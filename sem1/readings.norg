@@ -1,0 +1,18 @@
+@document.meta
+    title: readings
+    description: 
+    author: jakob
+    categories: 
+    created: 2021-10-01
+    version: 0.1
+@end
+
+
+* Articles
+  - Refactoring and Active Object Languages - Artikkel
+  - LSP-proposal
+  - Erlend Kristiansen refaktorering for Java
+
+* Tveito Books
+  - Gødel, Escher, Bach
+  - Types and programming languages

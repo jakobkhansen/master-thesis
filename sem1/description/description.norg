@@ -1,0 +1,78 @@
+@document.meta
+    title: Master thesis description
+    description: 
+    author: jakob
+    categories: 
+    created: 2021-10-01
+    version: 0.1
+@end
+
+
+* Temporary thesis statement
+  Vi ønsker å utvikle refaktorerings-støtte for ABS (abs-lenke). Vi bygger på eksisterende
+  Xtext grammatikk. Ønsker å tilby nye refaktoreringer. Ønsker å finne ut hva som er beste
+  måte å støtte refaktoreringsaktiviteter i LSP-protokoll. Muligens en LSP-change
+  proposal (https://arxiv.org/abs/2108.02961).
+
+  The thesis will be based around implementing refactoring support for the ABS
+  programming language (link). We want to offer users of the language more refactorings
+  and a way to apply them. To do this we will build upon an existing Xtext grammar
+  and work with the LSP protocol. A proposal to extend the LSP protocol might be made
+  in order to accomplish this goal. Based on this the temporary thesis statement and
+  research questions will be:
+
+  - How should refactorings be implemented in programming languages?
+  - Which refactorings can we safely implement?
+
+* Methodology
+  Our methodology will consist of the following steps:
+  - Read relevant existing research
+  - Specify requirements for the implementation
+  - Implement software
+  - Evaluate the software according to the requirements
+
+  Since development of ABS is at IFI, we will work with the maintainers of the
+  ABS language over the course of the thesis.
+
+* Progress plan, with milestones
+ ** Autumn 2021
+    - Deliver project plan
+    - Read relevant curriculum and papers
+
+ ** Spring 2021
+    - Read relevant papers
+    - Formulate a thesis for the essay due ...
+    - Connect previously developed refactorings from Erlend Kristiansen's master thesis
+    with ABS, using LSP.
+    - Narrow down the scope of the thesis based on the result of the previous step
+    - Write essay
+
+ ** Autumn 2022
+    - Analyze LSP and determine if the protocol is sufficient for refactoring.
+    - Propose alternatives/extensions to the LSP protocol
+    
+ ** Spring 2022
+    - Implement and evaluate alternative proposal
+    - Implement more refactorings for ABS if possible
+    - Finish master thesis
+
+* Relevant curriculum
+ ** IFI
+    - IN5320 - Development in platform ecosystems
+    - IN5170 - Models of concurrency
+    - INF5110 - Compilers
+    - IN5440 - Selected topics in static analysis
+
+* Study plan
+ ** Autumn 2021:
+    - IN5320 - Development in platform ecosystems x
+    - IN5290 - Ethical Hacking
+    - IN5170 - Models of concurrency
+
+ ** Spring 2021:
+    - Kompilatorteknikk x
+    - Testing av programvare
+
+ ** Autumn 2022:
+    - IN5110?
+    - IN5440? x

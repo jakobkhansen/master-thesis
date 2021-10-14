@@ -1,0 +1,82 @@
+% Created 2017-11-22 Wed 11:51
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+%\usepackage{minted}
+\input{preamble.tex}
+\usepackage[backend=biber,firstinits=true,doi=false,isbn=false,url=false]{biblatex}
+\addbibresource{refs.bib}
+\date{December 2017}
+\title{\myred{Partial Order Reduction for Real Time ABS}\vspace{-1cm}}
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{center}
+\begin{tabular}{ll}
+\gc candidate & Martin Mellum Jackson\\
+\gc supervisors & Lars Tveito and Einar Broch Johnsen\\
+\gc group & SIRIUS\\
+\gc type & 60ECTS\\
+\gc study program & Informatics: Programming and Networks\\
+\gc planned date of completion & May 2019\\
+\end{tabular}
+\end{center}
+
+\section*{Short description}
+\label{sec:org4ecb37b}
+
+The task is to adapt \emph{dynamic partial order reduction}
+\cite{DBLP:journals/jacm/AbdullaAJS17} to Real-Time ABS
+\cite{DBLP:journals/jlp/JohnsenST15}.
+
+\section*{Background and motivation}
+\label{sec:org2c578d4}
+
+Real-Time ABS is an executable modeling language, which is suitable for
+modeling distributed systems at a high level of abstraction. The language is
+object-oriented and features concurrent object groups that communicate via
+asynchronous method calls and futures. Models in Real-Time ABS are
+nondeterministic, meaning that executing the same model twice might not yield
+the same answer. It follows that tests in such a model can sometimes pass and
+sometimes fail, making testing such models reliably a very challenging task.
+
+To strengthen testing facilities for Real-Time ABS, we want to be able to
+explore many different runs of a model. The number of different possible runs
+of a heavily concurrent model can be extremely large. However, many of these
+runs may be equivalent and therefore unnecessary to explore. Detecting
+equivalent runs is a crucial prerequisite for any exploration-based testing
+framework for Real-Time ABS.
+
+The most promising technique for establishing equivalence between different
+runs is \emph{partial order reduction} (POR) \cite{DBLP:journals/sttt/ClarkeGMP99}.
+In recent years, \emph{dynamic} POR \cite{DBLP:journals/jacm/AbdullaAJS17} has been
+shown to guarantee \emph{optimal} partial order reduction. Furthermore, similar
+techniques have been adapted to actor systems \cite{DBLP:conf/forte/AlbertAG14}
+similar to Real-Time ABS.
+
+\section*{Problem description}
+\label{sec:orgbf54a93}
+
+The thesis will consist of both conceptual and implementation work. On the
+conceptual side, the dynamic POR algorithm must be adapted to the semantics
+of Real-Time ABS. In addition, the algorithm should be optimized for a
+distributed environment, as the Real-Time ABS simulator is implemented as a
+distributed system in Erlang. Finally, a prototype of the proposed algorithm
+will be implemented as a part of the Real-Time ABS simulator.
+
+\printbibliography
+\end{document}
