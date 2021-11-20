@@ -19,7 +19,7 @@
 \usepackage[backend=biber,firstinits=true,doi=false,isbn=false,url=false]{biblatex}
 \addbibresource{refs.bib}
 \date{December 2021}
-\title{\myred{Refactoring}\vspace{-1cm}}
+\title{\vspace{-1cm}\myred{Refactoring}\vspace{-1cm}}
 \begin{document}
 
 
@@ -27,52 +27,93 @@
 \maketitle
 \thispagestyle{empty}
 
+\vspace{-1cm}
 \begin{center}
 \begin{tabular}{ll}
 \gc candidate & Jakob Konrad Hansen\\
 \gc supervisors & Volker Stolz and Lars Tveito\\
-\gc group & SIRIUS\\
 \gc type & 60ECTS\\
 \gc study program & Informatics: Programming and System Architecture\\
 \gc planned date of completion & May 2023\\
 \end{tabular}
 \end{center}
 
+\vspace{-0.75cm}
 \section*{Short description}
 \label{sec:org4ecb37b}
 
 The task is to implement and research refactoring for the ABS programming language
 \textsubscript{\cite{DBLP:conf/fmco/JohnsenHSSS10}}.
 
+\vspace{-0.5cm}
 \section*{Background and motivation}
 
-Refactoring is the process of changing a software system in such a way that it does not
-alter the external behavior of the code yet improves its internal structure. In essence
-when you refactor you are improving the design of the code after it has been
-written.\textsubscript{\cite{Fowler1999}}
+Refactoring is the process of changing a software system in such a way that it preserves
+the external behavior of the code, but also improves its internal structure.
+\textsubscript{\cite{Fowler1999}}
 
 
 The thesis will be based around implementing refactoring support and researching
-refactorings for the ABS programming language. We want to offer users of the language more
+refactorings for the ABS programming language. We want to offer users of ABS more
 refactorings and a satisfactory method to apply them. To do this we will build upon an
-existing Xtext grammar\textsubscript{\cite{xtext}} and work with the LSP
-protocol\textsubscript{\cite{lsp}}. A proposal to extend the LSP protocol might be made in
-order to accomplish this goal. With this as a basis, the temporary thesis statement and
-research questions will be
+existing Xtext\textsubscript{\cite{xtext}} grammar and work with the LSP
+protocol\textsubscript{\cite{lsp}}. A proposal to extend the LSP protocol might be made if
+it aligns with the thesis. The temporary thesis statement and
+research questions will be:
 
+\vspace{-0.25cm}
 \begin{itemize}
+    \itemsep0em
     \item How should refactoring be implemented for ABS?
+    \item Which refactorings can we safely implement for ABS?
     \item Is the resulting approach generalizable to other programming languages?
-    \item Which refactorings can we safely implement?
 \end{itemize}
+\vspace{-0.9cm}
 
 \section*{Methodology}
 
 The thesis will consist of both theoretical and practical work. The theoretical work will
-consist of reading relevant existing research and conceptualizing refactorings. The
-practical work will consist of implementing software which will provide these
-refactorings. That will be a process of specifying requirements for the software,
-implementing the software and then evaluating if the software meets the requirements.
+consist of reading relevant research, formalizing refactorings, and argue their
+correctness. The practical work will consist of implementing software which will provide
+these refactorings. That will be a process of specifying requirements for the software,
+implementing the software and then evaluating it.
+
+\vspace{-0.5cm}
+\section*{Progress plan}
+
+\subsubsection*{Autumn 2021}
+\begin{itemize}
+    \itemsep0em
+    \item Deliver the project plan and read relevant curriculum and papers
+\end{itemize}
+\subsubsection*{Spring 2022}
+\vspace{-0.25cm}
+\begin{itemize}
+    \itemsep0em
+    \item Read relevant papers
+    \item Connect previously developed refactorings from Erlend Kristiansen's master
+        thesis\textsubscript{\cite{DBLP:conf/nik/KristiansenS14}} with ABS, using LSP
+    \item Narrow down the scope of the thesis based on the result of this implementation
+    \item Formulate a thesis for and write essay
+\end{itemize}
+\vspace{-0.25cm}
+\subsubsection*{Autumn 2022}
+\vspace{-0.5cm}
+\begin{itemize}
+    \itemsep0em
+    \item Analyze LSP and determine if the protocol is sufficient for refactoring
+    \item Propose alternatives/extensions to the LSP protocol
+    \item Implement refactorings for ABS 
+\end{itemize}
+\vspace{-0.25cm}
+\subsubsection*{Spring 2023}
+\vspace{-0.4cm}
+\begin{itemize}
+    \itemsep0em
+    \item Evaluate refactorings and/or alternative LSP proposal
+    \item Finish master thesis
+\end{itemize}
+
 
 \printbibliography
 \end{document}
