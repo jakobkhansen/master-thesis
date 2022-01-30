@@ -1,0 +1,32 @@
+* Keywords
+  - Actor-based
+  - Object-oriented
+  - Modelling language
+ ** Prime features
+    - All data is immutable (except state of objects and futures)
+    - Functions are free of side effects
+    - Method calls create new processes
+    - Java like syntax
+    - Futures
+    - Interfaces
+    - Safe concurrency
+    - Easy to model distributed systems
+    - Suitable for program analysis and verification
+
+* Actor and Concurrency Model
+  - ABS method calls are asynchronous
+  --- A method call creates a new process in the target while the caller process runs in
+      parallel
+
+ ** Cogs
+    - COGs (Concurrent Object Groups)
+    - Unit of concurrency
+    - Each cog runs one process at a time
+    - Processes on different cogs can run in parallel
+
+* Error propagation
+  - Exceptions
+  - Try-catch as usual
+  - Propagates to other processes if not handled
+
+

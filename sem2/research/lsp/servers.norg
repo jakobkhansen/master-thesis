@@ -1,0 +1,25 @@
+@document.meta
+  title: servers
+  description: 
+  authors: jakob
+  categories: 
+  created: 2022-01-19
+  version: 0.0.9
+@end
+
+- List of LSP servers: {https://microsoft.github.io/language-server-protocol/implementors/servers/}
+- Can also find servers here:{https://github.com/neovim/nvim-lspconfig}
+
+* LSP servers and refactoring support
+ ** clangd (C/C++)
+    - Supports formatting and renaming
+    - { https://clangd.llvm.org/ }
+
+ ** Omnisharp-roslyn (C#)
+    - Hard to say what it supports without setting up, looks like its not entirely based
+    on LSP communication.
+    - {https://github.com/OmniSharp/omnisharp-roslyn}
+
+ ** JDTLS
+    - The big guy, supports a lot of refactorings
+    - However, JDTLS extends the LSP protocol, everything is not standardized

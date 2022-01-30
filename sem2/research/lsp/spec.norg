@@ -1,0 +1,16 @@
+@document.meta
+  title: spec
+  description: 
+  authors: jakob
+  categories: 
+  created: 2022-01-21
+  version: 0.0.9
+@end
+
+{ https://microsoft.github.io/language-server-protocol/specifications/specification-current/ }
+
+- Last version 3.16, released 2020-12-14
+- Communicates over JSON-RPC
+
+* JSON-RPC
+  - Designed for calling remote functions
