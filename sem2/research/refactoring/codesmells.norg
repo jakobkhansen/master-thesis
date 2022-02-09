@@ -1,0 +1,24 @@
+* Smells
+ ** God object
+    - When a single object has too many responsibilities or unrelated methods/fields
+    - An object which controls way too many other objects
+ ** Feature envy
+    - When an object uses too much functionality from another object
+    - When an object exposes much of the inner workings of another object, which in
+      practice removes the abstraction
+ ** Lazy class
+    - When a class does not do enough to justify existing
+    - Classes are costly to maintain, reduce number of them if they are not needed
+ ** Complex class
+    - A class which contain many complex methods and is long in terms of LOC
+ ** Refused Bequest
+    - When a subclass does not need a lot of the functionality inherited
+ ** Shotgun surgery
+    - One change requires change in multiple classes
+    - A single responsibility has been split between multiple classes
+ ** Divergent change
+    - When you change a class, you have to change many methods/fields to accomodate that
+    change
+    - Similar to shotgun surgery, except for a single class
+
+

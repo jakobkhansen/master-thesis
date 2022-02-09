@@ -1,0 +1,26 @@
+* Motivation
+  - Modern clone detection tools are as far as I've seen not very suitable for use while
+    programming
+  - Some tools offer plugins, but these are mostly for Eclipse, bloated, old or platform
+    dependant.
+  - Also, most tools do not support "real-time" clone detection and functionality to merge
+    them.
+
+* Proposal
+  I want to develop a tool which provides real-time clone detection and functionality to
+  merge the detected clones in a modern IDE. This could be suitable to implement as an LSP
+  server, making it an IDE agnostic tool.
+ ** Relevant research and challenges
+    - Real-time clone detection (while developers are typing)
+    - Incremental code clone detection?
+    - Real-time merging of code clones.
+    - Efficient detection of new code clones in a changing codebase
+    - Providing clone detection as an LSP server
+
+ ** Tools which can help me
+    - SimLib: a clone detection engine ({https://github.com/suddin/ca.usask.cs.srlab.simLib})
+    - lsp4j: An LSP library for creating LSP servers ({https://github.com/eclipse/lsp4j})
+
+ ** Suggestions for thesis title
+    - "Towards modern support for clone detection in IDE's"
+    - "Real-time detection and merging of code clones in IDE's"

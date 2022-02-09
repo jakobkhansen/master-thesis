@@ -1,0 +1,8 @@
+* Code clone detection
+  - Finne kodesnutter som er like eller neste like.
+  - Mange approacher:
+  --- AST trebasert
+  --- Maskinlæring
+  --- Count matrix
+  - Virker som det er en universal god måte å evaluere på: {https://www.sciencedirect.com/science/article/pii/S1877050918308123}
+  - Scalable og accurate tree: {https://ieeexplore.ieee.org/abstract/document/4222572/citations?tabFilter=papers#citations}

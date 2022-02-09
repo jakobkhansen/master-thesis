@@ -1,0 +1,18 @@
+* Principles in refactoring
+  $ Refactoring (noun)
+  A change made to the internal structure of software to make it easier to understand and
+  cheaper to modify without changing its observable behavior.
+
+  $ Refactoring (verb)
+  To restructure software by applying a series of refactorings without changing its
+  observable behavior.
+
+  $ Two Hats
+  Metaphor. Dividing software development between adding functionality and refactoring.
+  Don't add new functionality when refactoring, don't refactor when adding new
+  functionality.
+
+ ** Reasons for refactoring
+    - Improves design of software (p. 47)
+    - Decay of software has a cumulative effect
+    - Poorly designed code quite literally does the same thing in serveral places. (p. 47!)
