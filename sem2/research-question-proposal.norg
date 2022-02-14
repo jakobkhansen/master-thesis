@@ -1,8 +1,8 @@
 * Motivation
   - Modern clone detection tools are as far as I've seen not very suitable for use while
-    programming
-  - Some tools offer plugins, but these are mostly for Eclipse, bloated, old or platform
-    dependant.
+    programming, but rather for analysis after being written.
+  - Some tools offer plugins, but these are mostly for Eclipse, bloated, old and IDE
+    dependant. None seem to have any degree of "plug-and-play"
   - Also, most tools do not support "real-time" clone detection and functionality to merge
     them.
 
@@ -19,8 +19,22 @@
 
  ** Tools which can help me
     - SimLib: a clone detection engine ({https://github.com/suddin/ca.usask.cs.srlab.simLib})
-    - lsp4j: An LSP library for creating LSP servers ({https://github.com/eclipse/lsp4j})
+    - lsp4j: A Java library for creating LSP servers ({https://github.com/eclipse/lsp4j})
 
  ** Suggestions for thesis title
     - "Towards modern support for clone detection in IDE's"
-    - "Real-time detection and merging of code clones in IDE's"
+    - "Real-time detection and merging of code clones in an IDE environment"
+
+ ** Research question
+    - How could real-time detection of code clones affect code quality compared to
+      later analysis?
+    - How should real-time code clone detection be implemented when focusing on efficiency and
+      scalability?
+    - How should real-time code clone merging be implemented when focusing on efficiency and
+      scalability?
+    - How should code clone detection be offered to IDE users? (LSP, plugins, ...)
+
+
+* Sources
+  - {img/2022-02-13-14-49-22.png}
+  - {img/2022-02-13-14-51-17.png}
