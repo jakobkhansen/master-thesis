@@ -8,8 +8,7 @@
 \usepackage{tikz}
 \usepackage{hyperref}
 \usepackage{graphicx}
-\usepackage[a4paper, total={6.25in, 9.5in}]{geometry}
-\setlength{\voffset}{0.25in}
+\usepackage[a4paper, total={}]{geometry}
 \setlength{\headsep}{5pt}
 \setlength{\parskip}{1em}
 \usepackage{listings}
@@ -45,7 +44,7 @@
     initial text=$ $,
 }
 
-\title{Refactoring}
+\title{Real-time management of code clones in an IDE environment}
 
 \author{Jakob Hansen}
 
@@ -66,11 +65,48 @@ Code clones are a problem ...
 Many tools exist which ...
 
 \section{Background}
-\subsection{Refactoring}
 
-\subsection{Duplicated code}
+\subsection{Software quality}
 
-\subsection{Code clone detection and merging}
+\subsubsection{Bad smells}
+
+\subsubsection{Software quality metrics}
+
+\subsubsection{How refactoring affects software quality}
+
+\subsubsection{Duplicated code}
+
+Write about what duplicated code is, how it affects software and some statistics on
+duplicated code (need reference)
+
+\subsection{Code clones}
+
+\subsubsection{Code clone types}
+
+Code clones are generally classified into four types.\cite{Inoue_introduction_to_cc} These
+types classify code snippets as code clones with an increasing amount of leniency.
+Therefore Type-1 code clones are very similar, while Type-4 clones are not necessarily
+similar at all. However, all code clones do still have the same functionality, it is the
+syntactic and structual differences which distinguish the types. The set of code clones
+classified by a code clone type is also a subset of the next type, meaning all type-1
+clones are also type-2 clones, but not vice versa.
+
+The code clone types are defined as follows:
+
+\textbf{Type-1} clones are syntactically identical. The only differences allowed are elements
+without meaning, like comments and white-space. 
+
+\textbf{Type-2} clones are structurally identical. Possible differences include
+identifiers, literals and types. 
+
+\textbf{Type-3} clones are structurally similar, but not equal. Differences include
+statements which are added, removed or modified. For this clone type one needs to
+determine a threshold $\theta$ which determines how structurally different snippets can be
+to be considered Type-3\cite{Inoue_introduction_to_cc}.
+
+\subsection{Code clone detection}
+
+\subsection{Code clone management}
 
 \section{The way forward}
 
