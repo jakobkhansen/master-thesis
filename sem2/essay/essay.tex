@@ -58,11 +58,20 @@
 \section{Introduction}
 
 Refactoring is the process of restructuring code in order to improve the internal behavior
-of the code, without changing the external behavior.\cite{fowlerrefactoring}
+of the code, without changing the external behavior.\cite{fowlerrefactoring} Refactoring
+is often done in order to eliminate ``smelly`` code.
 
-Code clones are a problem ...
+A study conducted by Diego Cedrim et al.\cite{Rohit_Gheyi_Impact} has shown that
+while developers tend to refactor smelly code, they are rarely successful at eliminating
+the smell. A large portion of refactorings even tend to make the code smellier. Therefore,
+automated tools to help developers make better refactorings and code analysis is an
+important field of research.
 
-Many tools exist which ...
+Duplicated code is a code smell which occurs in practically every large software project.
+Code clone analysis has recently become an active field of research and many tools have
+been developed to detect duplicated code.\cite{Inoue_introduction_to_cc} However, few of
+these tools have made an impact on the industry, and no notable tools are suitable for use
+while programming.
 
 \section{Background}
 
@@ -87,10 +96,10 @@ snippet. The two code snippets are both code clones and together, they form a co
 pair. 
 
 \subsection{The clone relation}
-The clone relation defines a relationship between code snippets where clones are related
-to each other. The clone relation is reflexive and symmetric, but not always transitive. The
-transitive property depends on the treshold for similarity when identifying code clones.
-For example if we have:
+The clone relation defines a relation between code snippets where snippets which are
+code clones are related to each other. The clone relation is reflexive and symmetric, but
+not always transitive. The transitive property depends on the treshold for similarity when
+identifying code clones. For example if we have:
 
 $$a \xrightarrow{clone} b \xrightarrow{clone} c$$
 
