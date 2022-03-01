@@ -102,20 +102,20 @@ project.\cite[99]{fowlerrefactoring}
 
 We define a code snippet as a piece of software code in a larger software system. A code
 clone is then defined as a code snippet which is equal to or similar to another code
-snippet. The two code snippets are both code clones and together, they form a code clone
+snippet. The two code snippets are both code clones and together they form a code clone
 pair. 
 
 \subsubsection{The clone relation}
 The clone relation defines a relation between code snippets where snippets which are
 code clones are related to each other. The clone relation is reflexive and symmetric, but
 not always transitive. The transitive property depends on the treshold for similarity when
-identifying code clones. For example if we have:
+identifying code clones. Given
 
 $$a \xrightarrow{clone} b \xrightarrow{clone} c$$
 
-where $a,b,c$ are code snippets and $\xrightarrow{clone}$ gives the clone relation. In
-this example $a$ may be similar to $b$, but not necessarily similar to $c$, depending on
-the threshold for similarity.
+where $a,b,c$ are code snippets and $\xrightarrow{clone}$ gives the clone relation, $a$ is
+a clone of $b$, but not necessarily similar enough to be a clone of $c$, depending on the
+threshold for similarity.
 
 \subsubsection{Code clone types}
 
@@ -138,10 +138,10 @@ identifiers, literals and types.
 \textbf{Type-3} clones are required to be structurally similar, but not equal. Differences
 include statements which are added, removed or modified. For this clone type one needs to
 determine a threshold $\theta$ which determines how structurally different snippets can be
-to be considered Type-3\cite{Inoue_introduction_to_cc}.
+to be considered Type-3 clones.\cite{Inoue_introduction_to_cc}
 
-\textbf{Type-4} are clones without any requirement for structural similarity. Therefore
-the only requirement is the functionality being the same.
+\textbf{Type-4} are clones without any requirement for syntactical or structural similarity. Therefore
+the only requirement is having the same functionality.
 
 \subsubsection{Code clone detection}
 
