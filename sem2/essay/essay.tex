@@ -1,3 +1,5 @@
+% TODO add sidetall på alle kilder
+
 \documentclass[12pt]{article}
 
 \setlength\parindent{0pt}
@@ -58,26 +60,29 @@
 \section{Introduction}
 
 Refactoring is the process of restructuring code in order to improve the internal behavior
-of the code, without changing the external behavior.\cite{fowlerrefactoring} Refactoring
+of the code, without changing the external behavior.\cite[9]{fowlerrefactoring} Refactoring
 is often done in order to eliminate ``smelly`` code.
 
-A study conducted by Diego Cedrim et al.\cite{Rohit_Gheyi_Impact} has shown that
-while developers tend to refactor smelly code, they are rarely successful at eliminating
-the smell. A large portion of refactorings even tend to make the code smellier. Therefore,
-automated tools to help developers make better refactorings and code analysis is an
-important field of research.
+A study conducted by Diego Cedrim et al.\cite{Rohit_Gheyi_Impact} has shown that while
+developers tend to refactor smelly code, they are rarely successful at eliminating the
+smells they are targetting. A large portion of refactorings even tend to make the code
+smellier. Therefore, automated tools to help developers make better refactorings and code
+analysis is an important field of research.
 
 Duplicated code is a code smell which occurs in practically every large software project.
 Code clone analysis has recently become an active field of research and many tools have
 been developed to detect duplicated code.\cite{Inoue_introduction_to_cc} However, few of
 these tools have made an impact on the industry, and few have the capability of detecting
-advanced types of duplicated code in a real-time IDE environment. IntelliJ 
+advanced types of duplicated code in a real-time IDE environment. 
+
+This thesis will present a proposal for a tool which will fill this gap for an industry viable
+clone detection tool. It will explore the topics of finding clones in real-time, managing
+code clones in real-time and in providing clone detection (and refactorings in general) in
+a modern IDE environment.
 
 \section{Background}
 
 \subsection{Software quality}
-
-\subsubsection{Bad smells}
 
 \subsubsection{Software quality metrics}
 
@@ -87,6 +92,11 @@ advanced types of duplicated code in a real-time IDE environment. IntelliJ
 
 Write about what duplicated code is, how it affects software and some statistics on
 duplicated code (need reference)
+
+As stated, duplicated code damages software quality in practically every large software
+project. Duplicated code can lead to a plethora of anti-patterns like Shotgun-Surgery and
+Divergent-Change, and will often lead to an increase in technical debt for the
+project.\cite[99]{fowlerrefactoring}
 
 \subsection{Code clones}
 
@@ -104,7 +114,7 @@ identifying code clones. For example if we have:
 $$a \xrightarrow{clone} b \xrightarrow{clone} c$$
 
 where $a,b,c$ are code snippets and $\xrightarrow{clone}$ gives the clone relation. In
-this example $a$ may be similar to $b$, but not necessarily similar to $a$, depending on
+this example $a$ may be similar to $b$, but not necessarily similar to $c$, depending on
 the threshold for similarity.
 
 \subsubsection{Code clone types}
