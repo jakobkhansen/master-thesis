@@ -34,6 +34,8 @@
       scalability?
     - How should code clone detection be offered to IDE users? (LSP, plugins, ...)
 
+* Interesting stuff
+  - Search within a given scope first like class, package, ...
 
 * Sources
   - {img/2022-02-13-14-49-22.png}
