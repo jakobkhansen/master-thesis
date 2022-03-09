@@ -67,19 +67,18 @@ is often done in order to eliminate ``smelly`` code.
 A study conducted by Diego Cedrim et al.\cite{Rohit_Gheyi_Impact} has shown that while
 developers tend to refactor smelly code, they are rarely successful at eliminating the
 smells they are targetting. A large portion of refactorings even tend to make the code
-smellier. Therefore, automated tools to help developers make better refactorings and code
-analysis is an important field of research.
+smellier. Therefore, automated tools to help developers make better refactorings and
+perform code analysis is an important field of research.
 
 Duplicated code is a code smell which occurs in practically every large software project.
 Code clone analysis has recently become a highly active field of research and many tools have
 been developed to detect duplicated code.\cite[7]{Inoue_introduction_to_cc} However, few of
-these tools have made an impact on the industry, and few have the capability of detecting
-advanced types of duplicated code and managing them in a real-time IDE environment. 
+these tools reached and see use in the industry and few have the capability of detecting
+more intricate types of duplicated code and managing them in a real-time IDE environment. 
 
 This thesis will present a tool for industry viable clone detection and management. It
 will explore the topics of finding and managing clones in real-time, refactoring-oriented
 clone detection and providing clone management in a modern IDE environment.
-
 
 \section{Background}
 
@@ -96,6 +95,7 @@ project. Duplicated code can lead to a plethora of anti-patterns like Shotgun-Su
 Divergent-Change, and will often lead to an increase in technical debt for the
 project.\cite[99]{fowlerrefactoring}
 
+Statistic about percentage of duplicated code here.
 
 \subsection{Code clones}
 
@@ -145,7 +145,7 @@ the only requirement is having the same functionality.
 Type-1 clones are often referred to as ``exact`` clones, while Type-2 and Type-3 clones are
 often referred to as ``near-miss`` clones.\cite[1]{Zibran_real_time_search}
 
-\subsubsection{Code clone detection and management}
+\subsubsection{Code clone detection and management techniques}
 
 Write about different techniques which are used and how well they work
 
@@ -217,6 +217,7 @@ focus will therefore be:
     \item Real-time detection and management of code clones
     \item Code clone refactoring and detection of refactoring-oriented clones
     \item IDE tooling and IDE agnostic tooling like LSP\cite{}
+    \item Clone ranking, which clones are ok to leave in the code?
 \end{itemize}
 
 \bibliography{refs}
