@@ -46,7 +46,7 @@
     initial text=$ $,
 }
 
-\title{Real-time management of code clones in an IDE environment}
+\title{\vspace{-20px}Real-time management of code clones in an IDE environment}
 % Alternative: \title{IDE-agnostic management of code clones }
 
 \author{Jakob Hansen}
@@ -71,15 +71,15 @@ smellier. Therefore, automated tools to help developers make better refactorings
 analysis is an important field of research.
 
 Duplicated code is a code smell which occurs in practically every large software project.
-Code clone analysis has recently become a more active field of research and many tools have
+Code clone analysis has recently become a highly active field of research and many tools have
 been developed to detect duplicated code.\cite[7]{Inoue_introduction_to_cc} However, few of
 these tools have made an impact on the industry, and few have the capability of detecting
-advanced types of duplicated code in a real-time IDE environment. 
+advanced types of duplicated code and managing them in a real-time IDE environment. 
 
-This thesis will present a proposal for a tool which will fill this gap for an industry viable
-clone detection tool. It will explore the topics of finding clones in real-time, managing
-code clones in real-time and providing clone detection (and refactorings in general) in
-a modern IDE environment.
+This thesis will present a tool for industry viable clone detection and management. It
+will explore the topics of finding and managing clones in real-time, refactoring-oriented
+clone detection and providing clone management in a modern IDE environment.
+
 
 \section{Background}
 
@@ -91,13 +91,11 @@ a modern IDE environment.
 
 \subsubsection{Duplicated code}
 
-Write about what duplicated code is, how it affects software and some statistics on
-duplicated code (need reference)
-
 As stated, duplicated code damages software quality in practically every large software
 project. Duplicated code can lead to a plethora of anti-patterns like Shotgun-Surgery and
 Divergent-Change, and will often lead to an increase in technical debt for the
 project.\cite[99]{fowlerrefactoring}
+
 
 \subsection{Code clones}
 
@@ -149,38 +147,77 @@ often referred to as ``near-miss`` clones.\cite[1]{Zibran_real_time_search}
 
 \subsubsection{Code clone detection and management}
 
-...
+Write about different techniques which are used and how well they work
 
+\subsubsection{Clone aware development}
+
+Developers are often not aware of the creation of clones in their code. Clone aware
+development involves having clone management as a part of the software development
+process. Since code clones can be hard to keep track of and manage, tools which help
+developers deal with clones are useful. However, Mathias Rieger et al. claims that
+a problem with many detection tools is that the tools ``report large amounts data that must
+be treated with little tool support.``\cite[1]{InsightsSystemWideDuplication}. Existing
+tools which partly solves this problem are presented below. 
 \subsubsection{IDE-based clone management}
 
-There are many existing clone management tools, however the most useful tools while
-developing are the tools which are integrated into an IDE and offer services to the
-programmer while developing in real-time. The IDE-based tools which
-exist can be categorized as follows\cite[8]{Udding_Towards_Convenient_Management}:
+There are many existing clone management tools, however the most useful tools for clone
+aware development are the tools which are integrated into an IDE and offer services to the
+programmer while developing in real-time. 
 
-\textit{Copy-paste-clones:} This category of tools deals only with code snippets which are
-copy-pasted from another location in code. These tools therefore only track clones which
-are created when copy-pasting, and does not use any other detection techniques. Therefore
-this type of tool is not suitable for detecting clones which are made accidentally, since
-developers are aware that they are creating clones when pasting already existing code
-snippets.
+The IDE-based tools which exist can be categorized as
+follows\cite[8]{Udding_Towards_Convenient_Management}:
 
-\textit{Clone detection and visualization tools:} This category of tools have more
-sophisticated clone detection capabilities and will detect code clones which occur
-accidentally.
+\begin{itemize}
+    \item\textit{Copy-paste-clones:} This category of tools deals only with code snippets which are
+    copy-pasted from another location in code. These tools therefore only track clones which
+    are created when copy-pasting, and does not use any other detection techniques. Therefore
+    this type of tool is not suitable for detecting clones which are made accidentally, since
+    developers are aware that they are creating clones when pasting already existing code
+    snippets.
 
-\textit{Versatile clone management:} This category of tools cover tools which provide more
-services than the above. Services like refactoring and simultaneous editing of clones fall
-under this category.
+    \item\textit{Clone detection and visualization tools:} This category of tools have more
+    sophisticated clone detection capabilities and will detect code clones which occur
+    accidentally.
+
+    \item\textit{Versatile clone management:} This category of tools cover tools which provide more
+    services than the above. Services like refactoring and simultaneous editing of clones fall
+    under this category.
+\end{itemize}
+
+There are a few existing IDE-tools which have seen success in real-time detection of clones:
+
+\begin{itemize}
+        \item Minhaz et al. introduced a technique for performing real-time focused
+            searches, i.e. searching only for code clones of a given code snippet. This
+            technique can also detect Type-3 clones.\cite{Zibran_real_time_search} 
+        This technique was later used in the tool
+        \textit{SimEclipse}.\cite{Udding_Towards_Convenient_Management} Since this tool
+        can only detect clones of a code snippet which the developer selects, this tool is
+        not well suited for finding accidental clones.
+
+        \item Another tool, SHINOBI can detect code clones in real-time without the need
+            of the developer to select a code snippet, however it can only detect type-1
+            and type-2 code clones.\cite{SHINOBI}
+        \item The modern IDE IntelliJ has a built-in duplication detection and
+            refactoring, it's able to detect type-1 and type-2 code clones at a method
+            granularity and refactors by replacing one of the clones with a method call.
+\end{itemize}
+
+No tools which we are aware of have the capability of both reporting code clones without
+fragment-selection and reporting type-3 clones.
 
 \section{The way forward}
 
-This thesis will attempt to provide a modern tool which provides clone management
+This thesis will attempt to provide and evaluate a modern tool which provides clone management
 capabilities in a real-time IDE environment. The main goal will be to create a tool which
-fits well into the development cycle and is agnostic in terms of IDE and possibly
-language. 
+fits well into the development cycle and works in a real-time IDE environment. Areas of
+focus will therefore be:
 
-Incrementally searching for clones while typing and increasing search-area incrementally.
+\begin{itemize}
+    \item Real-time detection and management of code clones
+    \item Code clone refactoring and detection of refactoring-oriented clones
+    \item IDE tooling and IDE agnostic tooling like LSP\cite{}
+\end{itemize}
 
 \bibliography{refs}
 \bibliographystyle{plain}
