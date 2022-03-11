@@ -1,0 +1,86 @@
+* Gjort siden sist
+  - Lekt med LSP
+  - Skrevet ~5 sider på essay ( mye overskrifter :) )
+  - Lest en god del artikler om code clones og techniques
+
+ ** Code clones
+    - Fått litt oversikt over techniques (hvertfall token-basert med suffix tre)
+    - Fått god oversikt over hvertfall en technique brukt for real-time detection
+    --- Jeg kommer nok til å trenge suffix-trær
+
+ ** Tanker om LSP
+    - Tror det skal gå greit å bruke LSP til dette
+    - Har laget en veldig primitiv "extract method" i LSP
+    - Det vil være relativt enkelt å bruke LSP til å gjøre endringer
+
+  *** Ting som er mulig med LSP code actions
+      - Insert, delete text in file
+      - Create/Delete/Rename files
+
+  *** Ting jeg fortsatt må finne ut av
+     - Indeksere alle filer i prosjektet
+     --- Får en "event" når en fil åpnes og redigeres, men må ha en måte å indeksere alle
+         filer i prosjektet slik at jeg kan edite filer som ikke har blitt åpnet fra før.
+     --- Skal se på hvordan andre LSP servere gjør dette
+
+     - Har ikke sett på diagnostics enda, tenker å gi en warning/hint error i editor når en clone er
+       detected
+
+  *** Begrensninger
+      - AFAIK ingen måte å få opp en liste med clones i editoren. Altså begrenset med
+        visualisering
+
+      - AFAIK ingen måter å spørre brukeren om input angående en codeaction
+      --- i.e. kan ikke gi brukeren flere valg når en action har blitt valgt
+      --- Kan derimot gi flere code actions, men dette kan være begrensende
+
+
+ ** Tanker for oppgaven
+    - SHINOBI har real-time detection der kloner blir rapportert til brukeren, men lite
+      management støtte
+    - "IDE-based Real-time focused search" artikkel har real-time detection, men
+      rapporterer bare kloner for kodesnutter som brukeren ber om. Har heller ingen
+      management innebygd
+    - IntelliJ har innebygd detection og merging, men virker som det bare er for kloner i samme fil, altså
+      ingen merging av kloner i forskjellige klasser. Dette er også slik at brukeren spør
+      etter kloner for en gitt metode.
+
+    Derfor, å fokusere på å detecte "refactoring-oriented" kloner og management av disse
+    er en bra mulighet, siden det virker som at det er merging som er minst utforsket.
+
+  *** Ide for første forsøk på en algoritme
+   **** Detection
+         - Use algorithm in "IDE-based Real-time focused search" 
+         --- Need tokens from program
+         --- Need to create a suffix tree
+         - Extend to "actively" find clones
+         - Extend to find "refactoring-oriented" clones
+   **** Merging
+         - When looking at a clone, show diagnostic with information regarding the clone pair
+    ***** Code actions
+          - Go to matching code clone
+          - Depending on class hierarchy, provide following merge actions
+          --- Merge code clone to new method (in same class)
+          --- Merge code clones in common super-class (Give name of common super-class)
+          --- Merge code clones in new utility class
+  
+  *** Spørsmål
+      - Hvordan burde evaluering gjøres for denne ideen?
+      - Er dette forsknings-nært nok?
+   
+
+
+
+
+
+
+* Links
+  - {:/home/jakob/Documents/MasterArticles/IdeBasedRealTimeSearch/IdeBasedRealTimeSearch.pdf:} 
+  - {:/home/jakob/Documents/MasterArticles/SHINOBI/SHINOBI_A_tool_for_automatic_code_clone_detection_.pdf:}
+
+
+* Notes for møte
+ - User interaction in essay
+ - Where does the LSP protocol suck
+ - User story for hvordan interaksjonen skal være
+ - https://openjdk.java.net/groups/compiler/doc/hhgtjavac/index.html

@@ -1,0 +1,78 @@
+@document.meta
+  title: daglatex
+  description: 
+  authors: jakob
+  categories: 
+  created: 2022-01-14
+  version: 0.0.9
+@end
+
+* Using Latex for your master's thesis
+ ** Writing
+  *** Commands
+      - Documents contain commands like `\documentclass[UKenglish{ifimaster}]`
+      --- Commands may have options in square brackets
+      --- Commands may have parameters in curly braces
+
+  *** Classes
+      - The parameter ifimaster in earlier command is the document class
+      --- Article
+      --- Report
+      --- Book
+      --- Beamer
+
+  *** Packages
+      - Load packages with the `\usepackage` command
+
+   **** useful packages
+        - inputenc - Text encoding
+        - fontenc - Font encoding
+        - url - Urls
+        - babel - Language adaption
+        - textcomp - Useful symbols
+        - csquotes - International quotation marks
+        - duomasterforside - UiO frontpage
+        - graphicx - Images
+        - varioref - `\vref`
+        - biblatex - Bibliography
+
+  *** Useful commands
+      - title{Title}
+      - subtitle{Subtitle}
+      - author{Jakob}
+
+      - begin{document} end{document}
+
+  *** Structure
+      - `\part{}`
+      - `\chapter{}`
+      - `\section{}`
+      - `\subsection{}`
+      - `\subsubsection{}`
+      - `\paragraph{}`
+      - `\subparagraph{}`
+
+  *** Creating commands
+      - `\newcommand{\bsl}{\backslash}`
+
+  *** Drawing
+      - `\usepackage{graphicx}`
+
+      - When referencing images, one should use `\vref`
+
+
+ ** Bibtex - Bibliography
+    - Create a text file containing information on every document
+    - Example:
+    @code bibtex
+    @article {Breaklines,
+     author = {Donald Knuth},
+     title = {Breaking Paragraphs into Lines},
+     journaltitle = {Software---Practice and Experience},
+     volume = 11,
+     year = 1981,
+     pages = {1119-1184}
+    }
+    @end
+
+

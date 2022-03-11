@@ -1,8 +1,0 @@
-* First attempt
-  A simple version of type-1 and type-2 code clones.
-  - Fingerprint code fragments
-  - For every code fragment (method?) in open file
-  --- Find code clones via suffix tree
-  - Determine how well this works for real-time detection
-  
-

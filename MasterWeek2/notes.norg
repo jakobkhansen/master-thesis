@@ -1,0 +1,63 @@
+@document.meta
+  title: notes
+  description: 
+  authors: jakob
+  categories: 
+  created: 2022-01-11
+  version: 0.0.9
+@end
+
+
+* Structuring a master document - Leif Harald
+
+ ** What is a master thesis
+    - A document that stands on its own feet
+    - Describes a topic, investigates problem, describes solution
+
+ ** Essay
+    - Gets you started writing
+    - Helps you get an overview
+    - Text often reused in final thesis
+
+ ** Structure of thesis
+    - Introduction
+    --- Why is this topic important, how it contributes
+    - Background, theory, methodology
+    --- Necessary information for reader to understand problem and solution
+    - Presentation of work
+    - Analysis and discussion
+    - Conclusion and suggestions for future work
+    - Appendix
+    --- Link to implementation, experiments, sources
+
+    - You can assume that the reader is a master student at IFI and has some knowledge in the field
+
+ ** Writing
+    - Reader cannot look in your head
+    - Write complete proper sentences
+    - Spellchecker
+    - Guiding the user through your text
+    --- Refer back, refresh their memory, sum up, internal references
+    --- Make bridges between sections
+
+  *** Signposting
+
+
+* Choosing research methods
+ ** Methods
+  *** Case study
+  *** Experiment
+  *** SW Engineering Evaluation
+
+ ** Research process
+    - Research review
+    - Research design
+    - Data collection
+    - Data analysis
+    - Discussion
+
+ ** Choosing my research method
+    - Identify research field and real-world problem
+    - Formulate research question
+    - Assess which methods are candidates
+    - Choose research method

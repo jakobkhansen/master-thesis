@@ -1,0 +1,18 @@
+* First attempt
+ ** Detection
+    A simple version of type-1 and type-2 code clone detection
+    - Fingerprint code fragments
+    - For every code fragment (method?) in open file
+    --- Find code clones via suffix tree
+    - Determine how well this works for real-time detection
+    - Should try to identify refactoring-oriented clones
+ ** Merging
+    - When looking at a clone, show diagnostic with information regarding the clone pair
+  *** Code actions
+      - Go to matching code clone
+      - Depending on class hierarchy, provide following merge actions
+      --- Merge code clone to new method (in same class)
+      --- Merge code clones in common super-class (Give name of common super-class)
+      --- Merge code clones in new utility class
+  
+
