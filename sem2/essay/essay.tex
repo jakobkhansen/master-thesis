@@ -301,6 +301,20 @@ focus will therefore be:
 
 \subsection{LSP for IDE-based clone management}
 
+Our tool will give programmers the ability to manage clones in their IDE. The interaction
+with the LSP is modelled as user stories as follows:
+
+A programmer wants to see code clones for a single file, the programmer opens the files
+and is displayed diagnostics in the code wherever there are detected clones.
+
+A programmer wants to see all code clones for the current project. The programmer opens
+the IDE's diagnostic view and will see all code clones detected as diagnostics there.
+
+A programmer wants to jump to the corresponding match of a code clone in their editor. The
+programmer moves their cursor to the code clone diagnostic, invokes a request to see code
+actions, and invokes the ``Jump to matching clone`` code action. This moves the cursor to
+the relevant file with the matching code clone selected.
+
 
 \bibliography{refs}
 \bibliographystyle{plain}
