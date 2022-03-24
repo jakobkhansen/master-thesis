@@ -66,7 +66,7 @@ is often done in order to eliminate ``smelly`` code.
 
 A study conducted by Diego Cedrim et al.\cite{Rohit_Gheyi_Impact} has shown that while
 developers tend to refactor smelly code, they are rarely successful at eliminating the
-smells they are targetting. A large portion of refactorings even tend to make the code
+smells they are targeting. A large portion of refactorings even tend to make the code
 smellier. Therefore, automated tools to help developers make better refactorings and
 perform code analysis is an important field of research.
 
@@ -91,7 +91,7 @@ clone detection and providing clone management tools in a modern IDE environment
 \subsubsection{Duplicated code}
 
 As stated, duplicated code damages software quality in practically every large software
-project. Duplicated code can lead to a plethora of anti-patterns like Shotgun-Surgery and
+project. Duplicated code can lead to a plethora of antipatterns like Shotgun-Surgery and
 Divergent-Change, and will often lead to an increase in technical debt for the
 project\cite[99]{fowlerrefactoring}.
 
@@ -101,13 +101,13 @@ Statistic about percentage of duplicated code here.
 
 We define a code snippet or code fragment as a piece of software code in a larger software
 system. A code clone is then defined as a code snippet which is equal to or similar to
-another code snippet. The two code snippets are both code clones and together they form a
+another code snippet. The two code snippets are both code clones, and together they form a
 code clone pair.
 
 \subsubsection{The clone relation}
 The clone relation defines a relation between code snippets where snippets which are
 code clones are related to each other. The clone relation is reflexive and symmetric, but
-not always transitive. The transitive property depends on the treshold for similarity when
+not always transitive. The transitive property depends on the threshold for similarity when
 identifying code clones. Given
 
 $$a \xrightarrow{clone} b \xrightarrow{clone} c$$
@@ -120,9 +120,9 @@ threshold for similarity.
 
 Code clones are generally classified into four types\cite{Inoue_introduction_to_cc}. These
 types classify code snippets as code clones with an increasing amount of leniency.
-Therefore Type-1 code clones are very similar, while Type-4 clones are not necessarily
+Therefore, Type-1 code clones are very similar, while Type-4 clones are not necessarily
 similar at all. However, all code clones do still have the same functionality, it is the
-syntactic and structual differences which distinguish the types. The set of code clones
+syntactic and structural differences which distinguish the types. The set of code clones
 classified by a code clone type is also a subset of the next type, meaning all type-1
 clones are also type-2 clones, but not vice versa.
 
@@ -139,7 +139,7 @@ include statements which are added, removed or modified. For this clone type one
 determine a threshold $\theta$ which determines how structurally different snippets can be
 to be considered Type-3 clones\cite{Inoue_introduction_to_cc}.
 
-\textbf{Type-4} clones have no requirement for syntactical or structural similarity. Therefore
+\textbf{Type-4} clones have no requirement for syntactical or structural similarity. Therefore,
 the only requirement is having the same functionality.
 
 Type-1 clones are often referred to as ``exact`` clones, while Type-2 and Type-3 clones are
@@ -245,16 +245,16 @@ follows\cite[8]{Udding_Towards_Convenient_Management}:
 \begin{itemize}
 	\item\textit{Copy-paste-clones:} This category of tools deals only with code snippets which are
 	copy-pasted from another location in code. These tools therefore only track clones which
-	are created when copy-pasting, and does not use any other detection techniques. Therefore
+	are created when copy-pasting, and does not use any other detection techniques. Therefore,
 	this type of tool is not suitable for detecting clones which are made accidentally, since
 	developers are aware that they are creating clones when pasting already existing code
 	snippets.
 
-	\item\textit{Clone detection and visualization tools:} This category of tools have more
+	\item\textit{Clone detection and visualization tools:} This category of tools has more
 	sophisticated clone detection capabilities and will detect code clones which occur
 	accidentally.
 
-	\item\textit{Versatile clone management:} This category of tools cover tools which provide more
+	\item\textit{Versatile clone management:} This category of tools covers tools which provide more
 	services than the above. Services like refactoring and simultaneous editing of clones fall
 	under this category.
 \end{itemize}
@@ -283,6 +283,8 @@ There are a few existing IDE-tools which have seen success in real-time detectio
 No tools which we are aware of have the capability of both reporting code clones in
 real-time without fragment-selection and reporting type-3 clones.
 
+\subsection{The Language Server Protocol}
+
 \section{The way forward}
 
 This thesis will present and evaluate a modern tool which provides clone management
@@ -296,6 +298,9 @@ focus will therefore be:
 	\item IDE tooling and IDE agnostic tooling like LSP.
 	\item Clone ranking, which clones are allowed to stay?
 \end{itemize}
+
+\subsection{LSP for IDE-based clone management}
+
 
 \bibliography{refs}
 \bibliographystyle{plain}
