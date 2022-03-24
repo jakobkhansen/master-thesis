@@ -1,3 +1,19 @@
 * Plan
+ ** Uke 1
+  - [x] Fikse fil-synkronisering i LSP server
+  - [x] Lag et enkelt setup for å opprette og vise kloner i LSP server
+  --- [x] Hopp til matchende klone CodeAction
+  --- [ ] Hvordan håndtere overlappende kloner?
+  ----- Kanskje egen option for å select current klone
+
+  - [ ] Få helt oversikt over hvertfall part 1 av real-time algoritmen
+  - [ ] Se på hooking into Java compiler {https://openjdk.java.net/groups/compiler/doc/hhgtjavac/index.html}
+  - [ ] Avgjøre om Java er et bra språk å jobbe på
+  - [ ] Kan de gå ann å ha en language independent clone detector, ref {https://ieeexplore.ieee.org/abstract/document/8305997/citations?tabFilter=papers#citations}
+
+ ** Uke 2
+    - [ ] Lage en god arkitektur for LSP server
+    --- Hvordan organisere code actions og algo implementation?
+    --- Algo burde være separert fra LSP server
 
 * Gjort siden sist

@@ -1,0 +1,15 @@
+* LSP4J
+  - Server is a class which implements `LanguageServer, LanguageClientAware`
+  - Provides a TextDocumentService and WorkspaceService
+ ** TextDocumentService
+    - Provides services on a text document
+
+ ** WorkspaceService
+    - Provides services for workspaces
+    - For example if files are renamed or moved
+
+
+* Logging
+  - Må kunne logge hele dokumenter for å avgjøre om ting er synkronisert riktig
+  server-side
+  - Alternativ: Lag opplegg for å write en hel fil til log

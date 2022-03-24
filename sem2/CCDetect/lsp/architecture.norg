@@ -1,0 +1,38 @@
+* CCDetect architecture
+
+* Interaction
+ - User should have the following options:
+ --- See code clone as diagnostic, including filename and line number
+   --- Also percentage of duplicated code for Type-3?
+ --- Code action should be able to jump to the relevant file and line
+ --- Merge clone action
+ --- Display number of reduced lines in code action message
+ --- Ignore clone action?
+
+
+* LSP stuff
+ - Clones are displayed via diagnostics
+ - Merge clones with code actions
+ --- WorkspaceEdit/TextEdit
+ - Move between clone-pairs with code actions
+ --- No edits, use showDocument command
+ ----- In Neovim, required custom handler because of missing handler
+ --- Currently requires a custom handler in Neovim as there is no default handler for "window/showDocument"
+ ** Notes
+    - Should compute CodeAction edit and command in resolveCodeAction, seems like its recommended
+
+* Code clones
+
+ ** CodeCloneDetector interface
+    - Interface which provides methods for detecting code clones
+    - Allows plugging in different clone detection engines
+
+ ** CodeClone class
+    - Holds information for each code clone
+    - Has reference to matching code clone(s?)
+    - Provides code actions for the given clone
+
+ ** Finding relevant Code clones
+    - A good question is how to find relevant code clones for a given position in text
+    --- Probably not that hard, store clones for each file, loop through them all
+    --- Maybe store the clones in a B tree?
