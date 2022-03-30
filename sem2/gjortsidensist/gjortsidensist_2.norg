@@ -1,19 +1,25 @@
-* Plan
- ** Uke 1
-  - [x] Fikse fil-synkronisering i LSP server
-  - [x] Lag et enkelt setup for å opprette og vise kloner i LSP server
-  --- [x] Hopp til matchende klone CodeAction
-  --- [ ] Hvordan håndtere overlappende kloner?
-  ----- Kanskje egen option for å select current klone
+* Essay
+  - [x] Write about techniques (Needs revision)
+  - [x] Write about LSP
+  - [x] Write about our tool with user stories for LSP interaction
 
-  - [ ] Få helt oversikt over hvertfall part 1 av real-time algoritmen
-  - [ ] Se på hooking into Java compiler {https://openjdk.java.net/groups/compiler/doc/hhgtjavac/index.html}
-  - [ ] Avgjøre om Java er et bra språk å jobbe på
-  - [ ] Kan de gå ann å ha en language independent clone detector, ref {https://ieeexplore.ieee.org/abstract/document/8305997/citations?tabFilter=papers#citations}
+* Programming
+  - [x] Simple architecture for creating and displaying clones
+  --- [x] Jump to matching code clone action
+  --- [x] Architecture allows "plugging in" different detectors and mergers
+  --- [x] Looked at Java-compiler, but used a library, not javac {https://github.com/javaparser/javaparser}
+  - [x] VSCode extension which talks to LSP
 
- ** Uke 2
-    - [ ] Lage en god arkitektur for LSP server
-    --- Hvordan organisere code actions og algo implementation?
-    --- Algo burde være separert fra LSP server
+* Plans next 2 weeks
+  - At a point where I can attempt to implement an algorithm for detection
+  --- Will first attempt the first part of this: {@ ~/Documents/master-thesis/articles/IdeBasedRealTimeSearch/IdeBasedRealTimeSearch.pdf}
+  - First draft of essay should be done
 
-* Gjort siden sist
+
+
+
+  - Architecture: {@ ~/Documents/master-thesis/sem2/CCDetect/lsp/LSPArchitecture.drawio.png}
+
+
+* Notes under møtet
+

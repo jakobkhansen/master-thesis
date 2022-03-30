@@ -153,23 +153,23 @@ process is often a pipeline of input-processing steps before finally comparing f
 against each other and filtering. The steps are generally as follows:
 
 \begin{enumerate}
-    \item \textbf{Pre-processing}: Removing some uninteresting parts, partitioning code into a set
-        of fragments, determining granularity.
-    \item \textbf{Transformation}: Transforming the fragments into an intermediate representation.
-    \begin{enumerate}
-        \item Extraction: Transforming source code into the input for the comparison
-            algorithm. Can be tokens, AST, dependency graphs, etc.
-        \item Normalization: Optional step which removes superficial differences such as
-            comments, whitespace and identifier names. Often useful for identifying type-2
-            clones.
-    \end{enumerate}
-    \item \textbf{Match detection}: Performing the comparisons which outputs a set of
-        candidate clone pairs.
-    \item \textbf{Formatting}: Convert from candidate clone pairs from the transformed
-        code back to clone pairs in the original source code.
-    \item \textbf{Post-processing/Filtering}: Ranking and filtering manually or with
-        automated heuristics
-    \item \textbf{Aggregation}: Optionally aggregating sets of clone pairs into clone classes
+	\item \textbf{Pre-processing}: Removing some uninteresting parts, partitioning code into a set
+	      of fragments, determining granularity.
+	\item \textbf{Transformation}: Transforming the fragments into an intermediate representation.
+	      \begin{enumerate}
+		      \item Extraction: Transforming source code into the input for the comparison
+		            algorithm. Can be tokens, AST, dependency graphs, etc.
+		      \item Normalization: Optional step which removes superficial differences such as
+		            comments, whitespace and identifier names. Often useful for identifying type-2
+		            clones.
+	      \end{enumerate}
+	\item \textbf{Match detection}: Performing the comparisons which outputs a set of
+	      candidate clone pairs.
+	\item \textbf{Formatting}: Convert from candidate clone pairs from the transformed
+	      code back to clone pairs in the original source code.
+	\item \textbf{Post-processing/Filtering}: Ranking and filtering manually or with
+	      automated heuristics
+	\item \textbf{Aggregation}: Optionally aggregating sets of clone pairs into clone classes
 \end{enumerate}
 
 As stated, not all clone detection techniques will necessarily follow all these steps.
@@ -189,8 +189,8 @@ subsequences of tokens. Since token streams rarely include superficial differenc
 such as whitespace, indentation and comments, this approach is more robust to such
 differences. Concrete names of identifiers and values are abstracted away when comparing
 the token-stream, therefore type-2 clones can easily be identified. Type-3 clones can also
-be identified by comparing the fragments tokens and keeping clone pairs which are
-lexically not more different than a given threshold. This can be solved with dynamic
+be identified by comparing the fragments tokens and keeping clone pairs with a lexical
+difference lower than a given threshold. This can be solved with dynamic
 programming\cite{BakerSparseDynamicProgramming}.
 
 \textit{Syntactic} approaches transform source code into either parse trees or abstract
@@ -201,7 +201,7 @@ subtrees into buckets and compare them with a tolerant tree matching algorithm. 
 names, literal values and other source may be abstracted to find type-2 clones more
 easily. Metrics-based techniques gather metrics for code fragments in the parse tree / AST
 and uses the metrics to determine if the fragments are clones or not. One way is to use
-fingerprinting functions where the fingerprint include certain metrics, and compare the
+fingerprinting functions where the fingerprint includes certain metrics, and compare the
 fingerprints of all fragments to find clones.
 
 \textit{Chunk-based} approaches decompose chunks of source code into signatures which are
@@ -214,14 +214,6 @@ example Zibran et al.\cite{Zibran_real_time_search} developed a hybrid algorithm
 combining both token-based suffix trees for type-1 and type-2 clone detection, with
 a k-difference dynamic programming algorithm for type-3 clone detection.
 
-
-\begin{itemize}
-    \item Text-based 
-    \item Lexical/Token-based
-    \item Syntax-based (AST)
-    \item Metrics-based (Comparing gathered metrics)
-    \item Semantics-based (static program analysis)
-\end{itemize}
 
 \subsubsection{Clone aware development}
 
@@ -276,14 +268,22 @@ There are a few existing IDE-tools which have seen success in real-time detectio
 	\item The modern IDE IntelliJ has a built-in duplication detection and
 	      refactoring, it's able to detect type-1 and type-2 code clones at a method
 	      granularity and refactors by replacing one of the clones with a method call.
-          This tool also requires the user to actively select the method which will be
-          checked for clones.
+	      This tool also requires the user to actively select the method which will be
+	      checked for clones.
 \end{itemize}
 
 No tools which we are aware of have the capability of both reporting code clones in
 real-time without fragment-selection and reporting type-3 clones.
 
 \subsection{The Language Server Protocol}
+
+The Language Server protocol (LSP) is a protocol which defines specifies interaction between a
+client (IDE) and server in order to give the client tool support. The goal of the protocol
+is to avoid the need for separate implementations of language tools for every IDE and
+every language. Servers which implement LSP will be able to offer IDE's code-completion,
+diagnostics, go-to-definition and much more. LSP also specifies generic code-actions and
+commands, which the LSP server provides to the client in order to perform custom actions
+defined by the server. 
 
 \section{The way forward}
 
@@ -301,19 +301,36 @@ focus will therefore be:
 
 \subsection{LSP for IDE-based clone management}
 
-Our tool will give programmers the ability to manage clones in their IDE. The interaction
-with the LSP is modelled as user stories as follows:
+Our tool will give programmers the ability to manage clones in their IDE. We will utilize
+many feature of LSP, especially code-actions, in order to provide functionality for clone
+management to any editor which implements LSP.
 
-A programmer wants to see code clones for a single file, the programmer opens the files
-and is displayed diagnostics in the code wherever there are detected clones.
+The interaction with the LSP server is modelled as user stories as follows:
 
-A programmer wants to see all code clones for the current project. The programmer opens
-the IDE's diagnostic view and will see all code clones detected as diagnostics there.
+\begin{itemize} 
+    \item A programmer wants to see code clones for a single file, the
+        programmer opens the file in their IDE and is displayed diagnostics in the code
+        wherever there are detected clones.
 
-A programmer wants to jump to the corresponding match of a code clone in their editor. The
-programmer moves their cursor to the code clone diagnostic, invokes a request to see code
-actions, and invokes the ``Jump to matching clone`` code action. This moves the cursor to
-the relevant file with the matching code clone selected.
+    \item A programmer wants to see all code clones for the current project. The
+        programmer opens the IDE's diagnostic view and will see all code clones detected
+        as diagnostics there. The diagnostic will contain information like where the clone
+        exists, and percentage of duplicated code.
+
+    \item A programmer wants to jump to the corresponding match of a code clone in their
+        editor. The programmer moves their cursor to the code clone diagnostic, invokes a
+        request to see code actions, and invokes the ``Jump to matching clone`` code
+        action. This moves the cursor to the relevant file with the matching code clone
+        selected.
+
+    \item A programmer wants to merge a code clone pair. The programmer moves their cursor
+        to one of the code clones, invokes a request to see code actions, and invokes one
+        of the ``Merge code clone with strategy x`` actions. The strategies presented to
+        the user is dependent on the context of the code clone pair, the programmer will
+        only see the useful / realizable merging strategies.
+\end{itemize}
+
+
 
 
 \bibliography{refs}
