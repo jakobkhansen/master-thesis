@@ -56,18 +56,23 @@
 \begin{document}
 \maketitle
 
+\newpage
+
 \tableofcontents
+
+\newpage
 
 \section{Introduction}
 
 Refactoring is the process of restructuring code in order to improve the internal behavior
-of the code, without changing the external behavior\cite[9]{fowlerrefactoring}. Refactoring
-is often done in order to eliminate ``smelly`` code.
+of the code, without changing the external behavior\cite[9]{fowlerrefactoring}.
+Refactoring is often done in order to eliminate instances of bad design quality in code,
+otherwise known as code smells.  
 
-A study conducted by Diego Cedrim et al.\cite{Rohit_Gheyi_Impact} has shown that while
-developers tend to refactor smelly code, they are rarely successful at eliminating the
-smells they are targeting. A large portion of refactorings even tend to make the code
-smellier. Therefore, automated tools to help developers make better refactorings and
+A study conducted by Diego Cedrim et al. has shown that while developers tend to refactor
+smelly code, they are rarely successful at eliminating the smells they are
+targeting\cite{Rohit_Gheyi_Impact}. A large portion of refactorings even tend to make the
+code smellier. Therefore, automated tools to help developers make better refactorings and
 perform code analysis is an important field of research.
 
 Duplicated code is a code smell which occurs in practically every large software project.
@@ -76,9 +81,10 @@ been developed to detect duplicated code\cite[7]{Inoue_introduction_to_cc}. Howe
 these tools reached and see use in the industry and few have the capability of detecting
 more intricate types of duplicated code and managing them in a real-time IDE environment.
 
-This thesis will present a tool for industry viable clone detection and management. It
-will explore the topics of finding and managing clones in real-time, refactoring-oriented
-clone detection and providing clone management tools in a modern IDE environment.
+This thesis will present a tool and possibly techniques for industry viable clone
+detection and management. It will explore the topics of finding and managing clones in
+real-time, refactoring-oriented clone management and providing clone management tools in a
+modern IDE environment.
 
 \section{Background}
 
@@ -91,9 +97,11 @@ clone detection and providing clone management tools in a modern IDE environment
 \subsubsection{Duplicated code}
 
 As stated, duplicated code damages software quality in practically every large software
-project. Duplicated code can lead to a plethora of antipatterns like Shotgun-Surgery and
-Divergent-Change, and will often lead to an increase in technical debt for the
-project\cite[99]{fowlerrefactoring}.
+project. Duplicated code can lead to a plethora of antipatterns like Shotgun-Surgery, and
+will often lead to an increase in technical debt for the
+project\cite[99]{fowlerrefactoring}. The shotgun-surgery antipattern occurs when a
+developer wants to implement a change, but needs to make the same change in many different
+places for the change to take effect.
 
 Statistic about percentage of duplicated code here.
 
