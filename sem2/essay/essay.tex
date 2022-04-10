@@ -67,7 +67,7 @@
 Refactoring is the process of restructuring code in order to improve the internal behavior
 of the code, without changing the external behavior\cite[9]{fowlerrefactoring}.
 Refactoring is often done in order to eliminate instances of bad design quality in code,
-otherwise known as code smells.  
+otherwise known as code smells.
 
 A study conducted by Diego Cedrim et al. has shown that while developers tend to refactor
 smelly code, they are rarely successful at eliminating the smells they are
@@ -90,9 +90,6 @@ modern IDE environment.
 
 \subsection{Software quality}
 
-\subsubsection{Software quality metrics}
-
-\subsubsection{How refactoring affects software quality}
 
 \subsubsection{Duplicated code}
 
@@ -285,13 +282,13 @@ real-time without fragment-selection and reporting type-3 clones.
 
 \subsection{The Language Server Protocol}
 
-The Language Server protocol (LSP) is a protocol which defines specifies interaction between a
-client (IDE) and server in order to give the client tool support. The goal of the protocol
-is to avoid the need for separate implementations of language tools for every IDE and
-every language. Servers which implement LSP will be able to offer IDE's code-completion,
-diagnostics, go-to-definition and much more. LSP also specifies generic code-actions and
-commands, which the LSP server provides to the client in order to perform custom actions
-defined by the server. 
+The Language Server protocol (LSP) is a protocol which specifies interaction between a
+client (IDE) and server in order to provide the client with tooling support. The goal of
+the protocol is to avoid the need for separate implementations of language tools for every
+IDE and every language. Servers which implement LSP will be able to offer IDE's
+code-completion, diagnostics, go-to-definition and much more. LSP also specifies generic
+code-actions and commands, which the LSP server provides to the client in order to perform
+custom actions defined by the server.
 
 \section{The way forward}
 
@@ -315,28 +312,54 @@ management to any editor which implements LSP.
 
 The interaction with the LSP server is modelled as user stories as follows:
 
-\begin{itemize} 
-    \item A programmer wants to see code clones for a single file, the
-        programmer opens the file in their IDE and is displayed diagnostics in the code
-        wherever there are detected clones.
+\begin{itemize}
+	\item A programmer wants to see code clones for a single file, the
+	      programmer opens the file in their IDE and is displayed diagnostics in the code
+	      wherever there are detected clones.
 
-    \item A programmer wants to see all code clones for the current project. The
-        programmer opens the IDE's diagnostic view and will see all code clones detected
-        as diagnostics there. The diagnostic will contain information like where the clone
-        exists, and percentage of duplicated code.
+	\item A programmer wants to see all code clones for the current project. The
+	      programmer opens the IDE's diagnostic view and will see all code clones detected
+	      as diagnostics there. The diagnostic will contain information like where the clone
+	      exists, and percentage of duplicated code.
 
-    \item A programmer wants to jump to the corresponding match of a code clone in their
-        editor. The programmer moves their cursor to the code clone diagnostic, invokes a
-        request to see code actions, and invokes the ``Jump to matching clone`` code
-        action. This moves the cursor to the relevant file with the matching code clone
-        selected.
+	\item A programmer wants to jump to the corresponding match of a code clone in their
+	      editor. The programmer moves their cursor to the code clone diagnostic, invokes a
+	      request to see code actions, and invokes the ``Jump to matching clone`` code
+	      action. This moves the cursor to the relevant file with the matching code clone
+	      selected.
 
-    \item A programmer wants to merge a code clone pair. The programmer moves their cursor
-        to one of the code clones, invokes a request to see code actions, and invokes one
-        of the ``Merge code clone with strategy x`` actions. The strategies presented to
-        the user is dependent on the context of the code clone pair, the programmer will
-        only see the useful / realizable merging strategies.
+	\item A programmer wants to merge a code clone pair. The programmer moves their cursor
+	      to one of the code clones, invokes a request to see code actions, and invokes one
+	      of the ``Merge code clone with strategy x`` actions. The strategies presented to
+	      the user is dependent on the context of the code clone pair, the programmer will
+	      only see the useful / realizable merging strategies.
 \end{itemize}
+
+\subsection{Evaluation}
+
+We will evaluate this tool based on different criteria, which together will provide a
+basis for evaluating the tool as a whole.
+
+\subsubsection{Performance}
+
+Since the tool is focused on efficient detection and management of code clones, real-time
+performance of our tool will be a big priority in its evaluation. The tool will implement
+different techniques of detecting and merging clones. These will be empirically compared
+against each other. The tool will also be evaluated against existing tools empirically.
+
+\subsubsection{Effectiveness in managing clones}
+
+The tool will also be evaluated based on its effectiveness in managing clones. Can we
+determine if this tool is better than existing tools at managing or eliminating clones in
+the software development cycle?
+
+\subsubsection{Using LSP for refactoring and clone management}
+
+Finally, we will evalute if LSP is a suitable tool for use in clone management and
+refactoring in general. Can LSP provide all the features one would want in a modern clone
+management tool? What is missing, and how could the LSP protocol be extended in order to
+facilitate this? We believe that if LSP is an appropriate tool to use for clone
+management, LSP will also be an appropriate tool for refactoring in general.
 
 
 

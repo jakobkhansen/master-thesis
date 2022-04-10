@@ -1,3 +1,20 @@
 * Plan
+  - [ ] Got Treesitter working for Java (can use any grammar)
   - [ ] First draft of essay
   - [ ] Start (and maybe implement part 1) on clone detection algorithm
+
+* SimLib
+
+
+
+* LSP
+  - Linked editing, can it be used to edit clones simultaneously?
+  - HTML server supports this {https://github.com/microsoft/vscode-html-languageservice/blob/main/src/services/htmlLinkedEditing.ts}
+
+
+* Treesitter
+  - [x] Got Java bindings and Java grammar running
+  - [ ] Added to CCDetect project
+  - [ ] Overview over API
+  - [ ] How does the incremental updating work?
+
