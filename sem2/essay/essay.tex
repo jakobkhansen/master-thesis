@@ -88,19 +88,29 @@ modern IDE environment.
 
 \section{Background}
 
-\subsection{Software quality}
+\subsection{Software quality and duplicated code}
 
+Software quality is hard to define. The term ``quality'' is ambiguous and is in the case
+of software quality, multidimensional. Quality in itself has been defined as ``conformance
+to requirements''\cite[8]{crosby1980quality}. In software, the simplest measure of
+``conformance to requirements'' we can have is a lack of bugs. However, software quality
+is often measured in other metrics, including metrics which are not directly visible in
+the functionality\cite[29]{MetricsAndModelsInSoftwareQuality}. These metrics often include
+maintainability, analyzability and changeability.
 
-\subsubsection{Duplicated code}
+All of these stated metrics are affected negatively by duplicated code, code which is more
+or less copied to different locations in the software. Multiple studies have consistently
+shown that software projects typically have $10-15\%$ duplicated
+code\cite{CloningByAccident}. Therefore, research into tools and techniques which can
+reduce duplicated code, will be of benefit to almost all software.
 
-As stated, duplicated code damages software quality in practically every large software
-project. Duplicated code can lead to a plethora of antipatterns like Shotgun-Surgery, and
-will often lead to an increase in technical debt for the
-project\cite[99]{fowlerrefactoring}. The shotgun-surgery antipattern occurs when a
-developer wants to implement a change, but needs to make the same change in many different
-places for the change to take effect.
-
-Statistic about percentage of duplicated code here.
+As stated, duplicated code damages software quality in
+practically every large software project. Duplicated code can lead to a plethora of
+antipatterns, for example shotgun-surgery, and will often lead to an increase in technical debt
+for the project\cite[99]{fowlerrefactoring}. The shotgun-surgery antipattern occurs when a
+developer wants to implement a change, but needs to make the same change in many places
+for the change to take effect. This is a typical situation which slows down development
+when a software project contains a lot of duplicated code. 
 
 \subsection{Code clones}
 
@@ -359,10 +369,7 @@ Finally, we will evalute if LSP is a suitable tool for use in clone management a
 refactoring in general. Can LSP provide all the features one would want in a modern clone
 management tool? What is missing, and how could the LSP protocol be extended in order to
 facilitate this? We believe that if LSP is an appropriate tool to use for clone
-management, LSP will also be an appropriate tool for refactoring in general.
-
-
-
+management, LSP will also be an appropriate tool for refactoring tools in general.
 
 \bibliography{refs}
 \bibliographystyle{plain}
