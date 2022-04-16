@@ -1,6 +1,4 @@
 % TODO Skrive mer om LSP (diagram)
-% Legge inn og beskrive arkitektur til LSP server
-% Beskrive plan om hvilke teknikker som skal testes.
 
 \documentclass[12pt]{article}
 
@@ -112,7 +110,7 @@ increase in technical debt for the project\cite[99]{fowlerrefactoring}. The
 shotgun-surgery antipattern occurs when a developer wants to implement a change, but needs
 to make the same change in many places for the change to take effect. This is a typical
 situation which slows down development when a software project contains a lot of
-duplicated code. 
+duplicated code.
 
 \subsection{Code clones}
 
@@ -170,10 +168,10 @@ process is often a pipeline of input-processing steps before finally comparing f
 against each other and filtering. The steps are generally as follows:
 
 \begin{enumerate}
-    \item \textbf{Pre-processing}: Removing uninteresting parts which we do not want to
-        check for clones, for example generated code. Then partitioning code into a set of
-        fragments, depending on granularity. Granularity which one partitions fragments
-        into could be entire files, methods or lines.
+	\item \textbf{Pre-processing}: Removing uninteresting parts which we do not want to
+	      check for clones, for example generated code. Then partitioning code into a set of
+	      fragments, depending on granularity. Granularity which one partitions fragments
+	      into could be entire files, methods or lines.
 	\item \textbf{Transformation}: Transforming the fragments into an intermediate representation.
 	      \begin{enumerate}
 		      \item Extraction: Transforming source code into the input for the comparison
@@ -309,9 +307,9 @@ using LSP. The client sends requests to a server in the form of JSON-RPC, and th
 sends a corresponding response, also in the form of JSON-RPC.
 
 \begin{figure}
-    \includegraphics[width=\textwidth]{images/lspcommunication.png}
-    \caption{Example communication using LSP}
-    \label{fig:lspcommunication}
+	\includegraphics[width=\textwidth]{images/lspcommunication.png}
+	\caption{Example client-server interaction using LSP}
+	\label{fig:lspcommunication}
 \end{figure}
 
 
@@ -366,16 +364,37 @@ Figure \ref{fig:architecture} shows the architecture of the tool. The server com
 with the IDE and delegates the work of managing clones to the detection engine and the
 merge engine. The tool also stores an index of all source code files in the current project.
 
+\subsection{Exploring clone management techniques}
+
+During development of the tool, different techniques for detecting and merging clones will
+be explored. The goal will be to find a fitting technique for both detecting and merging
+clones in a real-time IDE environment. 
+
+Detection techniques explored will include:
+
+\begin{itemize}
+	\item A modified version of Zibran et al. hybrid algorithm\cite{Zibran_real_time_search}
+    \item AST-based technique with incremental parsing. Using Tree-sitter, a generator of
+        incremental parsers\cite{treesitter}.
+    \item More techniques ...
+\end{itemize}
+
+Merging tehcniques explored will include:
+
+\begin{itemize}
+    \item Refactoring-oriented clone merging\cite{RefactoringOrientedClonesAndMerging}
+\end{itemize}
+
 \begin{figure}
-    \includegraphics[width=\textwidth]{images/ToolArchitecture.png}
-    \caption{Tool architecture}
-    \label{fig:architecture}
+	\includegraphics[width=\textwidth]{images/ToolArchitecture.png}
+	\caption{Tool architecture}
+	\label{fig:architecture}
 \end{figure}
 
 The tool will be modular in how techniques are applied for clone management. This
 means that the tool will be capable of plugging in different detection engines, merging
 engines and file indices. This will be used extensively in our research in order to test
-multiple techniques for detection and merging. 
+multiple techniques for detection and merging.
 
 \subsection{Evaluation}
 
@@ -397,12 +416,14 @@ the software development cycle?
 
 \subsubsection{Using LSP for refactoring and clone management}
 
-Finally, we will evalute if LSP is a suitable tool for use in clone management and
+Finally, we will evaluate if LSP is a suitable tool for use in clone management and
 refactoring in general. Can LSP provide all the features one would want in a modern clone
 management tool? What is missing, and how could the LSP protocol be extended in order to
 facilitate this? We believe that if LSP is an appropriate tool to use for clone
 management, LSP will also be an appropriate tool for refactoring tools in general.
 
+
+\newpage
 \bibliography{refs}
 \bibliographystyle{plain}
 
