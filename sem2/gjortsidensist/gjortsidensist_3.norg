@@ -1,20 +1,40 @@
 * Plan
-  - [ ] Got Treesitter working for Java (can use any grammar)
-  - [ ] First draft of essay
-  - [ ] Start (and maybe implement part 1) on clone detection algorithm
+  - [x] Implement part 1 of real-time clone detection algorithm
+  - [x] First draft of essay
 
-* SimLib
+* Suffix-algo
+** Details
+   - Fingerprint each method and create a fingerprint string
+   --- Example: *12314#35123163#$*
+   - Create a suffix tree from this string
+   --- Every internal node has at least two children
+   --- Meaning every internal node has a pattern which occurs at least twice i.e. a code clone
+   --- Select all internal nodes with a pattern of length >= some constant
+   --- All leaf-nodes of that internal node is a position which starts with that suffix
+   - See {@ suffixexplanation.png}
+
+** Stuff done
+   - [x] First part: Suffix tree algorithm
+   - [x] Display clones in editor in a nice manner (not huge errors overlapping)
+   - [ ] Pre-process text for type-2 detection
+   - [ ] Continue with second part
+
+
+* Evaluating tool performance
+  - How to evaluate tool performance?
+  --- BigCloneBench
+  --- Evaluating usefulness for programmers?
 
 
 
-* LSP
-  - Linked editing, can it be used to edit clones simultaneously?
-  - HTML server supports this {https://github.com/microsoft/vscode-html-languageservice/blob/main/src/services/htmlLinkedEditing.ts}
+* Questions/Ideas (research questions)
+** Treesitter based algorithm (Idea)
+   - Use Tree-sitter to avoid recomputing entire AST
+   - Tree-search algorithm using Tree-sitter (fast, incremental parser)
+** Linked editing
+   - Linked editing, can it be used to edit clones simultaneously?
+   - HTML server supports this {https://github.com/microsoft/vscode-html-languageservice/blob/main/src/services/htmlLinkedEditing.ts}
 
-
-* Treesitter
-  - [x] Got Java bindings and Java grammar running
-  - [ ] Added to CCDetect project
-  - [ ] Overview over API
-  - [ ] How does the incremental updating work?
-
+** Research questions
+   - Main RQ: "How can code clone detection and merging be implemented in a modern IDE environment?"
+   - Could "Is LSP suited for refactoring tools in general?" be a second research question?

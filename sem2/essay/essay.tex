@@ -1,5 +1,3 @@
-% TODO Skrive mer om LSP (diagram)
-
 \documentclass[12pt]{article}
 
 \setlength\parindent{0pt}
@@ -46,7 +44,7 @@
 	initial text=$ $,
 }
 
-\title{\vspace{-20px}Real-time management of code clones in an IDE environment}
+\title{\vspace{-20px}Real-time management of code clones in modern IDE environments}
 % Alternative: \title{IDE-agnostic management of code clones }
 
 \author{Jakob Hansen}
@@ -81,10 +79,10 @@ been developed to detect duplicated code\cite[7]{Inoue_introduction_to_cc}. Howe
 these tools reached and see use in the industry and few have the capability of detecting
 more intricate types of duplicated code and managing them in a real-time IDE environment.
 
-This thesis will present a tool and possibly techniques for industry viable clone
-detection and management. It will explore the topics of finding and managing clones in
-real-time, refactoring-oriented clone management and providing clone management tools in a
-modern IDE environment.
+This thesis will present a tool and possibly techniques for clone detection and management
+in a modern IDE environment. It will explore the topics of finding and managing clones in
+real-time, refactoring-oriented clone management and providing clone management and
+refactoring tools in a modern IDE environment.
 
 \section{Background}
 
@@ -92,25 +90,24 @@ modern IDE environment.
 
 Software quality is hard to define. The term ``quality'' is ambiguous and is in the case
 of software quality, multidimensional. Quality in itself has been defined as ``conformance
-to requirements''\cite[8]{crosby1980quality}. In software, the simplest measure of
-``conformance to requirements'' the software can have is a lack of bugs. However, software
+to requirements'' \cite[8]{crosby1980quality}. In software, the simplest measure of
+``conformance to requirements'' is a lack of bugs. However, software
 quality is often measured in other metrics, including metrics which are not directly
-visible in the functionality\cite[29]{MetricsAndModelsInSoftwareQuality}. These metrics
+related to functionality\cite[29]{MetricsAndModelsInSoftwareQuality}. These metrics
 often include maintainability, analyzability and changeability.
 
 All of these stated metrics are affected negatively by duplicated code, code which is more
-or less copied to different locations in the software. Multiple studies have consistently
-shown that software projects typically have $10-15\%$ duplicated
+or less copied to different locations in the source code. Multiple studies have consistently
+shown that software projects typically contains $10-15\%$ duplicated
 code\cite{CloningByAccident}. Therefore, research into tools and techniques which can
-reduce duplicated code, will be of benefit to almost all software.
+reduce duplicated code will be of benefit to almost all software.
 
 As stated, duplicated code damages software quality software projects. Duplicated code can
-lead to a plethora of antipatterns, for example shotgun-surgery, and will often lead to an
-increase in technical debt for the project\cite[99]{fowlerrefactoring}. The
-shotgun-surgery antipattern occurs when a developer wants to implement a change, but needs
-to make the same change in many places for the change to take effect. This is a typical
-situation which slows down development when a software project contains a lot of
-duplicated code.
+lead to a plethora of antipatterns, and will often lead to an
+increase in technical debt. The ``Shotgun-Surgery''\cite[66]{fowlerrefactoring} antipattern
+occurs when a developer wants to implement a change, but needs to make the same change in
+multiple places for the change to take effect. This is a typical situation which slows down
+development when a software project contains a lot of duplicated code.
 
 \subsection{Code clones}
 
@@ -119,17 +116,22 @@ system. A code clone is then defined as a code snippet which is equal to or simi
 another code snippet. The two code snippets are both code clones, and together they form a
 code clone pair.
 
-\subsubsection{The clone relation}
-The clone relation defines a relation between code snippets where snippets which are
-code clones are related to each other. The clone relation is reflexive and symmetric, but
-not always transitive. The transitive property depends on the threshold for similarity when
-identifying code clones. Given
+\subsubsection{Clone relation and lifecycle}
+
+The clone relation defines a relation between code snippets which defines pairs of clones.
+The clone relation is reflexive and symmetric, but not always transitive. The transitive
+property depends on the threshold for similarity when identifying code clones. Given
 
 $$a \xrightarrow{clone} b \xrightarrow{clone} c$$
 
 where $a,b,c$ are code snippets and $\xrightarrow{clone}$ gives the clone relation, $a$ is
 a clone of $b$, but not necessarily similar enough to be a clone of $c$, depending on the
 threshold for similarity.
+
+A clones lifecycle can be defined as the ``lifespan'' of the clone, meaning from the point
+the clone was created, until it is eliminated. As clones manifest in a code-base over a
+longer lifecycle, the negative effects of duplicated code becomes more severe, and removing
+the clones becomes harder.
 
 \subsubsection{Code clone types}
 
@@ -163,15 +165,14 @@ often referred to as ``near-miss`` clones\cite[1]{Zibran_real_time_search}.
 \subsubsection{Code clone detection process and techniques}
 
 \textbf{The Code clone detection process} is generally split into (but is not limited to)
-a set of steps to identify clones\cite{ComparisonAndEvaluationOfTechniques}. This
+a set of steps to identify clones\cite{Inoue_introduction_to_cc}. This
 process is often a pipeline of input-processing steps before finally comparing fragments
 against each other and filtering. The steps are generally as follows:
 
 \begin{enumerate}
 	\item \textbf{Pre-processing}: Removing uninteresting parts which we do not want to
-	      check for clones, for example generated code. Then partitioning code into a set of
-	      fragments, depending on granularity. Granularity which one partitions fragments
-	      into could be entire files, methods or lines.
+	      check for clones, for example generated code. Then partition code into a set of
+	      fragments, depending on granularity. Granularity could be entire files, methods or lines.
 	\item \textbf{Transformation}: Transforming the fragments into an intermediate representation.
 	      \begin{enumerate}
 		      \item Extraction: Transforming source code into the input for the comparison
@@ -191,9 +192,10 @@ against each other and filtering. The steps are generally as follows:
 
 As stated, not all clone detection techniques will necessarily follow all these steps.
 
-\textbf{Code clone detection techniques} are techniques which can be applied to detect
-clones, with various advantages and disadvantages. Some of the most popular techniques are
-as follows:
+\textbf{Matching techniques} are techniques which can be applied to match source-code to
+detect clone-pairs, with various advantages and disadvantages. The matching technique will
+also require specific pre-processing to be done in the earlier steps, for example creating an
+AST. Some of the most explored techniques are as follows\cite{ComparisonAndEvaluationOfTechniques}:
 
 \textit{Text-based} approaches do very little processing on the source code before
 comparing. Simple techniques such as fingerprinting or incremental hashing have been used
@@ -202,13 +204,17 @@ the hashes of fragments in a dot plot for use in comparisons.
 
 \textit{Token-based} approaches transform source code into a stream of tokens, similar to
 lexical scanning in compilers. The token stream is then scanned for duplicated
-subsequences of tokens. Since token streams rarely include superficial differences
+subsequences of tokens. Since token streams can easily filter out superficial differences
 such as whitespace, indentation and comments, this approach is more robust to such
-differences. Concrete names of identifiers and values are abstracted away when comparing
+differences. Concrete names of identifiers and values can be abstracted away when comparing
 the token-stream, therefore type-2 clones can easily be identified. Type-3 clones can also
 be identified by comparing the fragments tokens and keeping clone pairs with a lexical
 difference lower than a given threshold. This can be solved with dynamic
-programming\cite{BakerSparseDynamicProgramming}.
+programming\cite{BakerSparseDynamicProgramming}. A common approach to detect clones using
+token-streams is with a suffix-tree. A suffix-tree can solve the \textit{Find all maximal
+repeats} problem efficiently, which in essence is the same problem as finding clone pairs.
+This algorithm can also be improved to use a suffix-array instead, which requires less
+memory.
 
 \textit{Syntactic} approaches transform source code into either parse trees or abstract
 syntax trees and find clones using either tree matching algorithms or structural metrics.
@@ -224,25 +230,49 @@ fingerprints of all fragments to find clones.
 \textit{Chunk-based} approaches decompose chunks of source code into signatures which are
 compared. Chunk-size is based on selected granularity, which can be functions, blocks,
 etc. Signatures can for example be based on some software metrics. Machine learning has
-been used in this approach ...
+been used in this approach using methods as chunks and token-frequency within the method
+as signature. A Deep Neural Network trained on this data can then be used to classify two
+chunks as clone or non-clone.
 
 \textit{Hybrid} approaches combine multiple approaches in order to improve detection. For
 example Zibran et al.\cite{Zibran_real_time_search} developed a hybrid algorithm
 combining both token-based suffix trees for type-1 and type-2 clone detection, with
-a k-difference dynamic programming algorithm for type-3 clone detection.
+a k-difference dynamic programming algorithm for type-3 clone detection. 
 
+\subsubsection{Code clone merging techniques}
 
-\subsubsection{Clone aware development}
+Automated merging of code clones has not yet been researched thoroughly, but some work has
+been done.
 
-Developers are often not aware of the creation of clones in their code. Clone aware
-development involves having clone management as a part of the software development
+\begin{itemize}
+    \item 
+Yoshiko Higo\cite{RefactoringOrientedClonesAndMerging} introduced the notion of a
+\textit{refactoring oriented} clone in object-oriented languages, which means stripping
+parts of clones to make them easier to automatically merge. With these clones they boiled
+down the merging process to three cases:
+
+\textbf{Case 1} if clones are in the same class, they can be merged as a new method.
+
+\textbf{Case 2} if clones inherit from the same class, they can be merged as a new
+method in the common superclass.
+
+\textbf{Case 3} If clones are scattered, create a new class where the method is merged. If
+the classes containing the clone do not inherit from other classes, the classes can
+inherit from the new class.
+
+They also introduced metrics for use in determining how merging should be done.
+\end{itemize}
+
+\subsubsection{IDE-based clone management}
+
+Developers are not always aware of the creation of clones in their code. Clone aware
+development means having clone management as a part of the software development
 process. Since code clones can be hard to keep track of and manage, tools which help
 developers deal with clones are useful. However, Mathias Rieger et al. claims that
 a problem with many detection tools is that the tools ``report large amounts data that must
-be treated with little tool support.``\cite[1]{InsightsSystemWideDuplication}. Existing
-tools which partly solves this problem are presented below.
-
-\subsubsection{IDE-based clone management}
+be treated with little tool support.``\cite[1]{InsightsSystemWideDuplication}. Detecting
+and eliminating clones early in their lifecycle is therefore vital for the developer to
+have success in managing their clones.
 
 There are many existing clone management tools, however the most useful tools for clone
 aware development are the tools which are integrated into an IDE and offer services to the
@@ -283,14 +313,14 @@ There are a few existing IDE-tools which have seen success in real-time detectio
 	      of the developer to select a code snippet, however it can only detect type-1
 	      and type-2 code clones\cite{SHINOBI}.
 	\item The modern IDE IntelliJ has a built-in duplication detection and
-	      refactoring, it's able to detect type-1 and type-2 code clones at a method
-	      granularity and refactors by replacing one of the clones with a method call.
-	      This tool also requires the user to actively select the method which will be
-	      checked for clones.
+	      refactoring, it's able to detect type-1 and (some) type-2 code clones at a method
+	      granularity and refactors by replacing one of the clones with a method call to
+          the other.
 \end{itemize}
 
 No tools which we are aware of have the capability of both reporting code clones in
-real-time without fragment-selection and reporting type-3 clones.
+real-time without fragment-selection and reporting type-3 clones. SimEclipse and SHINOBI
+has not stood the test of time and is not available for installation.
 
 \subsection{The Language Server Protocol}
 
@@ -345,11 +375,12 @@ The interaction with the LSP server is modelled as user stories as follows:
 	      as diagnostics there. The diagnostic will contain information like where the clone
 	      exists, and percentage of duplicated code.
 
-	\item A programmer wants to jump to the corresponding match of a code clone in their
-	      editor. The programmer moves their cursor to the code clone diagnostic, invokes a
-	      request to see code actions, and invokes the ``Jump to matching clone`` code
-	      action. This moves the cursor to the relevant file with the matching code clone
-	      selected.
+    \item A programmer wants to jump to the corresponding match of a code clone in their
+        editor. The programmer moves its cursor to the diagnostic and will see a list of
+        the related code clones. Alternatively, the programmer moves their cursor to the
+        code clone diagnostic, invokes a request to see code actions, and invokes the
+        ``Jump to matching clone`` code action. This moves the cursor to the relevant file
+        with the matching code clone selected. 
 
 	\item A programmer wants to merge a code clone pair. The programmer moves their cursor
 	      to one of the code clones, invokes a request to see code actions, and invokes one
@@ -357,6 +388,10 @@ The interaction with the LSP server is modelled as user stories as follows:
 	      the user is dependent on the context of the code clone pair, the programmer will
 	      only see the useful / realizable merging strategies.
 \end{itemize}
+
+The interaction with the LSP server will depend on the client's implementation of LSP. If
+the LSP client is limited in its capabilities, meaning it doesn't implement the entire
+protocol, the tool will be limited in how the programmer can interact with it.
 
 \subsection{Architecture of tool}
 
@@ -379,7 +414,7 @@ Detection techniques explored will include:
     \item More techniques ...
 \end{itemize}
 
-Merging tehcniques explored will include:
+Merging techniques explored will include:
 
 \begin{itemize}
     \item Refactoring-oriented clone merging\cite{RefactoringOrientedClonesAndMerging}
@@ -398,7 +433,7 @@ multiple techniques for detection and merging.
 
 \subsection{Evaluation}
 
-We will evaluate this tool based on different criteria, which together will provide a
+We will evaluate this tool based on different criteria, which combined will provide a
 basis for evaluating the tool as a whole.
 
 \subsubsection{Performance}
