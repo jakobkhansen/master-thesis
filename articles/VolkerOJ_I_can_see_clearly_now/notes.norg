@@ -1,0 +1,47 @@
+* Abstract
+  - Traditional approach: Analyse code post refactoring, possibly revert
+  - New approach: Predicting correctness of the refactored program
+  - Deadlock-detection (What can deadlock in this context?)
+
+* Introduction
+  - Its hard to check preservation of behavior even after doing the refactoring
+ ** Contributions
+    - Show how OO refactorings can lead to bad stuff like deadlocks in active object
+    languages
+    - Present an approach where we insert assertions which ancode the correctness
+    conditions in the code /before/ refactoring.
+  - Will show how to derive assertions for *Hide delegate* refactoring
+  - Allows refactorings to be verified both dynamically and statically
+
+
+* ABS lang
+  - Java-like
+  - Design, verify, execute concurrent software
+ ** Cogs
+    - Conceptually a processor
+    - Can contain a set of objects
+    - Objects can contain a set of processes
+    - In a cog, at most one process is active, the rest are suspended
+    - Scheduling is non-deterministic, but controlled by processor release points
+    --- This ensures data-race freedom inside a cog.
+ ** Objects
+    - Contain processes
+    - Hidden behind interfaces
+    --- All fields are private, must use method invocations for read/write
+
+ ** Runtime Syntax
+    - img/2022-01-24-11-29-04.png
+
+* Clairvoyant assertion
+  - Create the w4 graph in the original program, argue that it is the same w4 graph as in
+    the refactored program.
+
+
+
+
+
+* Things I don't understand
+  - Symbolic execution
+  - Verification of history-based class invariants
+  - Actor-based concurrency model
+  - Cooperative scheduling of method activations

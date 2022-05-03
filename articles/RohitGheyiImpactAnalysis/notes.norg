@@ -1,0 +1,45 @@
+
+* Smells
+ ** God object
+    - When a single object has too many responsibilities or unrelated methods/fields
+    - An object which controls way too many other objects
+ ** Feature envy
+    - When an object uses too much functionality from another object
+    - When an object exposes much of the inner workings of another object, which in
+      practice removes the abstraction
+ ** Lazy class
+ ** List
+    - {img/2022-02-04-14-42-11.png}
+
+* Goal
+  - Look at 23 projects
+  - Look at multiple versions
+  - Identify refactorings in versions
+  - Determine if the refactoring was positive, negative or neutral in terms of absolute
+    number of smells
+  - Discover if certain smells are more prone to positive/negative affection of code
+
+* Interesting stuff
+  - Why do many refactorings introduce smells, rather than remove them?
+  - This article is good for statistics
+  --- There are way more refactoring based on implementing new functionality than simply
+      for code structure and cleanliness
+
+* Research questions
+  - Does refactoring reduce the density of code smells?
+  - What are the patterns governing types of refactoring and code smells
+
+* Refactoring detection
+  - Reafactoring Miner {https://github.com/tsantalis/RefactoringMiner}
+
+* Code smell detection
+  - Often detected with rule-based strategies.
+  - Requires collection of metrics for all source files in a project
+  - Lanza et al proposes rules. Rules for God class, Long Method, Feature Envy, Shotgun
+  Surgery and Divergent Change
+
+* Words/phrases
+  - Code smells: Software strucutral problems
+  - Root-canal refactoring: Purely for improving source code structure
+  - Floss refactoring: Refactoring as a means to reach goals such as new features or bug
+    removal

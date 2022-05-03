@@ -1,0 +1,8 @@
+* Comparison and evaluation of code clone detection techniques and tools
+  - Look at state-of-the-art clone detection
+  - Qualititative comparison and evaluation
+
+* Definitions
+  - Code Fragment
+  - Code Clone
+  - Clone types (1-4)

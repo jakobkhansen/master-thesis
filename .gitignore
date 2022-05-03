@@ -288,4 +288,4 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
 
-articles/*
+articles/**/*.pdf

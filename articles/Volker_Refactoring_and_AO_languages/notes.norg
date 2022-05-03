@@ -1,0 +1,33 @@
+* Abstract
+  - Actor- and active object programs plcae an emphasis on concurrency
+  - Paper will show how common rfactorings interact with a cconcurrency model with local
+    and remote objects.
+
+* Intro
+  - Introduces same deadlock in Hide Delegate as OJ paper
+
+Leste til section 2
+* Syntax & Semantics
+  @code abs
+  ob(o,a,p,q) 
+  /*
+  Object with identifier o,
+  fields a,
+  active process p,
+  suspended process pool q
+  */
+  {l|s} // Substitution l of local variable bindings and list of statements s
+  @end
+
+
+$ Equivalence of configurations
+Two configurations are equivalent iff:
+  ~ All objects in both configurations have the same values for fields
+  ~ All local variables and activation state coincide
+
+$ Notion of refactoring correctness
+Given two equivalent configurations and a refactoring Rf, Rf is corrrect iff:
+  ~ Given a transition from the original cn to a new cn', there exists an equivalent
+  transition from the refactored cn_r to a new cn_r' where $cn = cn_r ∧ cn' = cn_r'$
+  
+

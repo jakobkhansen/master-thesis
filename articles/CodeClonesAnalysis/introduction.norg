@@ -1,0 +1,71 @@
+$ Code snippet
+Part of the source code for a program
+
+$ Code clone
+{$ Code snippet} having the same or similar code in the same or different software system
+
+$ Type-1 Code clone
+X and Y are syntactically identical code snippets. Only comments, white space etc may
+differ
+
+$ Type-2 Code clone
+X and Y are structurally identical code snippets. Identifier names, literals, type names
+may differ. Type-1 differences apply
+
+$ Type-3 Code clone
+X and Y are similar snippets, some statements may be added, removed or modified. The
+analyst defines a threshold θ for allowed difference.
+
+$ Type-4 Code clone
+X and Y are syntactically different snippets, but functionality is the same.
+
+$ P-match
+Parameterized match. For a type-2 clone pair (X, Y), all occurences of a in X are replaced
+with b in Y.
+
+$ Clone detector
+Program which takes a target source code as input, reports code clones, clone pairs or
+clone sets as output.
+
+$ Analysis granularity
+Which clones the analyst decides to discard and keep for analysis. For example
+method-level granularity only repots code clones of complete methods. Fine-grained
+granularity can report smaller and more precise movement of code, while coarse grained
+will give overview of the structure amongst potentially multiple systems
+
+* Analysis (detection) process
+  - Often plugins or stand-alone programs
+ ** Front End
+    - Inputs source code
+    - Pre-process and transform to internal representation
+    --- (tree-parsing, metrics measurements, ...)
+    - Map construction between source and internal representation
+    - For type-2 clone detection, user-defined identifiers and literals are often
+      transformed that erase the difference.
+
+ ** Matching
+    - Same or similar code sinppets are identified
+ ** Approaches
+  *** Sequence-Matching
+      - Source code is treated as a character/token sequence internally.
+   **** Methods
+         - Use an algorithm for finding all "maximal repeats"
+         --- An exactly equal substring of two substrings which cannot be extended
+         - Use suffix trees
+         --- Classically requires a lot of memory
+         --- Therefore suffix array algorithm is more popular
+         ----- Requires less memory
+
+ ** Chunk-Comparison
+    - Source code is decomposed into sequences of chunks
+    --- Blocks of statements, functions, files, ...
+    - Define signatures to represent the characteristics of a chunk
+    - Search for chunks with same or similar signatures
+    - Can for example transform each chunk into a tree, and search for similar AST's or
+    PDG (Program Dependence Graph)
+    --- Can detect type-3 and type-4 clones
+
+ ** Hybrid approach
+    - Match chunks of sequences?
+    - N-grams
+

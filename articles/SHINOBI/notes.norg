@@ -1,0 +1,15 @@
+* SHINOBI
+
+* SHINOBI tool
+  - VS-Studio tool
+  - Detects clones in real-time
+  - Uses "Suffix Array Index"
+  --- Allows search of similar sequences in O(m log(n)) time
+  --- m is sequence length, n is number of all stored tokens
+  - Client sends code to server if movement happens
+  - Can detect clones withing 0.5 seconds in 4.5MLOC
+  - No invocation needed
+  - Clone types? Depends on what suffix array index can do?
+
+* Potential sources
+  -

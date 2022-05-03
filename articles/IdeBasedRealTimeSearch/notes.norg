@@ -1,0 +1,50 @@
+* IDE-based Real-time Focused Search for Near-miss Clones
+  - Suffix-tree-based hybrid algorithm
+  - Type-(1-3) clones 
+
+* Concepts
+  - Intentional and unintentional clones
+
+
+* Clone detection techniques
+  - Token-based
+  - Text-based
+  - Tree-based
+  - Graph-based
+  - Metric-based
+
+* Preprocessing
+  - Rename every name to the same standard, i.e:
+  --- v1, v2, v2, ...
+
+* LIME
+  - computation and comparison
+  - Computes fingerprints for each line of code
+  - Rabin's fingerprinting algorithm
+
+* Suffix Tree
+  - Take all fingerprint and concatenate them
+  - Separate fingerprints with a distinct terminator ($, #, ...)
+  - From this sequence, generate a suffix tree
+ ** Ukkonen's online algorithm
+    - Basically a compressed trie for suffixes
+    - Builds up a suffix tree from input, left-to-right
+  - Can detect type-1 and type-2 (with preprocessing)
+
+* Approximate matching
+  - k-difference hybrid algorithm
+  - Finds all occurrences of one sequence inside another allowing at most k differences.
+  - User-defined dissimilarity threshold.
+  - k = (l*threshold)/100
+  --- l is number of lines in the smaller fragment
+  - Lager et enumerated suffix tree og mapper det til et complete binary tree med
+  bit-strenger.
+  - Kan da gjøre kalkulasjoner som LCA i konstant tid
+
+* Hybrid DP
+
+
+
+
+* Potential sources
+  - Percentage of duplicated code in software !!!
