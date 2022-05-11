@@ -39,13 +39,3 @@
    - Main RQ: "How can code clone detection and merging be implemented in a modern IDE environment?"
    - Could "Is LSP suited for refactoring tools in general?" be a second research question?
 
-* Plan for next weeks
-  - [ ] Fix anything wrong/missing with essay
-  - [ ] Look into using treesitter for parsing
-  - [ ] Migrate parts of essay into a thesis pdf?
-
-* Stuff
-  - [ ] Look for paper on suffix-based incremental algorithm
-  - Goal: Convince reader that incremental editing can be used for incremental analysis (clone detection)
-  - Incremental program tooling using LSP
-  - Pre-processing of changes might kill performance

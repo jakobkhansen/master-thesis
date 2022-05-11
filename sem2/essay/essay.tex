@@ -44,7 +44,7 @@
 	initial text=$ $,
 }
 
-\title{\vspace{-20px}Real-time management of code clones in modern IDE environments}
+\title{\vspace{-20px}Incremental tooling for management of code clones in modern IDE environments}
 % Alternative: \title{IDE-agnostic management of code clones }
 
 \author{Jakob Hansen}
@@ -116,7 +116,7 @@ system. A code clone is then defined as a code snippet which is equal to or simi
 another code snippet. The two code snippets are both code clones, and together they form a
 code clone pair.
 
-\subsubsection{Clone relation and lifecycle}
+\subsubsection{Clone relation}
 
 The clone relation defines a relation between code snippets which defines pairs of clones.
 The clone relation is reflexive and symmetric, but not always transitive. The transitive
@@ -127,12 +127,6 @@ $$a \xrightarrow{clone} b \xrightarrow{clone} c$$
 where $a,b,c$ are code snippets and $\xrightarrow{clone}$ gives the clone relation, $a$ is
 a clone of $b$, but not necessarily similar enough to be a clone of $c$, depending on the
 threshold for similarity.
-
-A clones lifecycle can be defined as the ``lifespan'' of the clone, meaning from the point
-the clone was created, until it is eliminated. As clones manifest in a code-base over a
-longer lifecycle, the negative effects of duplicated code becomes more severe, and removing
-the clones becomes harder.
-
 \subsubsection{Code clone types}
 
 Code clones are generally classified into four types\cite{Inoue_introduction_to_cc}. These
@@ -319,8 +313,7 @@ There are a few existing IDE-tools which have seen success in real-time detectio
 \end{itemize}
 
 No tools which we are aware of have the capability of both reporting code clones in
-real-time without fragment-selection and reporting type-3 clones. SimEclipse and SHINOBI
-has not stood the test of time and is not available for installation.
+real-time without fragment-selection and reporting type-3 clones. 
 
 \subsection{The Language Server Protocol}
 
@@ -342,6 +335,37 @@ sends a corresponding response, also in the form of JSON-RPC.
 	\label{fig:lspcommunication}
 \end{figure}
 
+\subsection{Incremental editing and analysis}
+
+While writing code, programmers usually only edit small portions of text at a time. One
+``edit'' will therefore only affect small parts of the internal representations of the
+code which most tools use to perform analysis. Reusing parts of this representation would
+therefore be faster and allow programming tools to scale better.
+
+\subsubsection{Incremental parsing}
+
+Incremental parsing is the process of reparsing only parts of a syntax tree whenever an
+edit is performed. The motivation behind incremental parsing is to have a readily
+accessible syntax tree, while doing as little computing as possible to build it.
+
+Ghezzi and Mandrioli first introduced the notion of incremental parsing, and introduced an
+incremental parser for LR $\land$ RL grammars. However, they were aware that this
+algorithm was both slow and didn't allow expressive enough
+grammars.\cite{incrementalparsing}
+
+Tim A. Wagner and his research group later published a large work on incremental software
+development environments, presenting many novel algorithms and techniques for incremental
+tooling in programming environments.\cite{PracticleAlgorithmsForIncremental}
+
+``Tree-sitter'' is a parser generator tool which specializes in incremental parsing.
+Inspired by Wagner's work, it supports incremental parsing, error recovery and querying
+for specific nodes.\cite{treesitter} These features combined allow Tree-sitter to become a
+powerful tool for analysis and has been used for editor features such as
+syntax-highlighting, refactoring and code navigation. 
+
+\subsubsection{Incremental clone detection}
+
+% TODO
 
 \section{The way forward}
 
@@ -351,10 +375,10 @@ fits well into the development cycle and works in a real-time IDE environment. A
 focus will therefore be:
 
 \begin{itemize}
-	\item Real-time detection and management of code clones
+	\item Real-time / Incremental detection and management of code clones
 	\item Code clone refactoring and detection of refactoring-oriented clones
 	\item IDE tooling and IDE agnostic tooling like LSP.
-	\item Clone ranking, which clones are allowed to stay?
+	\item Clone ranking, which clones are bad?
 \end{itemize}
 
 \subsection{LSP for IDE-based clone management}
@@ -408,10 +432,11 @@ clones in a real-time IDE environment.
 Detection techniques explored will include:
 
 \begin{itemize}
-	\item A modified version of Zibran et al. hybrid algorithm\cite{Zibran_real_time_search}
+    \item A fully incremental version of Zibran et al. hybrid
+        algorithm\cite{Zibran_real_time_search}
     \item AST-based technique with incremental parsing. Using Tree-sitter, a generator of
         incremental parsers\cite{treesitter}.
-    \item More techniques ...
+    \item More techniques ...(?)
 \end{itemize}
 
 Merging techniques explored will include:
@@ -426,7 +451,7 @@ Merging techniques explored will include:
 	\label{fig:architecture}
 \end{figure}
 
-The tool will be modular in how techniques are applied for clone management. This
+The tool will be modular in they way that techniques are applied for clone management. This
 means that the tool will be capable of plugging in different detection engines, merging
 engines and file indices. This will be used extensively in our research in order to test
 multiple techniques for detection and merging.
@@ -451,12 +476,11 @@ the software development cycle?
 
 \subsubsection{Using LSP for refactoring and clone management}
 
-Finally, we will evaluate if LSP is a suitable tool for use in clone management and
+We will evaluate if LSP is a suitable tool for use in clone management and
 refactoring in general. Can LSP provide all the features one would want in a modern clone
 management tool? What is missing, and how could the LSP protocol be extended in order to
 facilitate this? We believe that if LSP is an appropriate tool to use for clone
 management, LSP will also be an appropriate tool for refactoring tools in general.
-
 
 \newpage
 \bibliography{refs}

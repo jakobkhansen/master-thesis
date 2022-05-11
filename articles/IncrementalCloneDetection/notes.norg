@@ -1,0 +1,11 @@
+* Incremental clone detection with suffix tree algorithm
+  - Baker introduced the algorithm for suffix tree clone detection
+
+* Generalized Suffix Trees
+  - Superposition of suffix trees for multiple strings
+  - Unique delimiter
+
+
+* Terms
+  - GST: Generalized Suffix Trees
+  - PDG: Program dependency graph
