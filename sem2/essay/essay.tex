@@ -12,22 +12,22 @@
 \setlength{\headsep}{5pt}
 \setlength{\parskip}{1em}
 \usepackage{listings}
+\usepackage{extarrows}
 
 \definecolor{pblue}{rgb}{0.2,0.2,0.7}
-% \definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pgreen}{rgb}{0,0.5,0}
 \definecolor{pred}{rgb}{0.7,0.2,0.2}
 \definecolor{pgrey}{rgb}{0.46,0.45,0.48}
 
 \lstset{
-	backgroundcolor = \color{lightgray},
-	language=Bash,
+	language=Java,
 	showstringspaces=false,
 	columns=flexible,
 	basicstyle={\small\ttfamily},
 	numbers=none,
 	numberstyle=\tiny\color{gray},
 	keywordstyle=\color{blue},
-	commentstyle=\color{dkgreen},
+	commentstyle=\color{pgreen},
 	stringstyle=\color{mauve},
 	breaklines=true,
 	breakatwhitespace=true,
@@ -44,17 +44,15 @@
 	initial text=$ $,
 }
 
-\title{\vspace{-20px}Incremental tooling for management of code clones in modern IDE environments}
-% Alternative: \title{IDE-agnostic management of code clones }
+\title{\vspace{-20px}Incremental tooling for code clone management in modern IDE environments}
 
 \author{Jakob Hansen}
 
-\date{\today}
+\date{Last updated \today}
 
 \begin{document}
 \maketitle
 
-\newpage
 
 \tableofcontents
 
@@ -62,10 +60,10 @@
 
 \section{Introduction}
 
-Refactoring is the process of restructuring code in order to improve the internal behavior
+Refactoring is the process of restructuring source code in order to improve the internal behavior
 of the code, without changing the external behavior\cite[9]{fowlerrefactoring}.
-Refactoring is often done in order to eliminate instances of bad design quality in code,
-otherwise known as code smells.
+Refactoring on source code is often performed in order to eliminate instances of bad
+design quality in code, otherwise known as code smells.
 
 A study conducted by Diego Cedrim et al. has shown that while developers tend to refactor
 smelly code, they are rarely successful at eliminating the smells they are
@@ -74,14 +72,14 @@ code smellier. Therefore, automated tools to help developers make better refacto
 perform code analysis is an important field of research.
 
 Duplicated code is a code smell which occurs in practically every large software project.
-Code clone analysis has recently become a highly active field of research and many tools have
-been developed to detect duplicated code\cite[7]{Inoue_introduction_to_cc}. However, few of
-these tools reached and see use in the industry and few have the capability of detecting
-more intricate types of duplicated code and managing them in a real-time IDE environment.
+Code clone analysis has recently become a highly active field of research and many tools
+have been developed to detect duplicated code\cite[7]{Inoue_introduction_to_cc}. However,
+few of these tools reached the industry and few have the capability of detecting more
+intricate types of duplicated code and managing them in a real-time IDE environment.
 
 This thesis will present a tool and possibly techniques for clone detection and management
 in a modern IDE environment. It will explore the topics of finding and managing clones in
-real-time, refactoring-oriented clone management and providing clone management and
+real-time, incremental analysis of source code and providing clone management and
 refactoring tools in a modern IDE environment.
 
 \section{Background}
@@ -111,10 +109,10 @@ development when a software project contains a lot of duplicated code.
 
 \subsection{Code clones}
 
-We define a code snippet or code fragment as a piece of software code in a larger software
-system. A code clone is then defined as a code snippet which is equal to or similar to
-another code snippet. The two code snippets are both code clones, and together they form a
-code clone pair.
+Duplicated code is often described as ``code clones''. We define a code snippet or code
+fragment as a piece of software code in a larger software system. A code clone is then
+defined as a code snippet which is equal to or similar to another code snippet. The two
+code snippets are both code clones, and together they form a code clone pair.
 
 \subsubsection{Clone relation}
 
@@ -122,9 +120,10 @@ The clone relation defines a relation between code snippets which defines pairs 
 The clone relation is reflexive and symmetric, but not always transitive. The transitive
 property depends on the threshold for similarity when identifying code clones. Given
 
-$$a \xrightarrow{clone} b \xrightarrow{clone} c$$
+$$a \xleftrightarrow{clone} b \xleftrightarrow{clone} c$$
 
-where $a,b,c$ are code snippets and $\xrightarrow{clone}$ gives the clone relation, $a$ is
+
+where $a,b,c$ are code snippets and $\xleftrightarrow{clone}$ gives the clone relation, $a$ is
 a clone of $b$, but not necessarily similar enough to be a clone of $c$, depending on the
 threshold for similarity.
 \subsubsection{Code clone types}
@@ -140,18 +139,77 @@ clones are also type-2 clones, but not vice versa.
 The code clone types are defined as follows:
 
 \textbf{Type-1} clones are syntactically identical. The only differences allowed are elements
-without meaning, like comments and white-space.
+without meaning, like comments and white-space. Example:
+
+\begin{lstlisting}
+// Clone 1
+for (int i = 0; i < 10;   i++) {
+    print(i);
+}
+
+// Clone 2
+for (int i = 0; i < 10; i++) {
+    // A comment without meaning
+    print(i);
+}
+
+\end{lstlisting}
 
 \textbf{Type-2} clones are structurally identical. Possible differences include
-identifiers, literals and types.
+identifiers, literals and types. Example:
+
+\begin{lstlisting}
+// Clone 1
+for (int i = 0; i < 10; i++) {
+    print(i);
+}
+
+// Clone 2
+for (int j = 1; j < 10; j++) {
+    print(j);
+}
+\end{lstlisting}
 
 \textbf{Type-3} clones are required to be structurally similar, but not equal. Differences
 include statements which are added, removed or modified. This clone type relies on a
-threshold $\theta$ which determines how structurally different snippets can be
-to be considered Type-3 clones\cite{Inoue_introduction_to_cc}.
+threshold $\theta$ which determines how structurally different snippets can be to be
+considered Type-3 clones\cite{Inoue_introduction_to_cc}. The granularity of usage for this
+difference could be on tokens, lines, etc. Example:
+
+\begin{lstlisting}
+// Clone 1
+for (int i = 0; i < 10; i++) {
+    print(i);
+}
+
+// Clone 2
+for (int i = 0; i < 10; i++) {
+    print(i);
+    int x = 10;
+}
+\end{lstlisting}
+
+In this example there is a one line difference between the two snippets, so if $\theta >=
+1$, the two snippets would be considered type-3 clones.
 
 \textbf{Type-4} clones have no requirement for syntactical or structural similarity. Therefore,
 the only requirement is having the same functionality.
+\begin{lstlisting}
+// Clone 1
+print((n*(n-1)/2))
+
+// Clone 2
+sum = 0
+for (int i = 0; i < n; i++) {
+    for (int j = i+1; j < n; j++) {
+        sum++;
+    }
+}
+print(sum)
+\end{lstlisting}
+
+In this example there is no clear similarity in the two snippets, but they have the same
+functionality.
 
 Type-1 clones are often referred to as ``exact`` clones, while Type-2 and Type-3 clones are
 often referred to as ``near-miss`` clones\cite[1]{Zibran_real_time_search}.
@@ -376,8 +434,8 @@ focus will therefore be:
 
 \begin{itemize}
 	\item Real-time / Incremental detection and management of code clones
-	\item Code clone refactoring and detection of refactoring-oriented clones
-	\item IDE tooling and IDE agnostic tooling like LSP.
+	\item Code clone detection and refactoring of code clones
+	\item IDE tooling and IDE agnostic tooling like LSP
 	\item Clone ranking, which clones are bad?
 \end{itemize}
 

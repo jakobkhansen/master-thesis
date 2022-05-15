@@ -1,9 +1,14 @@
 * Plan for next weeks
   - [ ] Fix anything wrong/missing with essay
   - [ ] Look into using treesitter for parsing
+  --- [ ] Improve bindings to the point where we can use them
   - [ ] Migrate parts of essay into a thesis pdf?
 
-* Stuff
+
+
+
+
+* Notes
   - [x] Look for paper on suffix-based incremental algorithm
   -- {https://ieeexplore.ieee.org/abstract/document/4812755}
   - Goal: Convince reader that incremental editing can be used for incremental analysis (clone detection)
@@ -14,20 +19,3 @@
   - Refactor and cleanup
   - Implement part 2
   - Incrementally update entire algorithm
-
-
-* Ideas
-  - Can incremental clone detection process be parallelized?
-
-* LSP tool framework idea
-  My idea is to switch the focus of the thesis to implementing "incremental tools for the
-  IDE".
-** Things we need to find out
-   - What do tool developers need?
-   --- AST + TokenStream
-   --- Other intermediate representations?
-   --- Needs to be possible to use other intermediate representations
-
-** Challenges to solve
-   - How to implement tree-sitter native bindings in Java project
-   - 
