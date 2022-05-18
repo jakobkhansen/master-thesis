@@ -45,7 +45,7 @@
 	initial text=$ $,
 }
 
-\title{\vspace{-20px}Incremental tooling for code clone management in modern IDE environments}
+\title{\vspace{-20px}Incremental code clone management in modern IDE environments}
 
 \author{Jakob Hansen}
 
@@ -420,9 +420,9 @@ incremental parser for LR $\land$ RL grammars. However, they were aware that thi
 algorithm was both slow and didn't allow expressive enough
 grammars.\cite{incrementalparsing}
 
-Tim A. Wagner and his research group later published a large work on incremental software
-development environments, presenting many novel algorithms and techniques for incremental
-tooling in programming environments.\cite{PracticleAlgorithmsForIncremental}
+Tim A. Wagner\cite{PracticleAlgorithmsForIncremental} and his research group later
+published a large work on incremental software development environments, presenting many
+novel algorithms and techniques for incremental tooling in programming environments.
 
 ``Tree-sitter'' is a parser generator tool which specializes in incremental parsing.
 Inspired by Wagner's work, it supports incremental parsing, error recovery and querying
@@ -432,9 +432,26 @@ syntax-highlighting, refactoring and code navigation.
 
 \subsubsection{Incremental clone detection}
 
-Different approaches have been used to detect code clones incrementally as well.
+In order to incrementally detect code clones, an algorithm which first calculates the
+initial code clones is run, and for successive revisions of the source code, this list is
+incrementally updated, more efficiently than the initial run. Different approaches have
+been used to accomplish this.
 
-TODO
+
+Göde and Koschke\cite{GodeIncrementalCloneDetection} proposed the first incremental clone
+detection algorithm. The algorithm employs a generalized suffix tree in which the amount
+of work of updating is only dependent on the size of the edited code. This approach is
+limited in scalability, as generalized suffix trees require a substantial amount of
+memory.
+
+Hummel et al.\cite{IndexBasedIncrementalCloneDetection} presented the first incremental
+and scalable clone detection technique. This approach utilizes a custom ``clone index''
+data structure which can be updated efficiently. The implementation of this data structure
+is similar to that of an inverted index.
+
+More recently, Doi et al.\cite{TowardsScalableAndIncrementalCloneDetection} showed that an
+AST-based approach utilizing ``Locality-Sensitive Hashing'' can detect clones
+incrementally, with high precision and in real-time.
 
 \section{The way forward}
 
@@ -503,8 +520,8 @@ Detection techniques explored will include:
 \begin{itemize}
 	\item A fully incremental version of Zibran et al. hybrid
 	      algorithm\cite{Zibran_real_time_search}
-	\item AST-based technique with incremental parsing. Using Tree-sitter, a generator of
-	      incremental parsers\cite{treesitter}.
+	\item AST-based technique with incremental parsing. Using Tree-sitter to parse and an
+        incremental detection algorithm to detect clones.
 	\item More techniques ...(?)
 \end{itemize}
 
@@ -535,7 +552,10 @@ basis for evaluating the tool as a whole.
 Since the tool is focused on efficient detection and management of code clones, real-time
 performance of the tool will be a big priority in its evaluation. The tool will implement
 different techniques of detecting and merging clones. These will be empirically compared
-against each other. The tool will also be evaluated against existing tools empirically.
+against each other. The tool will also be evaluated against existing tools empirically. We
+will utilize BigCloneBench\cite{BigCloneBench} to evaluate detection techniques, by
+running our detection techniques in a standalone mode. We will distinguish between initial
+detection and incremental detection when evaluating.
 
 \subsubsection{Effectiveness in managing clones}
 
