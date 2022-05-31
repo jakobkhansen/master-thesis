@@ -149,7 +149,7 @@ The code clone types are defined as follows:
 \textbf{Type-1} clones are syntactically identical. The only differences allowed are elements
 without meaning, like comments and white-space. Example:
 
-\begin{lstlisting}
+\begin{lstlisting}[frame=single]
 // Clone 1
 for (int i = 0; i < 10;   i++) {
     print(i);
@@ -164,9 +164,10 @@ for (int i = 0; i < 10; i++) {
 \end{lstlisting}
 
 \textbf{Type-2} clones are structurally identical. Possible differences include
-identifiers, literals and types. Example:
+identifiers, literals and types. Type-2 clones are relatively easy to detect by
+consistently renaming identifiers and literals.\cite[2]{Zibran_real_time_search} Example:
 
-\begin{lstlisting}
+\begin{lstlisting}[frame=single]
 // Clone 1
 for (int i = 0; i < 10; i++) {
     print(i);
@@ -182,9 +183,10 @@ for (int j = 1; j < 10; j++) {
 include statements which are added, removed or modified. This clone type relies on a
 threshold $\theta$ which determines how structurally different snippets can be to be
 considered Type-3 clones\cite{Inoue_introduction_to_cc}. The granularity for this
-difference could be based differing tokens, lines, etc. Example:
+difference could be based differing tokens, lines, etc. Detecting this type of clone is
+hard. Example:
 
-\begin{lstlisting}
+\begin{lstlisting}[frame=single]
 // Clone 1
 for (int i = 0; i < 10; i++) {
     print(i);
@@ -201,9 +203,13 @@ In this example there is a one line difference between the two snippets, so if $
 	\geq
 	1$, the two snippets would be considered Type-3 clones.
 
-\textbf{Type-4} clones have no requirement for syntactical or structural similarity. Therefore,
-the only requirement is equal functionality. Example:
-\begin{lstlisting}
+\textbf{Type-4} clones have no requirement for syntactical or structural similarity.
+Therefore, the only requirement is equal functionality. Detecting this type of clone is
+very challenging, but attempts have been made using program dependency
+graphs\cite{SeedType4Detection}. The following example shows two code snippets which have
+no clear syntactic or structural similarity, but is functionally equal:
+
+\begin{lstlisting}[frame=single]
 // Clone 1
 print((n*(n-1))/2)
 
@@ -220,8 +226,8 @@ print(sum);
 In this example there is no clear similarity in the two snippets, but they have the same
 functionality.
 
-Type-1 clones are often referred to as ``exact`` clones, while Type-2 and Type-3 clones are
-often referred to as ``near-miss`` clones\cite[1]{Zibran_real_time_search}.
+Type-1 clones are often referred to as ``exact'' clones, while Type-2 and Type-3 clones
+are referred to as ``near-miss'' clones\cite[1]{Zibran_real_time_search}.
 
 \subsubsection{Code clone detection process and techniques}
 
@@ -237,14 +243,14 @@ against each other and filtering. The steps are generally as follows:
 	\item \textbf{Transformation}: Transform fragments into an intermediate representation.
 	      \begin{enumerate}
 		      \item Extraction: Transform source code into the input for the comparison
-		            algorithm. Can be tokens, AST, dependency graphs, etc.
+		            algorithm. Can be tokens, AST, dependency graphs, suffix tree, etc.
 		      \item Normalization: Optional step which removes superficial differences such as
 		            comments, whitespace and identifier names. Often useful for identifying type-2
 		            clones.
 	      \end{enumerate}
 	\item \textbf{Match detection}: Perform comparisons which outputs a set of
 	      candidate clone pairs.
-	\item \textbf{Formatting}: Convert from candidate clone pairs from the transformed
+	\item \textbf{Formatting}: Convert candidate clone pairs from the transformed
 	      code back to clone pairs in the original source code.
 	\item \textbf{Post-processing/Filtering}: Ranking and filtering manually or with
 	      automated heuristics
@@ -277,14 +283,14 @@ token-streams is with a suffix-tree. A suffix-tree can solve the \textit{Find al
 This algorithm can also be improved to use a suffix-array instead, which requires less
 memory.
 
-\textit{Syntactic} approaches transform source code into either parse trees or abstract
-syntax trees and find clones using either tree matching algorithms or structural metrics.
-For tree matching, the common approach is to find similar subtrees in the parse tree /
-AST, which are then deemed as clones. One way of finding similar subtrees is to hash
+\textit{Syntactic} approaches transform source code into either concrete syntax trees or
+abstract syntax trees and find clones using either tree matching algorithms or structural
+metrics. For tree matching, the common approach is to find similar subtrees in the tree,
+which are then deemed as clone pairs. One way of finding similar subtrees is to hash
 subtrees into buckets and compare them with a tolerant tree matching algorithm. Variable
 names, literal values and other source may be abstracted to find Type-2 clones more
-easily. Metrics-based techniques gather metrics for code fragments in the parse tree / AST
-and uses the metrics to determine if the fragments are clones or not. One way is to use
+easily. Metrics-based techniques gather metrics for code fragments in the tree and uses
+the metrics to determine if the fragments are clones or not. One way is to use
 fingerprinting functions where the fingerprint includes certain metrics, and compare the
 fingerprints of all fragments to find clones.
 
@@ -305,24 +311,21 @@ a k-difference dynamic programming algorithm for Type-3 clone detection.
 Automated merging of code clones is a mostly unexplored area of research, but some work has
 been done.
 
-\begin{itemize}
-	\item
-	      Yoshiki Higo\cite{RefactoringOrientedClonesAndMerging} introduced the notion of a
-	      \textit{refactoring oriented} clone in object-oriented languages, which means stripping
-	      parts of clones to make them easier to automatically merge. With these clones they boiled
-	      the merging process down to three cases:
+Yoshiki Higo\cite{RefactoringOrientedClonesAndMerging} introduced the notion of a
+\textit{refactoring oriented} clone in object-oriented languages, which means stripping
+parts of clones to make them easier to automatically merge. With these clones they boiled
+the merging process down to three cases:
 
-	      \textbf{Case 1} if clones are in the same class, they can be merged as a new method.
+\textbf{Case 1:} If clones are in the same class, they can be merged as a new method.
 
-	      \textbf{Case 2} if clones inherit from the same class, they can be merged as a new
-	      method in the common super-class.
+\textbf{Case 2:} If clones inherit from the same class, they can be merged as a new
+method in the common super-class.
 
-	      \textbf{Case 3} If clones are scattered, create a new class where the method is merged. If
-	      the classes containing the clone do not inherit from other classes, the classes can
-	      inherit from the new class.
+\textbf{Case 3:} If clones are scattered between unrelated classes, a new class can be
+created where the method is merged. If the classes containing the clone do not inherit
+from other classes, the classes can inherit from the new class.
 
-	      They also introduced metrics for use in determining how merging should be done.
-\end{itemize}
+They also introduced metrics for use in determining how merging should be done.
 
 \subsubsection{IDE-based clone management}
 
@@ -361,44 +364,25 @@ follows\cite[8]{Udding_Towards_Convenient_Management}:
 
 There are a few existing IDE-tools which have seen success in real-time detection of clones:
 
-\begin{itemize}
-	\item Minhaz et al. introduced a technique for performing real-time focused
-	      searches, i.e. searching for code clones of a selected code snippet. This
-	      technique can also detect Type-3 clones\cite{Zibran_real_time_search}.
-	      This technique was later used in the tool
-	      \textit{SimEclipse}\cite{Udding_Towards_Convenient_Management}. Since this tool
-	      can only detect clones of a code snippet which the developer actively selects, this tool is
-	      not well suited for finding accidental clones.
+\begin{itemize} \item Minhaz et al. introduced a hybrid technique for performing real-time
+	      focused searches, i.e. searching for code clones of a selected code snippet. This
+	      technique can also detect Type-3 clones\cite{Zibran_real_time_search}. This technique
+	      was later used in the tool
+	      \textit{SimEclipse}\cite{Udding_Towards_Convenient_Management}. Since this tool can
+	      only detect clones of a code snippet which the developer actively selects, this tool
+	      is not well suited for finding accidental clones.
 
-	\item Another tool, SHINOBI can detect code clones in real-time without the need
-	      of the developer to select a code snippet, however it can only detect type-1
-	      and Type-2 code clones\cite{SHINOBI}.
+	\item Another tool, SHINOBI can detect code clones in real-time without the need of
+	      the developer to select a code snippet, however it can only detect type-1 and
+	      Type-2 code clones. The tool uses a token-based suffix array index approach to detect
+	      clones incrementally\cite{SHINOBI}.
 
 	\item The modern IDE IntelliJ has a built-in duplication detection and
-          refactoring service, it is able to detect type-1 and (some) type-2 code clones
-          at a method granularity and refactors by replacing one of the clones with a
-          method call to the other.
+	      refactoring service, it is able to detect type-1 and (some) type-2 code clones
+	      at a method granularity and refactors by replacing one of the clones with a
+	      method call to the other.
 \end{itemize}
 
-\subsection{The Language Server Protocol}
-
-The Language Server protocol (LSP) is a protocol which specifies interaction between a
-client (IDE) and server in order to provide tooling support for the client. The goal of
-the protocol is to avoid multiple implementations of the same language tools for every
-IDE and every language. Servers which implement LSP will be able to offer IDE's
-code-completion, diagnostics, go-to-definition and more. LSP also specifies generic
-code-actions and commands, which the LSP server provides to the client in order to perform
-custom actions defined by the server.
-
-Figure \ref{fig:lspcommunication} shows a sample interaction between client and server
-using LSP. The client sends requests to a server in the form of JSON-RPC, and the server
-sends a corresponding response, also in the form of JSON-RPC.
-
-\begin{figure}
-	\includegraphics[width=\textwidth]{images/lspcommunication.png}
-	\caption{Example client-server interaction using LSP}
-	\label{fig:lspcommunication}
-\end{figure}
 
 \subsection{Incremental editing and analysis}
 
@@ -411,7 +395,8 @@ therefore be faster and allow programming tools to scale better.
 
 Incremental parsing is the process of reparsing only parts of a syntax tree whenever an
 edit is performed. The motivation behind incremental parsing is to have a readily
-accessible syntax tree, while doing as little computing as possible to build it.
+available syntax tree after every edit, while doing as little computing as possible to
+build it.
 
 Ghezzi and Mandrioli first introduced the notion of incremental parsing, and introduced an
 incremental parser for LR $\land$ RL grammars. However, they were aware that this
@@ -424,9 +409,9 @@ novel algorithms and techniques for incremental tooling in programming environme
 
 ``Tree-sitter'' is a parser generator tool which specializes in incremental parsing.
 Inspired by Wagner's work, it supports incremental parsing, error recovery and querying
-for specific nodes.\cite{treesitter} These features combined allow Tree-sitter to become a
-powerful tool for analysis and has been used for editor features such as
-syntax-highlighting, refactoring and code navigation.
+for specific nodes and subtrees.\cite{treesitter} These features combined allow
+Tree-sitter to become a powerful tool for analysis and has been used for editor features
+such as syntax-highlighting, refactoring and code navigation.
 
 \subsubsection{Incremental clone detection}
 
@@ -442,25 +427,50 @@ of work of updating is only dependent on the size of the edited code. This appro
 limited in scalability, as generalized suffix trees require a substantial amount of
 memory.
 
-Hummel et al.\cite{IndexBasedIncrementalCloneDetection} presented the first incremental
-and scalable clone detection technique. This approach utilizes a custom ``clone index''
-data structure which can be updated efficiently. The implementation of this data structure
-is similar to that of an inverted index.
+Nguyen et al. showed that an AST-based approach utilizing ``Locality-Sensitive Hashing''
+can detect clones incrementally with high precision, in real-time ($< 1$ second).
 
-More recently, Doi et al.\cite{TowardsScalableAndIncrementalCloneDetection} showed that an
-AST-based approach utilizing ``Locality-Sensitive Hashing'' can detect clones
-incrementally, with high precision and in real-time.
+Hummel et al.\cite{IndexBasedIncrementalCloneDetection} presented the first incremental
+and scalable clone detection technique for Type-1 and Type-2 clones. This approach
+utilizes a custom ``clone index'' data structure which can be updated efficiently. The
+implementation of this data structure is similar to that of an inverted index.
+
+More recently, Ragkhitwetsagul and Krinke\cite{SiameseScalableAndIncrementalClone}
+presented the tool ``Siamese'', which uses a novel approach of having multiple
+intermediate representations of source code to detect a high number of clones with
+support for incremental detection. The tool can detect up to Type-3 clones, but will only
+give clones based on queries given to it by the user. 
+
+\subsection{The Language Server Protocol}
+
+The Language Server protocol (LSP) is a protocol which specifies interaction between a
+client (IDE) and server in order to provide language tooling for the client. The goal of
+the protocol is to avoid multiple implementations of the same language tools for every
+IDE and every language. Servers which implement LSP will be able to offer IDE's
+code-completion, diagnostics, go-to-definition and more. LSP also specifies generic
+code-actions and commands, which the LSP server provides to the client in order to perform
+custom actions defined by the server.
+
+Figure \ref{fig:lspcommunication} shows a sample interaction between client and server
+using LSP. The client sends requests to a server in the form of JSON-RPC messages, and the
+server sends a corresponding response, also in the form of JSON-RPC messages.
+
+\begin{figure}
+	\includegraphics[width=\textwidth]{images/lspcommunication.png}
+	\caption{Example client-server interaction using LSP}
+	\label{fig:lspcommunication}
+\end{figure}
 
 \section{The way forward}
 
-This thesis will present and evaluate a modern tool which provides clone management
+This thesis will present and evaluate a tool which provides clone management
 capabilities in a real-time IDE environment. The main goal will be to create a tool which
 fits well into the development cycle and works in a real-time IDE environment. Areas of
 focus will therefore be:
 
 \begin{itemize}
-	\item Real-time / Incremental detection and management of code clones
 	\item Code clone detection and refactoring of code clones
+	\item Real-time / Incremental detection and management of code clones
 	\item IDE tooling and IDE agnostic tooling like LSP
 	\item Possibly clone ranking, determining which clones should be kept.
 \end{itemize}
@@ -486,7 +496,7 @@ The following user stories shows how interaction with the LSP server will work.
 	\item A programmer wants to jump to the corresponding match of a code clone in their
 	      editor. The programmer moves its cursor to the diagnostic and will see a list of
 	      the matching code clones. The programmer will select the wanted code clone which
-          will move the cursor to the file and location of the selected code clone.
+	      will move the cursor to the file and location of the selected code clone.
 
 	\item A programmer wants to merge a code clone pair. The programmer moves their cursor
 	      to one of the code clones, invokes a request to see code actions, and invokes one
@@ -517,8 +527,7 @@ Detection techniques explored will include:
 	\item A fully incremental version of Zibran et al. hybrid
 	      algorithm\cite{Zibran_real_time_search}
 	\item AST-based technique with incremental parsing. Using Tree-sitter to parse and an
-        incremental detection algorithm to detect clones.
-	\item More techniques ...(?)
+	      incremental detection algorithm to detect clones.
 \end{itemize}
 
 Merging techniques explored will include:
@@ -533,7 +542,7 @@ Merging techniques explored will include:
 	\label{fig:architecture}
 \end{figure}
 
-The tool will be modular in they way that techniques are applied for clone management. This
+The tool will be modular in how techniques are applied for clone management. This
 means that the tool will be capable of plugging in different detection engines, merging
 engines and file indices. This will be used extensively in our research in order to test
 multiple techniques for detection and merging.
@@ -556,10 +565,10 @@ determine if this tool is better than existing tools at managing or eliminating 
 the software development cycle?
 
 Finally, we will evaluate if LSP is a suitable tool for use in clone management and
-refactoring in general. Can LSP provide all the features one would want in a modern clone
-management tool? What is missing, and how could the LSP protocol be extended in order to
-facilitate this? We believe that if LSP is an appropriate tool to use for clone
-management, LSP will also be an appropriate tool for refactoring tools in general.
+refactoring in general. Can LSP provide all the features one would want in a modern
+analysis and refactoring tool? What is missing, and how could the LSP protocol be extended
+in order to facilitate this? We believe that if LSP is an appropriate tool to use for
+clone management, LSP will also be an appropriate tool for refactoring tools in general.
 
 \newpage
 \bibliography{refs}
