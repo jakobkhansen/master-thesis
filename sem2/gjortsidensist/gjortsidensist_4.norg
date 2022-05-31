@@ -1,21 +1,42 @@
 * Plan for next weeks
-  - [ ] Fix anything wrong/missing with essay
+  - [x] Fix anything wrong/missing with essay
+  --- [x] Write small section about incremental parsing / clone detection
   - [ ] Look into using treesitter for parsing
-  --- [ ] Improve bindings to the point where we can use them
-  - [ ] Migrate parts of essay into a thesis pdf?
+  --- [ ] Improve Java bindings to the point where we can use them
+  ----- [x] Incremental editing
+  ----- [ ] Queries
 
 
 
 
 
-* Notes
-  - [x] Look for paper on suffix-based incremental algorithm
-  -- {https://ieeexplore.ieee.org/abstract/document/4812755}
-  - Goal: Convince reader that incremental editing can be used for incremental analysis (clone detection)
-  - Incremental program tooling using LSP
-  - Pre-processing of changes might kill performance
 
-* Further development of hybrid algo
-  - Refactor and cleanup
-  - Implement part 2
-  - Incrementally update entire algorithm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* Notes during meeting
+  - Vise at vi har en plan
+  - Incremental code clone detection process
+  - Færre sections i kap 3
