@@ -47,7 +47,7 @@
 
 \title{\vspace{-20px}Incremental code clone management in modern IDE environments}
 
-\author{Jakob Hansen}
+\author{Jakob Konrad Hansen}
 
 \date{Last updated \today}
 
@@ -75,13 +75,13 @@ and perform code analysis is an important field of research.
 Duplicated code is a code smell which occurs in practically every large software project.
 Code clone analysis has recently become a highly active field of research and many tools
 have been developed to detect duplicated code\cite[7]{Inoue_introduction_to_cc}. However,
-few of these tools reached the industry and few have the capability of detecting more
-intricate types of duplicated code and managing them in a real-time IDE environment.
+few of these have the capability of detecting intricate types of duplicated code and
+managing them in a real-time IDE environment.
 
 This thesis will present a tool and possibly techniques for clone detection and management
-in a modern IDE environment. It will explore the topics of finding and managing clones in
-real-time, incremental analysis of source code and providing clone management and
-refactoring tools in a modern IDE environment.
+in real-time, for usage in modern IDE environments. The thesis will explore the topics
+such as finding and managing clones in real-time, incremental analysis of source code and
+providing clone management and refactoring tools in a modern IDE environment.
 
 \section{Background}
 
@@ -95,18 +95,19 @@ quality is often measured in other metrics, including metrics which are not dire
 related to functionality\cite[29]{MetricsAndModelsInSoftwareQuality}. These metrics
 often include maintainability, analyzability and changeability.
 
-All of these stated metrics are affected negatively by duplicated code, code which is more
-or less copied to different locations in the source code. Multiple studies have consistently
-shown that software projects typically contains $10-15\%$ duplicated
-code\cite{CloningByAccident}. Therefore, research into tools and techniques which can
-reduce duplicated code will be of benefit to almost all software.
+These metrics are affected negatively by duplicated code, code which is more or less
+copied to different locations in the source code. Multiple studies have shown that
+software projects typically contains $10-15\%$ duplicated code\cite{CloningByAccident}.
+Therefore, research into tools and techniques which can reduce duplicated code will be of
+benefit to almost all software.
 
-As stated, duplicated code damages software quality software projects. Duplicated code can
-lead to a plethora of antipatterns, and will often lead to an
-increase in technical debt. The ``Shotgun-Surgery''\cite[66]{fowlerrefactoring} antipattern
-occurs when a developer wants to implement a change, but needs to make the same change in
-multiple locations for the change to take effect. This is a typical situation which slows down
-development when a software project contains a lot of duplicated code.
+As stated, duplicated code damages software quality in software projects. Duplicated code
+can lead to a plethora of antipatterns, and will often lead to an increase in technical
+debt. The ``Shotgun-Surgery''\cite[66]{fowlerrefactoring} antipattern occurs when a
+developer wants to implement a change, but needs to make the same change in multiple
+locations for the change to take effect. This is a typical situation which slows down
+development and reduces maintainability when a software project contains a lot of
+duplicated code.
 
 \subsection{Code clones}
 
@@ -379,9 +380,6 @@ There are a few existing IDE-tools which have seen success in real-time detectio
           method call to the other.
 \end{itemize}
 
-No tools which we are aware of have the capability of both reporting code clones in
-real-time without fragment-selection and reporting Type-3 clones.
-
 \subsection{The Language Server Protocol}
 
 The Language Server protocol (LSP) is a protocol which specifies interaction between a
@@ -464,7 +462,7 @@ focus will therefore be:
 	\item Real-time / Incremental detection and management of code clones
 	\item Code clone detection and refactoring of code clones
 	\item IDE tooling and IDE agnostic tooling like LSP
-	\item Clone ranking, which clones are bad?
+	\item Possibly clone ranking, determining which clones should be kept.
 \end{itemize}
 
 \subsection{LSP for IDE-based clone management}
@@ -473,7 +471,7 @@ The tool will give programmers the ability to manage clones in their IDE. We wil
 many feature of LSP, especially code-actions, in order to provide functionality for clone
 management to any editor which implements LSP.
 
-The interaction with the LSP server is modelled as user stories as follows:
+The following user stories shows how interaction with the LSP server will work.
 
 \begin{itemize}
 	\item A programmer wants to see code clones for a single file, the
@@ -487,10 +485,8 @@ The interaction with the LSP server is modelled as user stories as follows:
 
 	\item A programmer wants to jump to the corresponding match of a code clone in their
 	      editor. The programmer moves its cursor to the diagnostic and will see a list of
-	      the related code clones. Alternatively, the programmer moves their cursor to the
-	      code clone diagnostic, invokes a request to see code actions, and invokes the
-	      ``Jump to matching clone`` code action. This moves the cursor to the relevant file
-	      with the matching code clone selected.
+	      the matching code clones. The programmer will select the wanted code clone which
+          will move the cursor to the file and location of the selected code clone.
 
 	\item A programmer wants to merge a code clone pair. The programmer moves their cursor
 	      to one of the code clones, invokes a request to see code actions, and invokes one
@@ -547,25 +543,19 @@ multiple techniques for detection and merging.
 We will evaluate this tool based on different criteria, which combined will provide a
 basis for evaluating the tool as a whole.
 
-\subsubsection{Performance}
-
 Since the tool is focused on efficient detection and management of code clones, real-time
-performance of the tool will be a big priority in its evaluation. The tool will implement
+performance of the tool will be a high priority in its evaluation. The tool will implement
 different techniques of detecting and merging clones. These will be empirically compared
 against each other. The tool will also be evaluated against existing tools empirically. We
 will utilize BigCloneBench\cite{BigCloneBench} to evaluate detection techniques, by
 running our detection techniques in a standalone mode. We will distinguish between initial
 detection and incremental detection when evaluating.
 
-\subsubsection{Effectiveness in managing clones}
-
 The tool will also be evaluated based on its effectiveness in managing clones. Can we
 determine if this tool is better than existing tools at managing or eliminating clones in
 the software development cycle?
 
-\subsubsection{Using LSP for refactoring and clone management}
-
-We will evaluate if LSP is a suitable tool for use in clone management and
+Finally, we will evaluate if LSP is a suitable tool for use in clone management and
 refactoring in general. Can LSP provide all the features one would want in a modern clone
 management tool? What is missing, and how could the LSP protocol be extended in order to
 facilitate this? We believe that if LSP is an appropriate tool to use for clone
