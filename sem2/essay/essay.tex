@@ -13,6 +13,7 @@
 \setlength{\parskip}{1em}
 \usepackage{listings}
 \usepackage{extarrows}
+\usepackage{bold-extra}
 \newtheorem{definition}{Definition}
 
 \definecolor{pblue}{rgb}{0.2,0.2,0.7}
@@ -32,7 +33,8 @@
 	stringstyle=\color{mauve},
 	breaklines=true,
 	breakatwhitespace=true,
-	tabsize=3
+	tabsize=3,
+    escapeinside={(*}{*)}
 }
 
 \hbadness=10000
@@ -68,9 +70,10 @@ design quality in code, otherwise known as code smells.
 
 A study conducted by Diego Cedrim et al. has shown that while developers tend to refactor
 smelly code, they are rarely successful at eliminating the smells they are
-targeting\cite{Rohit_Gheyi_Impact}. A large portion of refactorings even tend to make the
-code quality worse. Therefore, automated tools to help developers make better refactorings
-and perform code analysis is an important field of research.
+targeting\cite{Rohit_Gheyi_Impact}. They also discovered that a large portion of
+refactorings tend to make the code quality worse. Therefore, automated tools to help
+developers make better refactorings and perform code analysis is an important field of
+research.
 
 Duplicated code is a code smell which occurs in practically every large software project.
 Code clone analysis has recently become a highly active field of research and many tools
@@ -104,22 +107,27 @@ benefit to almost all software.
 As stated, duplicated code damages software quality in software projects. Duplicated code
 can lead to a plethora of antipatterns, and will often lead to an increase in technical
 debt. The ``Shotgun-Surgery''\cite[66]{fowlerrefactoring} antipattern occurs when a
-developer wants to implement a change, but needs to make the same change in multiple
-locations for the change to take effect. This is a typical situation which slows down
-development and reduces maintainability when a software project contains a lot of
-duplicated code.
+developer wants to implement a change, but needs to change code at multiple locations for
+the change to take effect. This is a typical situation which slows down development and
+reduces maintainability when a software project contains a lot of duplicated code.
 
 \subsection{Code clones}
 
 Duplicated code is often described as ``code clones''.
 
 \begin{definition}[Code snippet]
-	A code snippet is a piece of source code in a larger software system.
+	A code snippet is a piece of contiguous source code in a larger software system.
 \end{definition}
 
 \begin{definition}[Code clone]
 	A code clone is a code snippet which is equal to or similar to another code snippet. The two
 	code snippets are both code clones, and together they form a code clone pair.
+    Similarity is determined by some metric such as number of equal lines of code.
+\end{definition}
+
+\begin{definition}[Clone set]
+    A clone set is a set of code snippets where all snippets are considered clones of each
+    other.
 \end{definition}
 
 \subsubsection{Clone relation}
@@ -134,6 +142,10 @@ $$a \xleftrightarrow{clone} b \xleftrightarrow{clone} c$$
 where $a,b,c$ are code snippets and $\xleftrightarrow{clone}$ gives the clone relation, $a$ is
 a clone of $b$, but not necessarily similar enough to be a clone of $c$, depending on the
 threshold for similarity.
+
+If the threshold for similarity is defined such that only equal clones are considered
+clones, the relation becomes transitive, and equivalence classes form clone sets.
+
 \subsubsection{Code clone types}
 
 Code clones are generally classified into four types\cite{Inoue_introduction_to_cc}. The
@@ -174,8 +186,8 @@ for (int i = 0; i < 10; i++) {
 }
 
 // Clone 2
-for (int j = 1; j < 10; j++) {
-    print(j);
+for (int (*\textbf j*) = (*\textbf 1*); (*\textbf j*) < 10; (*\textbf j++*)) {
+    print((*\textbf j*));
 }
 \end{lstlisting}
 
@@ -195,7 +207,7 @@ for (int i = 0; i < 10; i++) {
 // Clone 2
 for (int i = 0; i < 10; i++) {
     print(i);
-    int x = 10;
+    (*\textbf{int x = 10;}*)
 }
 \end{lstlisting}
 
@@ -222,9 +234,6 @@ for (int i = 0; i < n; i++) {
 }
 print(sum);
 \end{lstlisting}
-
-In this example there is no clear similarity in the two snippets, but they have the same
-functionality.
 
 Type-1 clones are often referred to as ``exact'' clones, while Type-2 and Type-3 clones
 are referred to as ``near-miss'' clones\cite[1]{Zibran_real_time_search}.
@@ -254,7 +263,7 @@ against each other and filtering. The steps are generally as follows:
 	      code back to clone pairs in the original source code.
 	\item \textbf{Post-processing/Filtering}: Ranking and filtering manually or with
 	      automated heuristics
-	\item \textbf{Aggregation}: Optionally aggregating sets of clone pairs into clone classes
+	\item \textbf{Aggregation}: Optionally aggregating sets of clone pairs into clone sets
 \end{enumerate}
 
 Not all clone detection techniques will necessarily follow all these steps.
@@ -299,7 +308,7 @@ compared. Chunk-size is based on selected granularity, which can be functions, b
 etc. Signatures can for example be based on some software metrics. Machine learning has
 been used in this approach using methods as chunks and token-frequency within the method
 as signature. A Deep Neural Network trained on this data can then be used to classify two
-chunks as clone or non-clone.
+chunks as clone or non-clone\cite{CCLearner}.
 
 \textit{Hybrid} approaches combine multiple approaches in order to improve detection. For
 example Zibran et al.\cite{Zibran_real_time_search} developed a hybrid algorithm
@@ -398,14 +407,14 @@ edit is performed. The motivation behind incremental parsing is to have a readil
 available syntax tree after every edit, while doing as little computing as possible to
 build it.
 
-Ghezzi and Mandrioli first introduced the notion of incremental parsing, and introduced an
-incremental parser for LR $\land$ RL grammars. However, they were aware that this
-algorithm was both slow and didn't allow expressive enough
+Ghezzi and Mandrioli introduced in 1979 the notion of incremental parsing, and
+introduced an incremental parser for LR $\land$ RL grammars. However, they were aware that
+this algorithm was both slow and did not allow expressive enough
 grammars.\cite{incrementalparsing}
 
-Tim A. Wagner\cite{PracticleAlgorithmsForIncremental} and his research group later
-published a large work on incremental software development environments, presenting many
-novel algorithms and techniques for incremental tooling in programming environments.
+Tim A. Wagner et al.\cite{PracticalAlgorithmsForIncremental} later published a large work
+on incremental software development environments, presenting many novel algorithms and
+techniques for incremental tooling in programming environments.
 
 ``Tree-sitter'' is a parser generator tool which specializes in incremental parsing.
 Inspired by Wagner's work, it supports incremental parsing, error recovery and querying
@@ -435,18 +444,20 @@ and scalable clone detection technique for Type-1 and Type-2 clones. This approa
 utilizes a custom ``clone index'' data structure which can be updated efficiently. The
 implementation of this data structure is similar to that of an inverted index.
 
+
 More recently, Ragkhitwetsagul and Krinke\cite{SiameseScalableAndIncrementalClone}
 presented the tool ``Siamese'', which uses a novel approach of having multiple
 intermediate representations of source code to detect a high number of clones with
 support for incremental detection. The tool can detect up to Type-3 clones, but will only
-give clones based on queries given to it by the user. 
+give clones based on ``queries'' given to it by the user. Queries are either files or
+methods in source-code, which are then checked for existing code clone.
 
 \subsection{The Language Server Protocol}
 
 The Language Server protocol (LSP) is a protocol which specifies interaction between a
 client (IDE) and server in order to provide language tooling for the client. The goal of
 the protocol is to avoid multiple implementations of the same language tools for every
-IDE and every language. Servers which implement LSP will be able to offer IDE's
+IDE and every language. Servers which implement LSP will be able to offer IDEs
 code-completion, diagnostics, go-to-definition and more. LSP also specifies generic
 code-actions and commands, which the LSP server provides to the client in order to perform
 custom actions defined by the server.
@@ -484,12 +495,13 @@ management to any editor which implements LSP.
 The following user stories shows how interaction with the LSP server will work.
 
 \begin{itemize}
-	\item A programmer wants to see code clones for a single file, the
+	\item A programmer wants to see code clones for a file, the
 	      programmer opens the file in their IDE and is displayed diagnostics in the code
-	      wherever there are detected clones.
+	      wherever there are detected clones. The matching code clones are not necessarily
+          in the same file.
 
 	\item A programmer wants to see all code clones for the current project. The
-	      programmer opens the IDE's diagnostic view and will see all code clones detected
+	      programmer opens the IDEs diagnostic view and will see all code clones detected
 	      as diagnostics there. The diagnostic will contain information like where the clone
 	      exists, and percentage of duplicated code.
 
@@ -501,12 +513,12 @@ The following user stories shows how interaction with the LSP server will work.
 	\item A programmer wants to merge a code clone pair. The programmer moves their cursor
 	      to one of the code clones, invokes a request to see code actions, and invokes one
 	      of the ``Merge code clone with strategy x`` actions. The strategies presented to
-	      the user is dependent on the context of the code clone pair, the programmer will
+	      the user are dependent on the context of the code clone pair, the programmer will
 	      only see the useful / realizable merging strategies.
 \end{itemize}
 
 The interaction with the LSP server will depend on the client's implementation of LSP. If
-the LSP client is limited in its capabilities, meaning it doesn't implement the entire
+the LSP client is limited in its capabilities, meaning it does not implement the entire
 protocol, the tool will be limited in how the programmer can interact with it.
 
 \subsection{Architecture of tool}

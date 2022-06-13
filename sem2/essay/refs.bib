@@ -48,7 +48,7 @@
                Chanchal K. Roy},
   editor    = {Katsuro Inoue and
                Chanchal K. Roy},
-  title     = {BigCloneBench},
+  title     = {{BigCloneBench}},
   booktitle = {Code Clone Analysis},
   pages     = {93--105},
   publisher = {Springer Singapore},
@@ -79,7 +79,7 @@
   title     = {Understanding the impact of refactoring on smells: a longitudinal
                study of 23 software projects},
   booktitle = {Proceedings of the 2017 11th Joint Meeting on Foundations of Software
-               Engineering, {ESEC/FSE} 2017, Paderborn, Germany, September 4-8, 2017},
+               Engineering, {ESEC/FSE} 2017},
   pages     = {465--475},
   publisher = {{ACM}},
   year      = {2017},
@@ -136,12 +136,27 @@ series = {CASCON '15}
     doi={10.1109/WCRE.2004.25}} 
 
 @inproceedings{SHINOBI,
-    author = {Kawaguchi, Shinji and Yamashina, Takanobu and Uwano, Hidetake and Fushida, Kyohei and Kamei, Yasutaka and Nagura, Masataka and Iida, Hajimu},
-    year = {2009},
-    month = {01},
-    pages = {313-314},
-    title = {SHINOBI: A tool for automatic code clone detection in the IDE},
-    doi = {10.1109/WCRE.2009.36}
+  author    = {Shinji Kawaguchi and
+               Takanobu Yamashina and
+               Hidetake Uwano and
+               Kyohei Fushida and
+               Yasutaka Kamei and
+               Masataka Nagura and
+               Hajimu Iida},
+  editor    = {Andy Zaidman and
+               Giuliano Antoniol and
+               St{\'{e}}phane Ducasse},
+  title     = {{SHINOBI:} {A} Tool for Automatic Code Clone Detection in the {IDE}},
+  booktitle = {16th Working Conference on Reverse Engineering, {WCRE} 2009, 13-16
+               October 2009, Lille, France},
+  pages     = {313--314},
+  publisher = {{IEEE} Computer Society},
+  year      = {2009},
+  url       = {https://doi.org/10.1109/WCRE.2009.36},
+  doi       = {10.1109/WCRE.2009.36},
+  timestamp = {Wed, 16 Oct 2019 14:14:53 +0200},
+  biburl    = {https://dblp.org/rec/conf/wcre/KawaguchiYUFKNI99a.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
 @article{ComparisonAndEvaluationOfTechniques,
@@ -195,23 +210,24 @@ series = {CASCON '15}
     address = {USA},
     edition = {2nd},
 }
-@INPROCEEDINGS{CloningByAccident,
 
-  author={Al-Ekram, R. and Kapser, C. and Holt, R. and Godfrey, M.},
-
-  booktitle={2005 International Symposium on Empirical Software Engineering, 2005.}, 
-
-  title={Cloning by accident: an empirical study of source code cloning across software systems}, 
-
-  year={2005},
-
-  volume={},
-
-  number={},
-
-  pages={10 pp.-},
-
-  doi={10.1109/ISESE.2005.1541846}
+@inproceedings{CloningByAccident,
+  author    = {Raihan Al{-}Ekram and
+               Cory Kapser and
+               Richard C. Holt and
+               Michael W. Godfrey},
+  title     = {Cloning by accident: an empirical study of source code cloning across
+               software systems},
+  booktitle = {2005 International Symposium on Empirical Software Engineering {(ISESE}
+               2005), 17-18 November 2005, Noosa Heads, Australia},
+  pages     = {376--385},
+  publisher = {{IEEE} Computer Society},
+  year      = {2005},
+  url       = {https://doi.org/10.1109/ISESE.2005.1541846},
+  doi       = {10.1109/ISESE.2005.1541846},
+  timestamp = {Wed, 16 Oct 2019 14:14:56 +0200},
+  biburl    = {https://dblp.org/rec/conf/isese/Al-EkramKHG05.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
 @misc{treesitter,
@@ -240,12 +256,15 @@ series = {CASCON '15}
     numpages = {13}
 }
 
-@article{PracticleAlgorithmsForIncremental,
-author = {Wagner, Tim},
-year = {2000},
-month = {08},
-pages = {},
-title = {Practical Algorithms for Incremental Software Development Environments}
+@phdthesis{PracticalAlgorithmsForIncremental,
+    Author = {Wagner, Tim A.},
+    Title = {Practical Algorithms for Incremental Software Development Environments},
+    School = {EECS Department, University of California, Berkeley},
+    Year = {1998},
+    Month = {Mar},
+    URL = {http://www2.eecs.berkeley.edu/Pubs/TechRpts/1998/5885.html},
+    Number = {UCB/CSD-97-946},
+    Abstract = {We describe an integrated collection of algorithms and data structures to serve as the basis for a practical incremental software development environment. A self-versioning representation provides a uniform model that embraces both natural and programming language documents in a single, consistent framework. Software artifacts in this representation provide fine-grained change reports to all tools in the environment. We then present algorithms for the initial construction and subsequent maintenance of persistent, structured documents that support unrestricted user editing. These algorithms possess several novel aspects: they are more general than previous approaches, address issues of practical importance, including scalability and information preservation, and are optimal in both space and time. Since deterministic parsing is too restrictive a model to describe some common programming languages, we also investigate support for multiple structural interpretations: incremental non-deterministic parsing is used to construct a compact form that efficiently encodes syntactic ambiguity. Later analyses may resolve ambiguous phrases through syntactic or semantic disambiguation. This result provides the first known method for handling C, C++, COBOL, and FORTRAN in an incremental framework derived from formal specifications. <p>Our transformation and analysis algorithms are designed to avoid spurious changes, which result in lost information and unnecessary recomputation by later stages. We provide the first non-operational definition of optimal node reuse in the context of incremental parsing, and present optimal algorithms for retaining tokens and nodes during incremental lexing and parsing. We also exploit the tight integration between versioning and incremental analysis to provide a novel history-sensitive approach to error handling. Our error recovery mechanism reports problems in terms of the user's own changes in a language-independent, non-correcting, automated, and fully incremental manner. <p>This work can be read at several levels: as a refinement and extension of previous results to address issues of scalability, end-to-end performance, generality, and description reuse; as a 'cookbook' for constructing the framework of a practical incremental environment into which semantic analysis, code generation, presentation, and other services can be plugged; and as a set of separate (but interoperable) solutions to open problems in the analysis and representation of software artifacts. Our results are promising: in addition to embracing a realistic language model, both asymptotic and empirical measurements demonstrate that we have overcome barriers in performance and scalability. Incremental methods can now be applied to commercially important languages, and may finally become the standard approach to constructing language-based tools and services.}
 }
 
 @INPROCEEDINGS{IndexBasedIncrementalCloneDetection,
@@ -305,5 +324,24 @@ title = {Practical Algorithms for Incremental Software Development Environments}
   doi       = {10.1007/s10664-019-09697-7},
   timestamp = {Tue, 25 Aug 2020 16:58:46 +0200},
   biburl    = {https://dblp.org/rec/journals/ese/Ragkhitwetsagul19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CCLearner,
+  author    = {Liuqing Li and
+               He Feng and
+               Wenjie Zhuang and
+               Na Meng and
+               Barbara G. Ryder},
+  title     = {CCLearner: {A} Deep Learning-Based Clone Detection Approach},
+  booktitle = {2017 {IEEE} International Conference on Software Maintenance and Evolution,
+               {ICSME} 2017, Shanghai, China, September 17-22, 2017},
+  pages     = {249--260},
+  publisher = {{IEEE} Computer Society},
+  year      = {2017},
+  url       = {https://doi.org/10.1109/ICSME.2017.46},
+  doi       = {10.1109/ICSME.2017.46},
+  timestamp = {Mon, 23 Aug 2021 15:53:56 +0200},
+  biburl    = {https://dblp.org/rec/conf/icsm/LiFZMR17.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
