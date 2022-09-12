@@ -9,12 +9,14 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage[a4paper, total={}]{geometry}
+\usepackage{tcolorbox}
 \setlength{\headsep}{5pt}
 \setlength{\parskip}{1em}
 \usepackage{listings}
 \usepackage{extarrows}
 \usepackage{bold-extra}
 \newtheorem{definition}{Definition}
+
 
 \definecolor{pblue}{rgb}{0.2,0.2,0.7}
 \definecolor{pgreen}{rgb}{0,0.5,0}
@@ -71,9 +73,8 @@ design quality in code, otherwise known as code smells.
 A study conducted by Diego Cedrim et al. has shown that while developers tend to refactor
 smelly code, they are rarely successful at eliminating the smells they are
 targeting~\cite{Rohit_Gheyi_Impact}. They also discovered that a large portion of
-refactorings tend to make the code quality worse. Therefore, automated tools to help
-developers make better refactorings and perform code analysis is an important field of
-research.
+refactorings tend to make the code quality worse. Automated tools which help developers
+make better refactorings and perform code analysis could be a solution to this problem.
 
 Duplicated code is a code smell which occurs in practically every large software project.
 Code clone analysis has recently become a highly active field of research and many tools
@@ -82,9 +83,10 @@ few of these have the capability of detecting intricate types of duplicated code
 managing them in a real-time IDE environment.
 
 This thesis will present a tool and possibly techniques for clone detection and management
-in real-time, for usage in modern IDE environments. The thesis will explore the topics
+in real-time, which runs in modern IDE environments. The thesis will explore the topics
 such as finding and managing clones in real-time, incremental analysis of source code and
-providing clone management and refactoring tools in a modern IDE environment.
+providing clone management and refactoring tools in an editor and language
+agnostic environment.
 
 \section{Background}
 
@@ -92,7 +94,7 @@ providing clone management and refactoring tools in a modern IDE environment.
 
 Software quality is hard to define. The term ``quality'' is ambiguous and is in the case
 of software quality, multidimensional. Quality in itself has been defined as ``conformance
-to requirements''~\cite[8]{crosby1980quality}. In software, the simplest measure of
+to requirements''~\cite[8]{crosby1980quality}. In software, A simple measure of
 ``conformance to requirements'' is a lack of bugs. However, software
 quality is often measured in other metrics, including metrics which are not directly
 related to functionality~\cite[29]{MetricsAndModelsInSoftwareQuality}. These metrics
@@ -106,10 +108,14 @@ benefit to almost all software.
 
 As stated, duplicated code damages software quality in software projects. Duplicated code
 can lead to a plethora of antipatterns, and will often lead to an increase in technical
-debt. The ``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} antipattern occurs when a
-developer wants to implement a change, but needs to change code at multiple locations for
-the change to take effect. This is a typical situation which slows down development and
-reduces maintainability when a software project contains a lot of duplicated code.
+debt. Technical debt occurs when developers make technical compromises that are expedient
+in the short term, but increases complexity in the long-term~\cite[111]{TechnicalDebt}. An
+example of this in the context of duplicated code is the
+``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} antipattern. This antipattern occurs when
+a developer wants to implement a change, but needs to change code at multiple locations
+for the change to take effect. This is a typical situation which slows down development
+and reduces maintainability when the amount of duplicated code increases in a software
+project.
 
 \subsection{Code clones}
 
@@ -151,65 +157,95 @@ clones, the relation becomes transitive, and equivalence classes form clone sets
 Code clones are generally classified into four types~\cite{Inoue_introduction_to_cc}. The
 types classify code snippets as code clones with an increasing amount of leniency.
 Therefore, Type-1 code clones are very similar, while Type-4 clones are not necessarily
-similar at all. However, all code clones have the same functionality, it is the syntactic
-and structural differences which distinguishes the types. The set of code clones
-classified by a code clone type is also a subset of the next type, meaning all Type-1
-clones are also Type-2 clones, but not vice versa.
+similar at all. When defining types, it is the syntactic and structural differences which
+is compared, not functionality. The set of code clones classified by a code clone type
+is also a subset of the next type, meaning all Type-1 clones are also Type-2 clones, but
+not vice versa.
 
 The code clone types are defined as follows:
 
 \textbf{Type-1} clones are syntactically identical. The only differences allowed are elements
 without meaning, like comments and white-space. Example:
 
-\begin{lstlisting}[frame=single]
+\begin{tcolorbox}
+\begin{center}
+	\begin{tabular}{c | c}
+		\begin{lstlisting}
 // Clone 1
 for (int i = 0; i < 10;   i++) {
     print(i);
 }
-
+        \end{lstlisting} &
+        \begin{lstlisting}
 // Clone 2
 for (int i = 0; i < 10; i++) {
     // A comment without meaning
     print(i);
 }
+        \end{lstlisting}
+	\end{tabular}
+\end{center}
+\end{tcolorbox}
 
-\end{lstlisting}
+
+
 
 \textbf{Type-2} clones are structurally identical. Possible differences include
 identifiers, literals and types. Type-2 clones are relatively easy to detect by
-consistently renaming identifiers and literals.~\cite[2]{Zibran_real_time_search} Example:
+consistently renaming identifiers and literals~\cite[2]{Zibran_real_time_search}. This
+type of clone is relevant to consider in merging scenarios because this type
+of clone is relatively simple to parameterize in order to merge two Type-2 clones.
+Example:
 
-\begin{lstlisting}[frame=single]
+
+\begin{center}
+    \begin{tcolorbox}
+	\begin{tabular}{c | c}
+		\begin{lstlisting}
 // Clone 1
 for (int i = 0; i < 10; i++) {
     print(i);
 }
-
+    \end{lstlisting} &
+		\begin{lstlisting}
 // Clone 2
 for (int (*\textbf j*) = (*\textbf 1*); (*\textbf j*) < 10; (*\textbf j++*)) {
     print((*\textbf j*));
 }
-\end{lstlisting}
+    \end{lstlisting}
+	\end{tabular}
+\end{tcolorbox}
+\end{center}
 
 \textbf{Type-3} clones are required to be structurally similar, but not equal. Differences
 include statements which are added, removed or modified. This clone type relies on a
 threshold $\theta$ which determines how structurally different snippets can be to be
 considered Type-3 clones~\cite{Inoue_introduction_to_cc}. The granularity for this
-difference could be based differing tokens, lines, etc. Detecting this type of clone is
+difference could be based on differing tokens, lines, etc. Detecting this type of clone is
 hard. Example:
 
-\begin{lstlisting}[frame=single]
+\begin{tcolorbox}
+\begin{center}
+    \begin{tabular}{c | c}
+        \begin{lstlisting}
 // Clone 1
 for (int i = 0; i < 10; i++) {
     print(i);
 }
-
+\end{lstlisting} &
+\begin{lstlisting}
 // Clone 2
 for (int i = 0; i < 10; i++) {
     print(i);
     (*\textbf{int x = 10;}*)
 }
 \end{lstlisting}
+    \end{tabular}
+\end{center}
+\end{tcolorbox}
+
+
+
 
 In this example there is a one line difference between the two snippets, so if $\theta
 	\geq
@@ -221,10 +257,16 @@ very challenging, but attempts have been made using program dependency
 graphs~\cite{SeedType4Detection}. The following example shows two code snippets which have
 no clear syntactic or structural similarity, but is functionally equal:
 
-\begin{lstlisting}[frame=single]
+\begin{tcolorbox}
+    \begin{center}
+        \begin{tabular}{c | c}
+\begin{lstlisting}
 // Clone 1
 print((n*(n-1))/2)
 
+print(sum);
+\end{lstlisting} &
+\begin{lstlisting}
 // Clone 2
 int sum = 0;
 for (int i = 0; i < n; i++) {
@@ -234,6 +276,10 @@ for (int i = 0; i < n; i++) {
 }
 print(sum);
 \end{lstlisting}
+        \end{tabular}
+    \end{center}
+\end{tcolorbox}
+
 
 Type-1 clones are often referred to as ``exact'' clones, while Type-2 and Type-3 clones
 are referred to as ``near-miss'' clones~\cite[1]{Zibran_real_time_search}.
@@ -246,10 +292,11 @@ process is often a pipeline of input-processing steps before finally comparing f
 against each other and filtering. The steps are generally as follows:
 
 \begin{enumerate}
-	\item \textbf{Pre-processing}: Removing uninteresting parts which we do not want to
+	\item \textbf{Pre-processing}: Filter uninteresting code that we do not want to
 	      check for clones, for example generated code. Then partition code into a set of
-	      fragments, depending on granularity. Granularity could be entire files, methods or lines.
-	\item \textbf{Transformation}: Transform fragments into an intermediate representation.
+	      fragments, depending on granularity such as methods, files or lines.
+	\item \textbf{Transformation}: Transform fragments into an intermediate
+        representation, with a source-map back to the original code.
 	      \begin{enumerate}
 		      \item Extraction: Transform source code into the input for the comparison
 		            algorithm. Can be tokens, AST, dependency graphs, suffix tree, etc.
@@ -268,17 +315,17 @@ against each other and filtering. The steps are generally as follows:
 
 Not all clone detection techniques will necessarily follow all these steps.
 
-\textbf{Matching techniques} are techniques which can be applied to match source-code to
-detect clone-pairs, with various advantages and disadvantages. The matching technique will
-also require specific pre-processing to be done in the earlier steps, for example creating an
-AST. Some of the most explored techniques are as follows~\cite{ComparisonAndEvaluationOfTechniques}:
+\paragraph{Matching techniques} are techniques which can be applied to match source-code to
+detect clone-pairs. The matching technique will also require specific pre-processing to be
+done in the earlier steps, for example creating an AST. Some of the most explored
+techniques are as follows~\cite{ComparisonAndEvaluationOfTechniques}:
 
 \paragraph{Text-based} approaches do very little processing on the source code before
 comparing. Simple techniques such as fingerprinting or incremental hashing have been used
 in this approach. Dot plots have also been used in newer text-based approaches, placing
 the hashes of fragments in a dot plot for use in comparisons.
 
-\textit{Token-based} approaches transform source code into a stream of tokens, similar to
+\paragraph{Token-based} approaches transform source code into a stream of tokens, similar to
 lexical scanning in compilers. The token stream is then scanned for duplicated
 subsequences of tokens. Since token streams can easily filter out superficial differences
 such as whitespace, indentation and comments, this approach is more robust to such
@@ -292,9 +339,9 @@ token-streams is with a suffix-tree. A suffix-tree can solve the \textit{Find al
 This algorithm can also be improved to use a suffix-array instead, which requires less
 memory.
 
-\textit{Syntactic} approaches transform source code into either concrete syntax trees or
-abstract syntax trees and find clones using either tree matching algorithms or structural
-metrics. For tree matching, the common approach is to find similar subtrees in the tree,
+\paragraph{Syntactic} approaches transform source code into either concrete syntax trees
+or abstract syntax trees and find clones using either tree matching algorithms or
+structural metrics. For tree matching, the common approach is to find similar subtrees,
 which are then deemed as clone pairs. One way of finding similar subtrees is to hash
 subtrees into buckets and compare them with a tolerant tree matching algorithm. Variable
 names, literal values and other source may be abstracted to find Type-2 clones more
@@ -303,25 +350,25 @@ the metrics to determine if the fragments are clones or not. One way is to use
 fingerprinting functions where the fingerprint includes certain metrics, and compare the
 fingerprints of all fragments to find clones.
 
-\textit{Chunk-based} approaches decompose chunks of source code into signatures which are
+\paragraph{Chunk-based} approaches decompose chunks of source code into signatures which are
 compared. Chunk-size is based on selected granularity, which can be functions, blocks,
 etc. Signatures can for example be based on some software metrics. Machine learning has
 been used in this approach using methods as chunks and token-frequency within the method
 as signature. A Deep Neural Network trained on this data can then be used to classify two
 chunks as clone or non-clone~\cite{CCLearner}.
 
-\textit{Hybrid} approaches combine multiple approaches in order to improve detection. For
-example Zibran et al.~\cite{Zibran_real_time_search} developed a hybrid algorithm
-combining both token-based suffix trees for Type-1 and Type-2 clone detection, with
-a k-difference dynamic programming algorithm for Type-3 clone detection.
+\paragraph{Hybrid} approaches combine multiple approaches in order to improve detection.
+For example Zibran et al. developed a hybrid algorithm combining both token-based suffix
+trees for Type-1 and Type-2 clone detection, with a k-difference dynamic programming
+algorithm for Type-3 clone detection~\cite{Zibran_real_time_search}.
 
 \subsubsection{Code clone merging techniques}
 
-Automated merging of code clones is a mostly unexplored area of research, but some work has
+Automated merging of code clones is not a thoroughly explored area of research, but some work has
 been done.
 
 Yoshiki Higo~\cite{RefactoringOrientedClonesAndMerging} introduced the notion of a
-\textit{refactoring oriented} clone in object-oriented languages, which means stripping
+\textit{refactoring oriented} clone in object-oriented languages which means stripping
 parts of clones to make them easier to automatically merge. With these clones they boiled
 the merging process down to three cases:
 
@@ -336,61 +383,6 @@ from other classes, the classes can inherit from the new class.
 
 They also introduced metrics for use in determining how merging should be done.
 
-\subsubsection{IDE-based clone management}
-
-Developers are not always aware of the creation of clones in their code. Clone aware
-development means having clone management as a part of the software development
-process. Since code clones can be hard to keep track of and manage, tools which help
-developers deal with clones are useful. However, Mathias Rieger et al. claims that
-a problem with many detection tools is that the tools ``report large amounts data that must
-be treated with little tool support''~\cite[1]{InsightsSystemWideDuplication}. Detecting
-and eliminating clones early in their lifecycle is therefore vital for the developer to
-have success in managing their clones.
-
-There are many existing clone management tools, however the most useful tools for clone
-aware development are the tools which are integrated into an IDE and offer services to the
-programmer while developing in real-time.
-
-The IDE-based tools which exist can be categorized as
-follows~\cite[8]{Udding_Towards_Convenient_Management}:
-
-\begin{itemize}
-	\item\textit{Copy-paste-clones:} This category of tools deals only with code snippets which are
-	copy-pasted from another location in code. These tools therefore only track clones which
-	are created when copy-pasting, and does not use any other detection techniques. Therefore,
-	this type of tool is not suitable for detecting clones which are made accidentally, since
-	developers are aware that they are creating clones when pasting already existing code
-	snippets.
-
-	\item\textit{Clone detection and visualization tools:} This category of tools has more
-	sophisticated clone detection capabilities and will detect code clones which occur
-	accidentally.
-
-	\item\textit{Versatile clone management:} This category of tools covers tools which provide more
-	services than the above. Services like refactoring and simultaneous editing of clones fall
-	under this category.
-\end{itemize}
-
-There are a few existing IDE-tools which have seen success in real-time detection of clones:
-
-\begin{itemize} \item Minhaz et al. introduced a hybrid technique for performing real-time
-	      focused searches, i.e. searching for code clones of a selected code snippet. This
-	      technique can also detect Type-3 clones~\cite{Zibran_real_time_search}. This technique
-	      was later used in the tool
-	      \textit{SimEclipse}~\cite{Udding_Towards_Convenient_Management}. Since this tool can
-	      only detect clones of a code snippet which the developer actively selects, this tool
-	      is not well suited for finding accidental clones and tracking clones in areas.
-
-	\item Another tool, SHINOBI can detect code clones in real-time without the need of
-	      the developer to select a code snippet, however it can only detect type-1 and
-	      Type-2 code clones. The tool uses a token-based suffix array index approach to detect
-	      clones incrementally~\cite{SHINOBI}.
-
-	\item The modern IDE IntelliJ has a built-in duplication detection and
-	      refactoring service, it is able to detect type-1 and (some) type-2 code clones
-	      at a method granularity and refactors by replacing one of the clones with a
-	      method call to the other.
-\end{itemize}
 
 
 \subsection{Incremental editing and analysis}
@@ -452,15 +444,78 @@ support for incremental detection. The tool can detect up to Type-3 clones, but 
 give clones based on ``queries'' given to it by the user. Queries are either files or
 methods in source-code, which are then checked for existing code clone.
 
-\subsection{The Language Server Protocol}
+\subsection{IDE tooling}
+
+\subsubsection{Existing IDE tools for clone management}
+
+Developers are not always aware of the creation of clones in their code. Clone aware
+development means having clone management as a part of the software development process.
+Since code clones can be hard to keep track of and manage, tools which help developers
+deal with clones are useful. However, Mathias Rieger et al. claims that a problem with
+many detection tools is that the tools ``report large amounts data that must be treated
+with little tool support''~\cite[1]{InsightsSystemWideDuplication}. Detecting and
+eliminating clones early in their lifecycle with IDE integrated tools could be a solution
+to the problem of dealing with too many clones.
+
+There are many existing clone management tools, and the following section will go over
+tools which are integrated into an IDE and offer services to the programmer while
+developing in real-time.
+
+The IDE-based tools which exist can be categorized as
+follows~\cite[8]{Udding_Towards_Convenient_Management}:
+
+\begin{itemize}
+	\item\textit{Copy-paste-clones:} This category of tools deals only with code snippets which are
+	copy-pasted from another location in code. These tools therefore only track clones which
+	are created when copy-pasting, and does not use any other detection techniques. Therefore,
+	this type of tool is not suitable for detecting clones which are made accidentally, since
+	developers are aware that they are creating clones when pasting already existing code
+	snippets.
+
+	\item\textit{Clone detection and visualization tools:} This category of tools has more
+	sophisticated clone detection capabilities and will detect code clones which occur
+	accidentally.
+
+	\item\textit{Versatile clone management:} This category of tools covers tools which provide more
+	services than the above. Services like refactoring and simultaneous editing of clones fall
+	under this category.
+\end{itemize}
+
+There are a few existing IDE-tools which have seen success in real-time detection of clones:
+
+\begin{itemize} \item Minhaz et al. introduced a hybrid technique for performing real-time
+	      focused searches, i.e. searching for code clones of a selected code snippet. This
+	      technique can also detect Type-3 clones~\cite{Zibran_real_time_search}. This technique
+	      was later used in the tool
+          \textit{SimEclipse}~\cite{Udding_Towards_Convenient_Management} which is a
+          plugin for the Eclipse editor. Since this tool can only detect clones of a code
+          snippet which the developer actively selects, this tool is not well suited for
+          finding accidental clones and tracking clones in areas.
+
+    \item Another tool, SHINOBI, which is a plugin for the Visual Studio editor, can
+        detect code clones in real-time without the need of the developer to select a code
+        snippet. However, it can only detect type-1 and Type-2 code clones. The tool uses a
+        token-based suffix array index approach to detect clones
+        incrementally~\cite{SHINOBI}.
+
+	\item The modern IDE IntelliJ has a built-in duplication detection and
+	      refactoring service, it is able to detect type-1 and (some) type-2 code clones
+	      at a method granularity and refactors by replacing one of the clones with a
+	      method call to the other.
+\end{itemize}
+
+All the tools mentioned uses the editors built-in API's to perform static analysis and
+refactoring, meaning they only work in that editor.
+
+\subsubsection{The Language Server Protocol}
 
 The Language Server protocol (LSP) is a protocol which specifies interaction between a
 client (IDE) and server in order to provide language tooling for the client. The goal of
-the protocol is to avoid multiple implementations of the same language tools for every
-IDE and every language. Servers which implement LSP will be able to offer IDEs
-code-completion, diagnostics, go-to-definition and more. LSP also specifies generic
-code-actions and commands, which the LSP server provides to the client in order to perform
-custom actions defined by the server.
+the protocol is to avoid multiple implementations of the same language tools for every IDE
+and every language, allowing for editor agnostic tooling. Servers which implement LSP will
+be able to offer IDEs code-completion, diagnostics, go-to-definition and more. LSP also
+specifies generic code-actions and commands, which the LSP server provides to the client
+in order to perform custom actions defined by the server.
 
 Figure \ref{fig:lspcommunication} shows a sample interaction between client and server
 using LSP. The client sends requests to a server in the form of JSON-RPC messages, and the
