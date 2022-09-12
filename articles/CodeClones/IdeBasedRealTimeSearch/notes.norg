@@ -37,14 +37,58 @@
   - User-defined dissimilarity threshold.
   - k = (l*threshold)/100
   --- l is number of lines in the smaller fragment
-  - Lager et enumerated suffix tree og mapper det til et complete binary tree med
-  bit-strenger.
-  - Kan da gjøre kalkulasjoner som LCA i konstant tid
+** Setup and definitions
+   - Create an enumerated suffix tree T
+   - Bit string on nodes in T is the bitstring for the number you get in DFS order
+   - h(u) for node u in T is the position of the least significant 1-bit
+   - I(v) is the node w in T such that h(w) is the maximum of all nodes in subtree of v
+     (including v)
+   - A run $T_r$ is a maximal subset of nodes in T such that all nodes u in the subset has
+     the same I(u). The head of the run is the node closest to the root.
+   - We also create a complete binary tree B which where we map each run to nodes in T
+   --- Each node in B's bitstring is enumerated with in-order traversal
+   - We also finally add another bit-number $A_v$ for each node v in T. This bit number
+     may contain a 1 in the location i if an ancestor of v maps to a node w in B with
+     h(w) = i. Meaning that u has h(I(u)) = i in B
+** LCA in binary tree
+   - Goal, compute lowest common ancestor in T, in constant time
+   - We will first find lowest common ancestor in B
+*** Algo
+    - For two nodes u,v in B, we will compute LCA in constant time using XOR and shifts on
+      bitstrings
+    - Two cases to consider, when one is ancestor of the other, and not
+*** u ancestor of v
+    - First check if one is ancestor of the other
+    - Use height to find the node u which is furthest up the tree
+    --- h is the number of edges from root to u
+    - XOR the bitstrings of u and v (inorder traversal bits)
+    --- k is the position of the left-most 1-bit, counting from left
+    - u is ancestor of v if and only if k > h
+*** Otherwise
+   - if one node is not ancestor of the other, find the LCA:
+   - XOR u and v
+   --- k is position of left-most 1 bit, counting from left
+   - d is number of bits in bitstring (log2(num nodes))
+   - Perform shifts
+   --- Right shift u by d-k spots
+   --- Set right-most bit to 1
+   --- Left-shift d-k spots
+   - Resulting bitstring is the bitstring of the LCA of u and v
+** LCA in Suffix Tree
+   - Goal, compute LCA for u, v in Suffix Tree
+   ~ b = LCA_B(I(u), I(v)) (LCA in binary tree of mapped nodes)
+   ~ Find smallest position p ≥ h(b) so that A_u, A_v has 1-bits in position p
+   ~ Find u', node closest to u in the same run as z (unknown)
+   ~~~ Find position p_r of right most 1-bit in A_u
+   ~~~ If p_r = p, then set u' = u and go to step 4
+   ~~~ Otherwise, find p_l, left-most 1-bit in A_u, which is to the right of p
+   ~~~ Form the number i_w which consists of the bits of I(x) to the left of p_l, 1 bit in
+       location of p_l, then all zeroes. Then find the head w of the run containing node
+       i_w. Set u' to be the parent of node w in T
+   ~ Find v'y the node closest to v on the same run as z, using same approach
+   ~ If u' < v' then LCA_T(u,v) = u', otherwise LCA_T(u,v) = v'
 
-* Hybrid DP
 
 
-
-
-* Potential sources
-  - Percentage of duplicated code in software !!!
+** Hybrid DP
+   - A modification on the global alignment DP solution
