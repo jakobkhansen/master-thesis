@@ -1,0 +1,8 @@
+* Treesitter nodes for functions/methods per language
+  - Java: method_declaration
+  - Python: function_definition
+  - C, C++: function_definition
+  - Go: function_declaration
+  - Javascript: function_declaration
+  - Ruby: method
+  - Haskell: function
