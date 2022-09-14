@@ -1,0 +1,16 @@
+* Pipeline initial
+  - SC: Source Code
+  - TS: Treesitter
+  - CST: Concrete syntax tree
+  - SA
+  - SC -> TS Parse -> CST -> Query methods -> Fingerprint -> SA -> Code clones
+
+* Pipeline incremental
+
+  - Edit → TS → Upd CST → Query methods in changed area → Upd fingerprint → Upd SA → Code clones
+
+
+  Source code is parsed by treesitter which gives a CST. We then query for fragments of
+  given selected node type. Hash each fragment and concatenate them to a fingerprint.
+  Insert fingerprint into a suffix array. Find code clones with a LCP >= threshold. These
+  are code clones.
