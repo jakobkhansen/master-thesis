@@ -1,0 +1,67 @@
+* Prelude: Skew algorithm
+  - Recursive linear time SACA.
+  - Computes ISA
+** Algorithm
+   ~ Compute rank array $R_{1,2}$ for suffixes $T_i$ starting at i ≠ 0 (mod 3) recursively
+   ~ Induce rank array $R_3$ for suffixes $T_0, T_3, T_6, T_9, ...$ from $R_{1,2}$
+   ~ Merge $R_{1,2}$ and $R_0$ using $R_{1,2}$
+   - Recurrence is O(n) and step 2,3 is also O(recurrence), therefore algo is O(n)
+* Linear time suffix array construction
+  - Three well-known linear time SACA's exist.
+  --- KS, KA, KSP
+
+* SAIS
+** Pre-knowledge
+   - Example: BANANA$
+   - SA: [6,5,3,1,0,4,2]
+*** Bucketing
+    - Suffix array can be bucketed based on starting character
+    --- `$-{6}, A-{5,3,1}, B-{0}, N-{4,2}`$
+*** L-type and S-type suffix
+    - A suffix at pos k is a S-type suffix (smaller) if it lexicographically comes
+      before suffix at pos k+1. Suffix starting at pos n-1 (sentinel char) is always an
+      S-type suffix
+    - A suffix at pos k is a L-type suffix (Larger) if it lexicographically comes after
+      suffix at pos k+1
+    - Example:
+    --- BANANA$
+    --- LSLSLLS
+    - The types of each suffix can be done by scanning linearly from right-to-left
+    --- index i of T is S-type if T[i] < T[i+1] or (T[i] = T[i+1] and T[i+1] is S-type)
+    --- index i of T is L-type if T[i] > T[i+1] or (T[i] = T[i+1] and T[i+1] is L-type)
+*** Theorem: L-type suffixes will occupy the left-side of buckets
+    `$-{6} = {L},
+    A-{5,3,1} = {L,R,R},
+    B-{0} = {L},
+    N-{4,2} = {L,L}`
+
+    - This intuitively makes sense as L-type suffixes at i will be followed up with a
+      suffix which is lexicographically smaller than itself, while S-type suffixes (which
+      start with the same character) will be followed by a suffix which is larger than
+      itself. When we compare these two, the suffix after the starting character will be
+      compared to determine which is larger, and the L-type suffix will be smaller.
+
+*** LMS character and LMS strings
+    - LMS: Left-most S-type
+    - A char at pos i of T (T[i]) is called LMS character if T[i] is S-type and T[i-1] is
+      L-type. Basically any occurence of LS in types means the S is an LMS character.
+      Also, the sentinel character is always an LMS-character.
+    - In BANANA$, LMS: [1,3]
+    - LMS-substring: Substring S[i..j] where both S[i] and S[j] are LMS-characters.
+    - LMS-substrings can be seen as the basic blocks of our string
+    - Theorem: If we can sort the LMS suffixes, we can sort the rest of
+      the suffixes in linear time
+*** Sorting LMS-suffixes in linear time
+    - Compare two LMS-suffixes by comparing each char from left to right
+    --- First compare lexicographical chars, then their types, where L-type is greater.
+    - To sort in O(n) space, keep pointer array $P_1$, which contains index of all
+      LMS-substrings
+    - We name a string $S_1$, which consists of each element of $P_1$
+    - This string $S_1$ is of at most size $n/2$, since LMS-substrings span at least 3
+      chars, neighbouring LMS-substring overlap
+      on 1 char.
+
+
+
+
+

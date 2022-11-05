@@ -1,7 +1,7 @@
 * The purpose of my thesis
   The purpose of my thesis is to create a tool which supports management of code clones in
   a modern IDE environment in order to research code clone analysis and IDE tooling. This
-  involves creating/implementing algorithms for detection and merging of code clones and
-  evaluating LSP as a tool for modern IDE tooling. For algorithms its interesting to
-  consider the aspect of incremental algorithms, since we are doing small edits to large
-  codebases, we don't want to recompute everything we have computed
+  involves creating/implementing algorithms for detection of code clones and evaluating
+  LSP as a tool for modern IDE tooling. For algorithms its interesting to consider the
+  aspect of incremental algorithms, since we are doing small edits to large codebases, we
+  don't want to recompute everything we have computed

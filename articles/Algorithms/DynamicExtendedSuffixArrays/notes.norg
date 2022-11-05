@@ -1,0 +1,10 @@
+* Dynamic extended suffix arrays
+  - Suffix trees require a lot of memory
+  - Suffix arrays can be used instead to save memory
+  - But how to update suffix arrays after text edit?
+** Burrows-wheeler transform dynamic
+   - Example: Insert a single character c at position i in T
+   - Four cases to consider for each of the cyclic shifts
+   --- 1a: c is between `$` and last char
+   --- 1b c is appended to end
+   --- 2a c is at last char

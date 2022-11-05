@@ -1,0 +1,98 @@
+* Programming
+** Parsing
+   - Fingerprinting is working, for each token we create a int.
+   - Initially went for string fingerprint solution, but that seemed harder to deal with in Java
+     than just using an `int[]`, therefore switched to `int[]`
+   - We have an index of documents. Each document stores its own text, syntax tree and
+     fingerprint
+
+** Linear time suffix array
+   - Have a decent understanding of the SAIS algorithm (should be best in practice)
+   - Implemented in Python like Lars suggested, worked mostly, but had a problem with the recursive step (unsolved)
+   - For our project, took an existing Java implementation of the SAIS algorithm
+     ({https://pastebin.com/hY59jK0A}, {https://www.youtube.com/watch?v=OIuG_Dqyl_s})
+   - Worked very well, easy to change it from processing a string, to an int[]
+   - Extended it to calculate ISA and LCP as well
+
+** Finding clones
+   - For calculating clones we iterate over every document and build an `int[]`, feed it
+     into a suffix array construction algorithm, then calculate the LCP. LCP is used to
+     find clones with size over a given threshold (sent as an init_option by client)
+   - Decided to ignore clones contained within other clones, and group clones which start
+     on the same token (buggy still)
+*** Algorithm for finding clones within LCP
+    @code java
+    for (int i = 0; i < fingerprint.length; i++) {
+      if (LCP[ISA[i]] >= cloneThreshold) {
+        clones.add(i);
+
+            // Ignore contained clones
+        i++;
+        while (LCP[ISA[i - 1]] > LCP[ISA[i]]) {
+          i++;
+        }
+      }
+    }
+    @end
+
+** Source-mapping
+   - After finding clone indices in fingerprint we know where in the fingerprint two clones are located
+   @code java
+   int firstIndex = cloneIndices[i];
+   int secondIndex = SA[ISA[cloneIndices[i]] - 1];
+   @end
+   - Need to map this back to source-code in a format LSP recognises (uri + range in
+     document which is on the form ((row, col), (row, col)) )
+   - Currently the source-map is just a huge array which maps an index in the fingerprint
+     to an object containing the uri and range.
+   - This gives O(1) lookups, but a big memory footprint
+
+** Optimizations done for time and memory
+*** Time
+    - Each document has a `changed` flag, when fingerprints are calculated after initial
+      pass, only changed documents will be processed (huge time-save)
+*** Memory
+    - For initial pass: Throw away both text and AST after fingerprint has been calculated
+    - When document is opened (LSP provides): Store text and calculate AST for quicker clone calculation
+      after an edit
+    - When document is changed, incremental reparse AST with tree-sitter. Find all
+      fragments (methods) and calculate fingerprint for those.
+    - When document is closed: Throw away text and AST
+
+
+* Case study for current solution: IntelliJ source code
+  - ~6M lines Java source-code
+  --- 214M characters
+  --- Fingerprint size / token count = 23M
+  --- Token threshold for clone at 100 gives ~3000 clones
+
+  - Initial processing: 120-140 seconds
+  - Updating: 8-11 seconds where ~75% of the time was used to build the suff, inverse suff, lcp arrays
+  --- Example: 8.4 seconds where 6.0 seconds were building the suffix array 
+  - Rough estimate of memory usage: Stabilizes at ~5gb RAM
+
+* Problem with grammars:
+  - Turns out not all grammars are consistent in regards to giving a CST
+  - C grammar does not have leaf node containing a string-literals value, but Java grammar does
+  - Possible hack to make this work, send a startup option which describes which nodes to
+    add to the fingerprint in addition to the leaf nodes.
+
+* Plan
+  - Need to take a week to catch up on IN5440
+** Fixes
+   - Fix how clones are displayed in respect to contained clones and transitivity
+** Optimizations
+  - Dynamic suffix array (time)
+  - Possibly not copy the full fingerprint to its own `int[]` (memory)
+  - Find better solution for source-mapping (memory)
+  --- Need to find an appropriate datastructure / algorithm for going from fingerprint
+      index back to source-code location
+  - Multi-threading initial fingerprinting?
+   --- Lock-free hashmap
+
+
+
+
+* chapters
+  - evaluation chapter (3 languages)
+  - technical chapter

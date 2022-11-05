@@ -289,3 +289,5 @@ TSWLatexianTemp*
 #*Notes.bib
 
 articles/**/*.pdf
+/TestCodebases/
+.hypothesis/

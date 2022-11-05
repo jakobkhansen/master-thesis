@@ -1,0 +1,38 @@
+* Gjort siden sist
+** Code
+   - [x] Treesitter parsing + incremental reparsing
+   - [x] Semi-language agnostic, client sends which language should be parsed, as long as grammar exists we can parse it
+   - [x] Query all nodes of a certain type (function_declaration, method_declaration, ...)
+   (function_declaration (child) (child))
+   - [x] Parsing evaluation
+   --- Tested parsing time/memory at scale, 
+   --- works for medium/large codebases
+   --- Big memory usage for huge codebases (Linux source-code)
+   ----- 500000 methods
+   ----- 
+   --- Not necessary to keep all the AST's in memory? Just the fingerprints of the
+       methods for each file
+** Research
+   - Linear time suffix array algorithm
+*** Dynamically updating suffix array using BWT
+    - BWT of text T can be dynamically updated
+    - Subsequently, suffix array, inverse suffix array and LCP can also be dynamically updated
+    - 2021 paper maybe not so useful
+
+** Fingerprint
+   - Updating fingerprint incrementally probably hard, but maybe good enough to copy first
+     part, concatenate new part, concatenate last part? Maybe we don't even need to
+     concatenate the entire fingerprint, keep them separated in arrays of fingerprints per
+     file, and let suffix array deal with those
+
+** Other notes
+   - 3456$234#
+   - Hash lines, or tokens?
+   - If tokens, maybe fingerprint will be too big?
+   - Generally accepted that clones are 50 tokens or more {https://ieeexplore.ieee.org/document/4288192}
+
+   jAstAdd attribute grammars
+
+   alpha-renaming
+
+   - Renaming variables for type-2 (scoping-rules)
