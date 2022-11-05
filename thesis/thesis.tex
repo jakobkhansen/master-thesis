@@ -2,18 +2,24 @@
 \usepackage[utf8]{inputenc}
 \usepackage{babel}
 \usepackage{frontpage/duomasterforside}
-\title{Masteroppgaven min}
-\subtitle{Et resultat av to års arbeid}
-\author{Navnet mitt}
+\usepackage{hyperref}
+\title{Title}
+\subtitle{Subtitle}
+\author{Jakob Konrad Hansen}
 \begin{document}
-\duoforside[dept={Institutt for informatikk},
-program={Informatikk: språkteknologi},
+\duoforside[dept={Department of Informatics},
+program={Informatics: Programming and System Architecture},
 long]
 
 \include{chapters/abstract}
 
 \tableofcontents
 
+\include{chapters/introduction}
 \include{chapters/background}
+\include{chapters/method}
+\include{chapters/evaluation}
+\include{chapters/conclusion}
+\include{chapters/futurework}
 
 \end{document}
