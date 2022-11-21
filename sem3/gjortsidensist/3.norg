@@ -1,0 +1,33 @@
+* Programming
+** Testing
+   - [x] We now have decent testing
+   --- Tested finding clone indices in fingerprint
+   --- Made a small codebase and tested that clones showed up in expected places (3 clone pairs currently)
+** Clone verification
+   - [x] Clone transitivity
+   --- Clone at index x should now have its range set to the longest clone starting at x
+   - [x] Clone reflexivity
+   --- Consistency in regard to clones within clones (Ignore "contained" clones)
+** Source-mapping
+   - Problem: Going from fingerprint index (clone index) back to source-code
+   - Tried multiple solutions
+   --- Original: Store a full copy of the fingerprint where every index has a range and uri
+   ----- Obviously very slow to build and memory intensive
+   --- Another: Each document stores its range, linear search to find which document the
+       index is in range of
+   ----- `O(|clones|*|files|)` turned out to be very slow
+** Solution
+   - Final: Sort all documents, binary search them
+   - This was very fast / fast enough
+   - This sorted list doesn't need to be updated after an edit (ranges are already updated
+     and documents dont change order in the fingerprint)
+   - If a file is added / deleted, this might break, but re-sorting the documents should
+     work (haven't done this yet)
+   - This is `O(log(|files|)*|clones|)`
+
+
+* Current state for editing
+  - 80-90% of time is now spent on suffix array building
+  - Memory usage is a lot better: 4gb for intellij source-code
+  - Good point to start working on the dynamic suffix array
+
