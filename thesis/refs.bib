@@ -1,0 +1,387 @@
+@book{fowlerrefactoring,
+  author    = {Martin Fowler},
+  title     = {Refactoring - Improving the Design of Existing Code},
+  series    = {Addison Wesley object technology series},
+  publisher = {Addison-Wesley},
+  year      = {1999},
+  url       = {http://martinfowler.com/books/refactoring.html},
+  isbn      = {978-0-201-48567-7},
+  timestamp = {Wed, 25 Mar 2015 11:31:06 +0100},
+  biburl    = {https://dblp.org/rec/books/daglib/0019908.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@Inbook{Inoue_introduction_to_cc,
+    author="Inoue, Katsuro",
+    editor="Inoue, Katsuro
+    and Roy, Chanchal K.",
+    title="Introduction to Code Clone Analysis",
+    bookTitle="Code Clone Analysis: Research, Tools, and Practices",
+    year="2021",
+    publisher="Springer Singapore",
+    address="Singapore",
+    pages="3--27",
+    abstract="Code Clone is a code snippet that has the same or similar code snippet in the same or different software system. The existence of code clones is an issue on software maintenance and a clue to understanding the structure and evolution of software systems. A large number of researches on code clones have been performed, and many tools for code clone analysis have been developed. In this chapter, we will explain some of the terms that are important for understanding code clones, such as definition, type, analysis granularity, and analysis domain. We will also outline the approaches and applications of code clone analysis.",
+    isbn="978-981-16-1927-4",
+    doi="10.1007/978-981-16-1927-4_1",
+    url="https://doi.org/10.1007/978-981-16-1927-4_1"
+}
+
+@Inbook{RefactoringOrientedClonesAndMerging,
+    author="Higo, Yoshiki",
+    editor="Inoue, Katsuro
+    and Roy, Chanchal K.",
+    title="Identifying Refactoring-Oriented Clones and Inferring How They Can Be Merged",
+    bookTitle="Code Clone Analysis: Research, Tools, and Practices",
+    year="2021",
+    publisher="Springer Singapore",
+    address="Singapore",
+    pages="183--196",
+    abstract="Our research group has been working on code clones for more than 20 years. In this chapter, I review our work on merging clones published in 2008 (Higo et al. in J Soft Mainten Evolut 20:435--461, 2008 [3]), introduce two subsequent studies, and discuss prospects for future research.",
+    isbn="978-981-16-1927-4",
+    doi="10.1007/978-981-16-1927-4_13",
+    url="https://doi.org/10.1007/978-981-16-1927-4_13"
+}
+
+@incollection{BigCloneBench,
+  author    = {Jeffrey Svajlenko and
+               Chanchal K. Roy},
+  editor    = {Katsuro Inoue and
+               Chanchal K. Roy},
+  title     = {{BigCloneBench}},
+  booktitle = {Code Clone Analysis},
+  pages     = {93--105},
+  publisher = {Springer Singapore},
+  year      = {2021},
+  url       = {https://doi.org/10.1007/978-981-16-1927-4\_7},
+  doi       = {10.1007/978-981-16-1927-4\_7},
+  timestamp = {Sat, 21 Aug 2021 14:12:45 +0200},
+  biburl    = {https://dblp.org/rec/books/sp/21/SvajlenkoR21.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+
+@inproceedings{Rohit_Gheyi_Impact,
+  author    = {Diego Cedrim and
+               Alessandro Garcia and
+               Melina Mongiovi and
+               Rohit Gheyi and
+               Leonardo da Silva Sousa and
+               Rafael Maiani de Mello and
+               Baldoino Fonseca and
+               M{\'{a}}rcio Ribeiro and
+               Alexander Ch{\'{a}}vez},
+  editor    = {Eric Bodden and
+               Wilhelm Sch{\"{a}}fer and
+               Arie van Deursen and
+               Andrea Zisman},
+  title     = {Understanding the impact of refactoring on smells: a longitudinal
+               study of 23 software projects},
+  booktitle = {Proceedings of the 2017 11th Joint Meeting on Foundations of Software
+               Engineering, {ESEC/FSE} 2017},
+  pages     = {465--475},
+  publisher = {{ACM}},
+  year      = {2017},
+  url       = {https://doi.org/10.1145/3106237.3106259},
+  doi       = {10.1145/3106237.3106259},
+  timestamp = {Tue, 01 Feb 2022 10:45:16 +0100},
+  biburl    = {https://dblp.org/rec/conf/sigsoft/CedrimGMGSMFRC17.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{Zibran_real_time_search,
+    author = {Zibran, Minhaz F. and Roy, Chanchal K.},
+    title = {IDE-Based Real-Time Focused Search for near-Miss Clones},
+    year = {2012},
+    isbn = {9781450308571},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/2245276.2231970},
+    doi = {10.1145/2245276.2231970},
+    abstract = {Code clone is a well-known code smell that needs to be detected and managed during the software development process. However, the existing clone detectors have one or more of the three shortcomings: (a) limitation in detecting Type-3 clones, (b) they come as stand-alone tools separate from IDE and thus cannot support clone-aware development, (c) they overwhelm the developer with all clones from the entire code-base, instead of a focused search for clones of a selected code segment of the developer's interest.This paper presents our IDE-integrated clone search tool, that addresses all the above issues. For clone detection, we adapt a suffix-tree-based hybrid algorithm. Through an asymptotic analysis, we show that our approach for clone detection is both time and memory efficient. Moreover, using three separate empirical studies, we demonstrate that our tool is flexibly usable for searching exact (Type-1) and near-miss (Type-2 and Type-3) clones with high precision and recall.},
+    booktitle = {Proceedings of the 27th Annual ACM Symposium on Applied Computing},
+    pages = {1235–1242},
+    numpages = {8},
+    keywords = {clone detection, clone search, maintenance, reengineering},
+    location = {Trento, Italy},
+    series = {SAC '12}
+}
+
+@inproceedings{Udding_Towards_Convenient_Management,
+author = {Uddin, Md Sharif and Roy, Chanchal K. and Schneider, Kevin A.},
+title = {Towards Convenient Management of Software Clone Codes in Practice: An Integrated Approach},
+year = {2015},
+publisher = {IBM Corp.},
+address = {USA},
+abstract = {Software code cloning is inevitable during software development and unmanaged cloning practice can create substantial problems for software maintenance and evolution. Current research in the area software clones includes, but is not limited to: finding ways to manage clones; gaining more control over clone generation; and, studying clone evolution and its effects on the evolution of software. In this study, we investigate tools and techniques for detecting, managing, and understanding the evolution of clones, as well as design a convenient tool to make those techniques available to a developer's software development environment. Towards the goal of promoting the practical use of code clone research and to provide better support for managing clones in software systems, we first developed SimEclipse: a clone-aware software development platform, and then, using the tool, we performed a study to investigate the usefulness of using a number clone based technologies in an integrated platform rather than using those discretely. Finally, a small scale user study is performed to evaluate SimEclipse's effectiveness, usability and information management with respect to some pre-defined clone management activities. We believe that both researchers and developers would enjoy and utilize the benefits of using SimEclipse for different aspects of code clone research as well as for managing cloned code in software systems.},
+booktitle = {Proceedings of the 25th Annual International Conference on Computer Science and Software Engineering},
+pages = {211–220},
+numpages = {10},
+keywords = {IDE plugin, software clone, integrated clone management},
+location = {Markham, Canada},
+series = {CASCON '15}
+}
+
+@INPROCEEDINGS{InsightsSystemWideDuplication, 
+    author={Rieger, M. and Ducasse, S. and Lanza, M.}, 
+    booktitle={11th
+    Working Conference on Reverse Engineering},
+    title={Insights into system-wide code
+    duplication},
+    year={2004},
+    volume={},
+    number={},
+    pages={100-109},
+    doi={10.1109/WCRE.2004.25}} 
+
+@inproceedings{SHINOBI,
+  author    = {Shinji Kawaguchi and
+               Takanobu Yamashina and
+               Hidetake Uwano and
+               Kyohei Fushida and
+               Yasutaka Kamei and
+               Masataka Nagura and
+               Hajimu Iida},
+  editor    = {Andy Zaidman and
+               Giuliano Antoniol and
+               St{\'{e}}phane Ducasse},
+  title     = {{SHINOBI:} {A} Tool for Automatic Code Clone Detection in the {IDE}},
+  booktitle = {16th Working Conference on Reverse Engineering, {WCRE} 2009, 13-16
+               October 2009, Lille, France},
+  pages     = {313--314},
+  publisher = {{IEEE} Computer Society},
+  year      = {2009},
+  url       = {https://doi.org/10.1109/WCRE.2009.36},
+  doi       = {10.1109/WCRE.2009.36},
+  timestamp = {Wed, 16 Oct 2019 14:14:53 +0200},
+  biburl    = {https://dblp.org/rec/conf/wcre/KawaguchiYUFKNI99a.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{ComparisonAndEvaluationOfTechniques,
+  author    = {Chanchal Kumar Roy and
+               James R. Cordy and
+               Rainer Koschke},
+  title     = {Comparison and evaluation of code clone detection techniques and tools:
+               {A} qualitative approach},
+  journal   = {Sci. Comput. Program.},
+  volume    = {74},
+  number    = {7},
+  pages     = {470--495},
+  year      = {2009},
+  url       = {https://doi.org/10.1016/j.scico.2009.02.007},
+  doi       = {10.1016/j.scico.2009.02.007},
+  timestamp = {Wed, 17 Feb 2021 21:56:05 +0100},
+  biburl    = {https://dblp.org/rec/journals/scp/RoyCK09.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{BakerSparseDynamicProgramming,
+    title = {Sparse Dynamic Programming for Longest Common Subsequence from Fragments},
+    journal = {Journal of Algorithms},
+    volume = {42},
+    number = {2},
+    pages = {231-254},
+    year = {2002},
+    issn = {0196-6774},
+    doi = {https://doi.org/10.1006/jagm.2002.1214},
+    url = {https://www.sciencedirect.com/science/article/pii/S0196677402912149},
+    author = {Brenda S. Baker and Raffaele Giancarlo},
+    abstract = {Sparse Dynamic Programming has emerged as an essential tool for the design of efficient algorithms for optimization problems coming from such diverse areas as computer science, computational biology, and speech recognition. We provide a new sparse dynamic programming technique that extends the Hunt–Szymanski paradigm for the computation of the longest common subsequence (LCS) and apply it to solve the LCS from Fragments problem: given a pair of strings X and Y (of length n and m, respectively) and a set M of matching substrings of X and Y, find the longest common subsequence based only on the symbol correspondences induced by the substrings. This problem arises in an application to analysis of software systems. Our algorithm solves the problem in O(|M|log|M|) time using balanced trees, or O(|M|loglogmin(|M|,nm/|M|)) time using Johnson's version of Flat Trees. These bounds apply for two cost measures. The algorithm can also be adapted to finding the usual LCS in O((m+n)log|Σ|+|M|log|M|) time using balanced trees or O((m+n)log|Σ|+|M|loglogmin(|M|,nm/|M|)) time using Johnson's version of Flat Trees, where M is the set of maximal matches between substrings of X and Y and Σ is the alphabet. These bounds improve on those of the original Hunt–Szymanski algorithm while retaining the overall approach.}
+}
+
+@book{crosby1980quality,
+  title={Quality is Free: The Art of Making Quality Certain},
+  author={Crosby, P.B.},
+  isbn={9780451624680},
+  lccn={79089296},
+  url={https://books.google.no/books?id=3TMQt73LDooC},
+  year={1980},
+  publisher={New American Library}
+}
+
+@book{MetricsAndModelsInSoftwareQuality,
+    author = {Kan, Stephen H.},
+    title = {Metrics and Models in Software Quality Engineering},
+    year = {2002},
+    isbn = {0201729156},
+    publisher = {Addison-Wesley Longman Publishing Co., Inc.},
+    address = {USA},
+    edition = {2nd},
+}
+
+@inproceedings{CloningByAccident,
+  author    = {Raihan Al{-}Ekram and
+               Cory Kapser and
+               Richard C. Holt and
+               Michael W. Godfrey},
+  title     = {Cloning by accident: an empirical study of source code cloning across
+               software systems},
+  booktitle = {2005 International Symposium on Empirical Software Engineering {(ISESE}
+               2005), 17-18 November 2005, Noosa Heads, Australia},
+  pages     = {376--385},
+  publisher = {{IEEE} Computer Society},
+  year      = {2005},
+  url       = {https://doi.org/10.1109/ISESE.2005.1541846},
+  doi       = {10.1109/ISESE.2005.1541846},
+  timestamp = {Wed, 16 Oct 2019 14:14:56 +0200},
+  biburl    = {https://dblp.org/rec/conf/isese/Al-EkramKHG05.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@misc{treesitter,
+  title = {Tree-sitter},
+  author = {Max Brunsfeld},
+  howpublished = {\url{https://tree-sitter.github.io/tree-sitter/}},
+  note = {Accessed: 2022-04-16}
+}
+
+@article{IncrementalParsing,
+  author    = {Carlo Ghezzi and
+               Dino Mandrioli},
+  title     = {Incremental Parsing},
+  journal   = {{ACM} Trans. Program. Lang. Syst.},
+  volume    = {1},
+  number    = {1},
+  pages     = {58--70},
+  year      = {1979},
+  url       = {https://doi.org/10.1145/357062.357066},
+  doi       = {10.1145/357062.357066},
+  timestamp = {Tue, 06 Nov 2018 12:51:29 +0100},
+  biburl    = {https://dblp.org/rec/journals/toplas/GhezziM79.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@phdthesis{PracticalAlgorithmsForIncremental,
+    Author = {Wagner, Tim A.},
+    Title = {Practical Algorithms for Incremental Software Development Environments},
+    School = {EECS Department, University of California, Berkeley},
+    Year = {1998},
+    Month = {Mar},
+    URL = {http://www2.eecs.berkeley.edu/Pubs/TechRpts/1998/5885.html},
+    Number = {UCB/CSD-97-946},
+    Abstract = {We describe an integrated collection of algorithms and data structures to serve as the basis for a practical incremental software development environment. A self-versioning representation provides a uniform model that embraces both natural and programming language documents in a single, consistent framework. Software artifacts in this representation provide fine-grained change reports to all tools in the environment. We then present algorithms for the initial construction and subsequent maintenance of persistent, structured documents that support unrestricted user editing. These algorithms possess several novel aspects: they are more general than previous approaches, address issues of practical importance, including scalability and information preservation, and are optimal in both space and time. Since deterministic parsing is too restrictive a model to describe some common programming languages, we also investigate support for multiple structural interpretations: incremental non-deterministic parsing is used to construct a compact form that efficiently encodes syntactic ambiguity. Later analyses may resolve ambiguous phrases through syntactic or semantic disambiguation. This result provides the first known method for handling C, C++, COBOL, and FORTRAN in an incremental framework derived from formal specifications. <p>Our transformation and analysis algorithms are designed to avoid spurious changes, which result in lost information and unnecessary recomputation by later stages. We provide the first non-operational definition of optimal node reuse in the context of incremental parsing, and present optimal algorithms for retaining tokens and nodes during incremental lexing and parsing. We also exploit the tight integration between versioning and incremental analysis to provide a novel history-sensitive approach to error handling. Our error recovery mechanism reports problems in terms of the user's own changes in a language-independent, non-correcting, automated, and fully incremental manner. <p>This work can be read at several levels: as a refinement and extension of previous results to address issues of scalability, end-to-end performance, generality, and description reuse; as a 'cookbook' for constructing the framework of a practical incremental environment into which semantic analysis, code generation, presentation, and other services can be plugged; and as a set of separate (but interoperable) solutions to open problems in the analysis and representation of software artifacts. Our results are promising: in addition to embracing a realistic language model, both asymptotic and empirical measurements demonstrate that we have overcome barriers in performance and scalability. Incremental methods can now be applied to commercially important languages, and may finally become the standard approach to constructing language-based tools and services.}
+}
+
+@INPROCEEDINGS{IndexBasedIncrementalCloneDetection,
+    author={Hummel, Benjamin and Juergens, Elmar and Heinemann, Lars and Conradt, Michael},
+    booktitle={2010 IEEE International Conference on Software Maintenance},
+    title={Index-based code clone detection: incremental, distributed, scalable},
+    year={2010},
+    volume={},
+    number={},
+    pages={1-9},
+    doi={10.1109/ICSM.2010.5609665}
+}
+
+@INPROCEEDINGS{GodeIncrementalCloneDetection,
+    author={Göde, Nils and Koschke, Rainer},
+    booktitle={2009 13th European Conference on Software Maintenance and Reengineering},
+    title={Incremental Clone Detection},
+    year={2009},
+    volume={},
+    number={},
+    pages={219-228},
+    doi={10.1109/CSMR.2009.20}
+}
+
+
+@article{SeedType4Detection,
+  author    = {Zhipeng Xue and
+               Haoran Liu and
+               Chen Zeng and
+               Chenglong Zhou and
+               Xiaodong Liu and
+               Yangtao Ge and
+               JinJing Zhao},
+  title     = {{SEED:} Semantic Graph based Deep detection for type-4 clone},
+  journal   = {CoRR},
+  volume    = {abs/2109.12079},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2109.12079},
+  eprinttype = {arXiv},
+  eprint    = {2109.12079},
+  timestamp = {Mon, 27 Sep 2021 15:21:05 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2109-12079.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+    
+
+@inproceedings{LocalitySensitiveHashingIncremental,
+  author    = {Tung Thanh Nguyen and
+               Hoan Anh Nguyen and
+               Jafar M. Al{-}Kofahi and
+               Nam H. Pham and
+               Tien N. Nguyen},
+  title     = {Scalable and incremental clone detection for evolving software},
+  booktitle = {25th {IEEE} International Conference on Software Maintenance {(ICSM}
+               2009), September 20-26, 2009, Edmonton, Alberta, Canada},
+  pages     = {491--494},
+  publisher = {{IEEE} Computer Society},
+  year      = {2009},
+  url       = {https://doi.org/10.1109/ICSM.2009.5306283},
+  doi       = {10.1109/ICSM.2009.5306283},
+  timestamp = {Wed, 16 Oct 2019 14:14:50 +0200},
+  biburl    = {https://dblp.org/rec/conf/icsm/NguyenNAPN09.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+
+@article{SiameseScalableAndIncrementalClone,
+  author    = {Chaiyong Ragkhitwetsagul and
+               Jens Krinke},
+  title     = {Siamese: scalable and incremental code clone search via multiple code
+               representations},
+  journal   = {Empir. Softw. Eng.},
+  volume    = {24},
+  number    = {4},
+  pages     = {2236--2284},
+  year      = {2019},
+  url       = {https://doi.org/10.1007/s10664-019-09697-7},
+  doi       = {10.1007/s10664-019-09697-7},
+  timestamp = {Tue, 25 Aug 2020 16:58:46 +0200},
+  biburl    = {https://dblp.org/rec/journals/ese/Ragkhitwetsagul19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CCLearner,
+  author    = {Liuqing Li and
+               He Feng and
+               Wenjie Zhuang and
+               Na Meng and
+               Barbara G. Ryder},
+  title     = {CCLearner: {A} Deep Learning-Based Clone Detection Approach},
+  booktitle = {2017 {IEEE} International Conference on Software Maintenance and Evolution,
+               {ICSME} 2017, Shanghai, China, September 17-22, 2017},
+  pages     = {249--260},
+  publisher = {{IEEE} Computer Society},
+  year      = {2017},
+  url       = {https://doi.org/10.1109/ICSME.2017.46},
+  doi       = {10.1109/ICSME.2017.46},
+  timestamp = {Mon, 23 Aug 2021 15:53:56 +0200},
+  biburl    = {https://dblp.org/rec/conf/icsm/LiFZMR17.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{TechnicalDebt,
+  author    = {Paris Avgeriou and
+               Philippe Kruchten and
+               Ipek Ozkaya and
+               Carolyn B. Seaman},
+  title     = {Managing Technical Debt in Software Engineering (Dagstuhl Seminar
+               16162)},
+  journal   = {Dagstuhl Reports},
+  volume    = {6},
+  number    = {4},
+  pages     = {110--138},
+  year      = {2016},
+  url       = {https://doi.org/10.4230/DagRep.6.4.110},
+  doi       = {10.4230/DagRep.6.4.110},
+  timestamp = {Wed, 07 Jun 2017 14:40:01 +0200},
+  biburl    = {https://dblp.org/rec/journals/dagstuhl-reports/AvgeriouKOS16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
