@@ -1,0 +1,6 @@
+- [ ] Remove stuff about clone refactoring
+- [ ] Write chapter about preliminary algorithms and datastructures
+-- [ ] Suffix trees
+-- [ ] Suffix arrays
+-- [ ] Burrows wheeler transform and its relation to the SA
+-- [ ] Dynamic suffix arrays

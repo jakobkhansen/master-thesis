@@ -16,14 +16,14 @@
    --- Another: Each document stores its range, linear search to find which document the
        index is in range of
    ----- `O(|clones|*|files|)` turned out to be very slow
-** Solution
-   - Final: Sort all documents, binary search them
-   - This was very fast / fast enough
-   - This sorted list doesn't need to be updated after an edit (ranges are already updated
-     and documents dont change order in the fingerprint)
-   - If a file is added / deleted, this might break, but re-sorting the documents should
-     work (haven't done this yet)
-   - This is `O(log(|files|)*|clones|)`
+*** Solution
+    - [x] Final: Sort all documents, binary search them
+    - This was very fast / fast enough
+    - This sorted list doesn't need to be updated after an edit (ranges are already updated
+      and documents dont change order in the fingerprint)
+    - If a file is added / deleted, this might break, but re-sorting the documents should
+      work (haven't done this yet)
+    - This is `O(log(|files|)*|clones|)`
 
 
 * Current state for editing
@@ -31,3 +31,15 @@
   - Memory usage is a lot better: 4gb for intellij source-code
   - Good point to start working on the dynamic suffix array
 
+* Dynamic suffix array
+  - Started implementing the 4 stages of the dynamic suffix array algorithm
+  - First 3 stages are pretty easy, 4th stage is hard
+  - Hopefully this will lead to a reduction in time compared to the SACA algorithm from
+    scratch
+
+
+
+
+* Nice to have list (Probably wont have time for all of this)
+  - Parallelize initial indexing
+  - Type-2 clones

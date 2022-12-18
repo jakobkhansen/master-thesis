@@ -1,0 +1,10 @@
+- Extend to more clone types
+--- Especially seeing how one could detect type-3 clones efficiently in a dynamically
+    updating suffix array would be interesting.
+
+- Reconsidering how the suffix array is stored
+--- Salon et al proposes a way to compress the suffix array, could one do this for the LCP
+    array as well?
+
+- Using tree-matching algorithms instead of SA
+--- Would this type of algorithm give more practical clones?
