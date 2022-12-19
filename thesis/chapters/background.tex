@@ -455,38 +455,87 @@ describe the detection algorithm
 
 \subsection{Suffix arrays}
 
-
-
-The suffix array SA of a string T contains a lexicographical sorting of all suffixes in T.
+The suffix array (SA) of a string T contains a lexicographical sorting of all suffixes in T.
 The suffix array does not contain the actual suffixes, but it contains integers pointing
-to the index where the suffix starts in T.
+to the index where the suffix starts in T. Conversely, the inverse suffix array (ISA)
+contains integers describing which rank a suffix has. ISA[i] = n describes that the suffix
+at position i in T, is the nth smallest suffix lexicographically.
+
+\begin{definition}[Suffix array] 
+    Let T be a text of length N.
+    The suffix array SA of T is an array of length N where \texttt{SA[i] = n} if the
+    suffix at \texttt{T[n..N-1]} is the ith smallest suffix in T lexicographically.
+
+\end{definition}
+
+\begin{definition}[Inverse suffix array] 
+    Let T be a text of length N.
+    The inverse suffix array ISA of T is an array of length N where \texttt{ISA[i] = n} if the
+    suffix at \texttt{T[i..N-1]} is the nth smallest suffix in T lexicographically.
+\end{definition}
 
 \begin{table}
 	\begin{center}
-		\begin{tabular}{c l}
-			Indices & Suffix   \\
-			0       & BANANA\$ \\
-			1       & ANANA\$ \\
-			2       & NANA\$ \\
-			3       & ANA\$ \\
-			4       & NA\$ \\
-			5       & A\$ \\
-			6   & \$ \\
-		\end{tabular}
-        \vline
-		\begin{tabular}{c l}
-			Indices (SA) & Suffix   \\
-			6   & \$ \\
-			5       & A\$ \\
-			3       & ANA\$ \\
-			1       & ANANA\$ \\
-			0       & BANANA\$ \\
-			4       & NA\$ \\
-			2       & NANA\$ \\
-		\end{tabular}
-		\caption{Suffixes and sorted suffixes of T=BANANA\$}
+        \subfloat[Suffixes]{
+		\begin{tabular}{c | l }
+			Index & Suffix   \\
+			\hline
+			0     & BANANA\$ \\
+			1     & ANANA\$  \\
+			2     & NANA\$   \\
+			3     & ANA\$    \\
+			4     & NA\$     \\
+			5     & A\$      \\
+			6     & \$       \\
+    \end{tabular}}
+		\hspace{1cm}
+        \subfloat[Sorted suffixes]{\begin{tabular}{c | l}
+			Index & Suffix   \\
+			\hline
+			6     & \$       \\
+			5     & A\$      \\
+			3     & ANA\$    \\
+			1     & ANANA\$  \\
+			0     & BANANA\$ \\
+			4     & NA\$     \\
+			2     & NANA\$   \\
+    \end{tabular}}
+		\hspace{1cm}
+        \subfloat[SA and ISA]{\begin{tabular}{c | c | c}
+				Index & SA & ISA \\
+				\hline
+				0     & 6  & 4   \\
+				1     & 5  & 3   \\
+				2     & 3  & 6   \\
+				3     & 1  & 2   \\
+				4     & 0  & 5   \\
+				5     & 4  & 1   \\
+				6     & 2  & 0   \\
+        \end{tabular}}
+		\caption{T=BANANA\$}
+        \label{table:BANANA}
 	\end{center}
 \end{table}
+
+Table \ref{table:BANANA} shows the suffix array of a text T=BANANA\$ and the correlation
+between the sorted suffixes and the suffix array.
+
+Suffix arrays can be constructed in linear time in terms of the length of T. Many
+so-called suffix array construction algorithms (SACA) have been discovered in the last
+decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm
+which has been shown to be very efficient in practice is Nong and
+Chan's.\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting.
+
+% TODO, describe this algorithm more here
+
+
+\subsection{Burrows-wheeler transform}
+
+% TODO write about BW transform
+
+\subsection{Dynamic suffix arrays}
+
+% Write about dynamic SA's
 
 
 \section{The way forward}
@@ -546,8 +595,8 @@ merge engine. The tool also stores an index of all source code files in the curr
 
 \subsection{Exploring clone management techniques}
 
-During development of the tool, different techniques for detecting and merging clones will
-be explored. The goal will be to find a fitting technique for both detecting and merging
+During development of the tool, different techniques for detecting clones will be
+explored. The goal will be to find a fitting technique for both detecting and merging
 clones in a real-time IDE environment.
 
 Detection techniques explored will include:
@@ -557,12 +606,6 @@ Detection techniques explored will include:
 	      algorithm~\cite{Zibran_real_time_search}
 	\item AST-based technique with incremental parsing. Using Tree-sitter to parse and an
 	      incremental detection algorithm to detect clones.
-\end{itemize}
-
-Merging techniques explored will include:
-
-\begin{itemize}
-	\item Refactoring-oriented clone merging~\cite{RefactoringOrientedClonesAndMerging}
 \end{itemize}
 
 \begin{figure}
