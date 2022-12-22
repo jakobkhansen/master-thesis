@@ -453,6 +453,20 @@ server sends a corresponding response, also in the form of JSON-RPC messages.
 The following algorithms and data structures will be useful in following chapters to
 describe the detection algorithm
 
+% TODO add section about suffix trees here
+\subsection{Suffix trees}
+
+A classic algorithm for code clone detection traverses a suffix-tree in order to find
+maximal repeats in all suffixes of the input string T.
+
+\Tree[.IP [.NP [.Det \textit{the} ]
+               [.N\1 [.N \textit{package} ]]]
+          [.I\1 [.I \textsc{3sg.Pres} ]
+                [.VP [.V\1 [.V \textit{is} ]
+                           [.AP [.Deg \textit{really} ]
+                                [.A\1 [.A \textit{simple} ]
+                                      \qroof{\textit{to use}}.CP ]]]]]]
+
 \subsection{Suffix arrays}
 
 The suffix array (SA) of a string T contains a lexicographical sorting of all suffixes in T.
@@ -520,6 +534,10 @@ at position i in T, is the nth smallest suffix lexicographically.
 Table \ref{table:BANANA} shows the suffix array of a text T=BANANA\$ and the correlation
 between the sorted suffixes and the suffix array.
 
+% TODO describe LCP array here
+
+% TODO add correlation between suffix array and tree here with applications
+
 Suffix arrays can be constructed in linear time in terms of the length of T. Many
 so-called suffix array construction algorithms (SACA) have been discovered in the last
 decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm
@@ -536,6 +554,10 @@ Chan's.\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting.
 \subsection{Dynamic suffix arrays}
 
 % Write about dynamic SA's
+
+\subsection{Incremental-parsing and error-recovery}
+
+% Write about incremental parsing algorithms here
 
 
 \section{The way forward}

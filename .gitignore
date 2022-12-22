@@ -12,6 +12,7 @@
 *.cb
 *.cb2
 .*.lb
+/thesis/.SRCINFO
 
 ## Intermediate documents:
 *.dvi
