@@ -1,10 +1,19 @@
-- Extend to more clone types
---- Especially seeing how one could detect type-3 clones efficiently in a dynamically
-    updating suffix array would be interesting.
+* Future work
+  - Extend to more clone types
+  --- Especially seeing how one could detect type-3 clones efficiently in a dynamically
+      updating suffix array would be interesting.
 
-- Reconsidering how the suffix array is stored
---- Salon et al proposes a way to compress the suffix array, could one do this for the LCP
-    array as well?
+  - Reconsidering how the suffix array is stored
+  --- Salon et al proposes a way to compress the suffix array, could one do this for the LCP
+      array as well?
 
-- Using tree-matching algorithms instead of SA
---- Would this type of algorithm give more practical clones?
+  - Using tree-matching algorithms instead of SA
+  --- Would this type of algorithm give more practical clones?
+* Further optimizations
+  - Parallelizing the fingerprinting process
+  - Incremental detection of added and removed elements of the LCP array
+  - Can LCP changes be detected without updating the suffix array first? If so the code
+    clone changes could be updated before and suffix array updated in the background after
+    an edit
+
+

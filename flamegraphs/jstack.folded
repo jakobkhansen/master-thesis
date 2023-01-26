@@ -1,0 +1,4 @@
+DestroyJavaVM 1
+Reference Handler;java.lang.ref.Reference$ReferenceHandler.run;java.lang.ref.Reference.processPendingReferences;java.lang.ref.Reference.waitForReferencePendingList 1
+Sweeper thread 1
+pool-1-thread;java.lang.Thread.run;java.util.concurrent.ThreadPoolExecutor$Worker.run;java.util.concurrent.ThreadPoolExecutor.runWorker;java.util.concurrent.FutureTask.run;java.util.concurrent.Executors$RunnableAdapter.call;org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run;org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen;java.io.BufferedInputStream.read;java.io.BufferedInputStream.fill;java.io.FileInputStream.read;java.io.FileInputStream.readBytes 1

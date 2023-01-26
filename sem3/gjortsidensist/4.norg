@@ -1,0 +1,45 @@
+* Determining what changes have happened to the codebase
+  - After an edit, how has the fingerprint been changed?
+  - Edit distance algorithm (dynamic programming) gives insert, delete, substitute
+    operations
+  - Tried first regular dynamic programming algorithm with a large matrix.
+  --- Worked well, but for large file, the matrix took to much memory
+  - Found Hirschberg's algorithm, a more memory efficient edit distance algorithm
+  - Also optimized by removing equal characters at beginning and end of string
+  - Works very well! And gives minimal number of operations to update the suffix array
+    with
+
+* Suffix array
+  - Insert/Delete factor working well
+  - Implemented a wavelet matrix which allows rank/select to be much faster (used to be
+    the bottleneck)
+  - At this point the dynamic suffix array can be many times faster than building the
+    suffix array from scratch... if doing smaller edits
+  - If copy/pasting large chunks of code, the dynamic suffix array is smaller
+  - The new bottle neck is having to increment/decrement large portions of the SA and ISA
+  --- A final thing to try here is to try and represent SA and ISA as a data structure
+      which facilitates quick decrements/increments of all numbers larger than N when
+      inserting/deleting N.
+  --- Paper shows a method of doing this with a balanced binary tree, allowing log(n)
+      inserts, deletes and lookups of permutations of the range (0...N) (SA and ISA are
+      both just permutations of this range).
+
+* Writing
+  - Started adding to and modifying the background chapter since we have a lot of
+    algorithms / data structures to talk about here.
+  --- Preliminary algorithms/datastructures section added
+
+** Current chapter setup
+   - Abstract
+   - Introduction 
+   --- Purpose, Problem statement, Contribution, Structure
+   - Background 
+   --- Background on code clones, LSP and preliminary algorithms
+   - Implementation / Design 
+   --- Main section, description of our tool
+   - Evaluation 
+   --- Evaluating incremental vs linear, comparison with iClones
+   - Conclusion
+   - Future work
+   --- Interesting things that could be worked on further
+
