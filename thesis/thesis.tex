@@ -8,7 +8,7 @@
 \usepackage{caption}
 \usepackage{subfig}
 \usepackage{amsthm}
-\usepackage{qtree}
+\usepackage{tikz-qtree}
 
 
 \usepackage{graphicx}
@@ -27,6 +27,9 @@
 
 \newtheorem{definition}{Definition}
 
+\def\addsquare#1{\tikz\node[draw]{#1};}
+\def\addcircle#1{\tikz\node[draw,circle]{#1};}
+
 \title{Title}
 \subtitle{Subtitle}
 
@@ -44,7 +47,7 @@
 
 \include{chapters/introduction}
 \include{chapters/background}
-\include{chapters/method}
+\include{chapters/design}
 \include{chapters/evaluation}
 \include{chapters/conclusion}
 \include{chapters/futurework}

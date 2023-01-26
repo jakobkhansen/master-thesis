@@ -1,0 +1,14 @@
+\chapter{Design}
+
+
+\subsection{Architecture of tool}
+
+\begin{figure}
+	\includegraphics[width=\textwidth]{images/ToolArchitecture.png}
+	\caption{Tool architecture}
+	\label{fig:architecture}
+\end{figure}
+
+Figure \ref{fig:architecture} shows the architecture of the tool. The server communicates
+with the IDE and delegates the work of managing clones to the detection engine and the
+merge engine. The tool also stores an index of all source code files in the current project.

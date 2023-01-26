@@ -459,25 +459,54 @@ describe the detection algorithm
 A classic algorithm for code clone detection traverses a suffix-tree in order to find
 maximal repeats in all suffixes of the input string T.
 
-\Tree[.IP [.NP [.Det \textit{the} ]
-               [.N\1 [.N \textit{package} ]]]
-          [.I\1 [.I \textsc{3sg.Pres} ]
-                [.VP [.V\1 [.V \textit{is} ]
-                           [.AP [.Deg \textit{really} ]
-                                [.A\1 [.A \textit{simple} ]
-                                      \qroof{\textit{to use}}.CP ]]]]]]
+
+\begin{figure}
+	\begin{center}
+		\begin{tikzpicture}[every tree node,
+				level distance=1.25cm,sibling distance=1cm,
+				edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+			\Tree
+			[.\addcircle{}
+                \edge node[midway, above, sloped] {\$};
+                [.\addsquare{6} ]
+                \edge node[midway, below, sloped] {BANANA\$};
+                [.\addsquare{0} ]
+                \edge node[midway, above, sloped] {A};
+                [.\addcircle{}
+                    \edge node[midway, above, sloped] {\$};
+                    [.\addsquare{5} ]
+                    \edge node[midway, above, sloped] {NA};
+                    [.\addcircle{}
+                        \edge node[midway, above, sloped] {\$};
+                        [.\addsquare{3} ]
+                        \edge node[midway, above, sloped] {NA\$};
+                        [.\addsquare{1} ]
+                    ]
+                ]
+                \edge node[midway, above, sloped] {NA};
+                [.\addcircle{}
+                    \edge node[midway, above, sloped] {\$};
+                    [.\addsquare{4} ]
+                    \edge node[midway, above, sloped] {NA\$};
+                    [.\addsquare{2} ]
+			    ]
+			]
+		\end{tikzpicture}
+		\caption{Suffix tree for $T$=BANANA\$}
+	\end{center}
+\end{figure}
 
 \subsection{Suffix arrays}
 
 The suffix array (SA) of a string T contains a lexicographical sorting of all suffixes in T.
 The suffix array does not contain the actual suffixes, but it contains integers pointing
-to the index where the suffix starts in T. Conversely, the inverse suffix array (ISA)
-contains integers describing which rank a suffix has. ISA[i] = n describes that the suffix
+to the index where the suffix starts in T. Conversely, the inverse suffix array (\texttt{ISA})
+contains integers describing which rank a suffix has. \texttt{ISA[i] = n} describes that the suffix
 at position i in T, is the nth smallest suffix lexicographically.
 
 \begin{definition}[Suffix array] 
     Let T be a text of length N.
-    The suffix array SA of T is an array of length N where \texttt{SA[i] = n} if the
+    The suffix array \texttt{SA} of T is an array of length N where \texttt{SA[i] = n} if the
     suffix at \texttt{T[n..N-1]} is the ith smallest suffix in T lexicographically.
 
 \end{definition}
@@ -526,12 +555,12 @@ at position i in T, is the nth smallest suffix lexicographically.
 				5     & 4  & 1   \\
 				6     & 2  & 0   \\
         \end{tabular}}
-		\caption{T=BANANA\$}
+        \caption{$T=\text{BANANA\$}$}
         \label{table:BANANA}
 	\end{center}
 \end{table}
 
-Table \ref{table:BANANA} shows the suffix array of a text T=BANANA\$ and the correlation
+Table \ref{table:BANANA} shows the suffix array of a text $T=\text{BANANA\$}$ and the correlation
 between the sorted suffixes and the suffix array.
 
 % TODO describe LCP array here
@@ -542,7 +571,7 @@ Suffix arrays can be constructed in linear time in terms of the length of T. Man
 so-called suffix array construction algorithms (SACA) have been discovered in the last
 decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm
 which has been shown to be very efficient in practice is Nong and
-Chan's.\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting.
+Chan's\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting.
 
 % TODO, describe this algorithm more here
 
@@ -560,30 +589,42 @@ Chan's.\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting.
 % Write about incremental parsing algorithms here
 
 
-\section{The way forward}
+\section{Our contribution}
 
-This thesis will present and evaluate a tool which provides clone management
-capabilities in a real-time IDE environment. The main goal will be to create a tool which
-fits well into the development cycle and works in a real-time IDE environment. Areas of
-focus will therefore be:
+This thesis will present and evaluate a tool which provides clone detection capabilities
+in a real-time IDE environment. The main goal will be to create an incremental tool which
+fits well into the development cycle and can efficiently update its results while writing
+code. Areas of focus will therefore be:
 
 \begin{itemize}
-	\item Code clone detection
-	\item Real-time / Incremental detection of code clones
-	\item IDE agnostic tooling like LSP and Tree-sitter
-	\item Possibly clone ranking, determining which clones should be kept.
+	\item Real-time / Incremental detection of code clones using dynamic suffix arrays
+	\item IDE and language agnostic tooling such as LSP and Tree-sitter
 \end{itemize}
+
+\subsection{Incremental clone detection using dynamic suffix arrays}
+
+The main area which we have explored is making the tool efficient in terms of
+incrementally updating whenever edits are performed in the editor. Most clone detection
+tools calculates clones from scratch and have no functionality to more efficiently
+calculate the clones after a small edit has been applied to the source-code. Our tool
+utilizes dynamic suffix arrays to quickly update and find/remove clones, often faster than
+calculating the clones from scratch using a linear time suffix array construction
+algorithm.
+
+We have also focused on how necessary information to calculate the clones are stored in
+memory in order to avoid too much memory usage, without loss in terms of accuracy of
+clones, or time spent calculating them.
 
 \subsection{LSP for IDE-based clone management}
 
-The tool will give programmers the ability to manage clones in their IDE. We will utilize
-many feature of LSP, especially code-actions, in order to provide functionality for clone
-management to any editor which implements LSP.
+The tool gives programmers the ability to view clones in their IDE. We will utilize
+features of LSP such as diagnostics and code-actions, in order to provide clone management
+to any editor which implements the LSP protocol.
 
-The following user stories shows how interaction with the LSP server will work.
+The following user-stories shows how interaction with the LSP server works.
 
 \begin{itemize}
-	\item A programmer wants to see code clones for a file, the
+	\item A programmer wants to see code clones for a file in their project, the
 	      programmer opens the file in their IDE and is displayed diagnostics in the code
 	      wherever there are detected clones. The matching code clones are not necessarily
 	      in the same file.
@@ -591,55 +632,24 @@ The following user stories shows how interaction with the LSP server will work.
 	\item A programmer wants to see all code clones for the current project. The
 	      programmer opens the IDEs diagnostic view and will see all code clones detected
 	      as diagnostics there. The diagnostic will contain information like where the clone
-	      exists, and percentage of duplicated code.
+	      exists, and where the matching clone(s) are.
 
 	\item A programmer wants to jump to the corresponding match of a code clone in their
 	      editor. The programmer moves their cursor to the diagnostic and will see a list of
 	      the matching code clones. The programmer will select the wanted code clone which
 	      will move the cursor to the file and location of the selected code clone.
 
-	\item A programmer wants to merge a code clone pair. The programmer moves their cursor
-	      to one of the code clones, invokes a request to see code actions, and invokes one
-	      of the ``Merge code clone with strategy x`` actions. The strategies presented to
-	      the user are dependent on the context of the code clone pair, the programmer will
-	      only see the useful / realizable merging strategies.
+      \item A programmer wants to remove a set of clones by applying the
+          ``extract-method'' refactoring. The programmer performs the necessary
+          refactorings, saves the file and will get fast feedback whether the
+          clones are now eliminated.
 \end{itemize}
 
 The interaction with the LSP server will depend on the client's implementation of LSP. If
 the LSP client is limited in its capabilities, meaning it does not implement the entire
 protocol, the tool will be limited in how the programmer can interact with it.
 
-\subsection{Architecture of tool}
 
-Figure \ref{fig:architecture} shows the architecture of the tool. The server communicates
-with the IDE and delegates the work of managing clones to the detection engine and the
-merge engine. The tool also stores an index of all source code files in the current project.
-
-\subsection{Exploring clone management techniques}
-
-During development of the tool, different techniques for detecting clones will be
-explored. The goal will be to find a fitting technique for both detecting and merging
-clones in a real-time IDE environment.
-
-Detection techniques explored will include:
-
-\begin{itemize}
-	\item A fully incremental version of Zibran et al. hybrid
-	      algorithm~\cite{Zibran_real_time_search}
-	\item AST-based technique with incremental parsing. Using Tree-sitter to parse and an
-	      incremental detection algorithm to detect clones.
-\end{itemize}
-
-\begin{figure}
-	\includegraphics[width=\textwidth]{images/ToolArchitecture.png}
-	\caption{Tool architecture}
-	\label{fig:architecture}
-\end{figure}
-
-The tool will be modular in how techniques are applied for clone management. This
-means that the tool will be capable of plugging in different detection engines, merging
-engines and file indices. This will be used extensively in our research in order to test
-multiple techniques for detection and merging.
 
 \subsection{Evaluation}
 
@@ -662,5 +672,3 @@ general. Can LSP provide all the features one would want in a modern analysis to
 is missing, and how could the LSP protocol be extended in order to facilitate this? We
 believe that if LSP is an appropriate tool to use for clone management, LSP will also be
 an appropriate tool for static analysis tools in general.
-
-
