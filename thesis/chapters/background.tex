@@ -459,6 +459,43 @@ describe the detection algorithm
 A classic algorithm for code clone detection traverses a suffix-tree in order to find
 maximal repeats in all suffixes of the input string T.
 
+The suffix tree of a string $T$ is a compressed trie where all the suffixes of $T$ have been
+inserted. The tree is compressed by combining consecutive nodes in a row which has
+only one child into a single node. 
+
+Suffix trees can be constructed in linear time with Ukkonen's algorithm which builds a
+larger and larger suffix tree by inserting characters one by one and utilizing some tricks
+to avoid inserting suffixes before it needs to, to lower the complexity. \cite{Ukkonen}
+
+This data structure facilitates solving the maximal repeat problem. A repeat in a string T
+is a substring that occurs at least twice in T. A maximal repeat in T is a repeat which is not
+a substring of another repeat in T, meaning that the maximal repeat cannot be extended in
+any direction to form a bigger repeat. This problem can be solved with a suffix tree by
+the following theorem:
+
+\begin{theorem}[Repeats in suffix tree]
+    Every internal node in a suffix tree corresponds to a substring which is repeated at least
+    twice in T. The substring is found by concatenating the strings found on the path from
+    the root of tree to the internal node.
+\end{theorem}
+
+This theorem is explained by the fact that any internal node has at least two children, and a
+node having two children means that two suffixes share the same prefix up to that point.
+An algorithm which finds the longest maximal repeat would find the internal node with
+represents the longest string. 
+
+The classic algorithm\cite{Zibran_real_time_search, GodeIncrementalCloneDetection} in
+terms of finding duplication in a string (such as source code) using suffix trees would
+find all repeats of length $k$ where $k$ is the threshold for how long a clone needs to
+be. This can be found by traversing the suffix tree and looking at all internal nodes
+which represent a string of length $\geq k$. Every internal node which represents a string
+which is $\geq k$ would correspond to a substring of the source code which occurs at least
+twice. Finding where the duplication occurs can be done by finding all the leaves of the
+internal node, which holds the  position where the suffix starts in T. Since a substring
+can have multiple repeats of different lengths longer than $k$, different strategies can
+be used to select which substrings are selected or not, such as filtering out repeats
+which are not maximal or repeats which overlap each other.
+
 
 \begin{figure}
 	\begin{center}
@@ -492,29 +529,43 @@ maximal repeats in all suffixes of the input string T.
 			    ]
 			]
 		\end{tikzpicture}
-		\caption{Suffix tree for $T$=BANANA\$}
+		\caption{Suffix tree for T=BANANA\$}
 	\end{center}
 \end{figure}
 
 \subsection{Suffix arrays}
 
-The suffix array (SA) of a string T contains a lexicographical sorting of all suffixes in T.
-The suffix array does not contain the actual suffixes, but it contains integers pointing
-to the index where the suffix starts in T. Conversely, the inverse suffix array (\texttt{ISA})
-contains integers describing which rank a suffix has. \texttt{ISA[i] = n} describes that the suffix
-at position i in T, is the nth smallest suffix lexicographically.
+The suffix array (SA) of a string T contains a lexicographical sorting of all suffixes in
+T. The suffix array does not contain the actual suffixes, but it contains integers
+pointing to the index where the suffix starts in T. 
+Conversely, the inverse suffix array (\texttt{ISA}) contains integers describing which
+rank a suffix has. \texttt{ISA} is therefore the inverse array of
+\texttt{SA}, such that if \texttt{SA[i] = n}, then \texttt{ISA[n] = i}.
 
 \begin{definition}[Suffix array] 
     Let T be a text of length N.
     The suffix array \texttt{SA} of T is an array of length N where \texttt{SA[i] = n} if the
     suffix at \texttt{T[n..N-1]} is the ith smallest suffix in T lexicographically.
-
 \end{definition}
 
 \begin{definition}[Inverse suffix array] 
     Let T be a text of length N.
     The inverse suffix array ISA of T is an array of length N where \texttt{ISA[i] = n} if the
     suffix at \texttt{T[i..N-1]} is the nth smallest suffix in T lexicographically.
+\end{definition}
+
+The Longest-common prefix (LCP) array of a string T of length N is an array of length N
+such that each element contains the length of the common prefix between two suffixes in T.
+The suffixes are ordered in the same order as the suffix array. Since the suffix array
+represents suffixes in a sorted order, the prefix length between adjacent suffixes in SA
+will be the longest possible common prefix for each suffix. These values are the values in
+the LCP array.
+
+\begin{definition}[LCP array]
+    Let T be a text of length N and SA be the suffix array of T.
+    The LCP array of T is an array of length N where \texttt{LCP[i] = n} if the suffix
+    \texttt{T[SA[i]..N]} and \texttt{T[SA[i-1]..N]} has a common prefix of length
+    \texttt{n}. \texttt{LCP[0]} is undefined or {0}.
 \end{definition}
 
 \begin{table}
@@ -544,26 +595,26 @@ at position i in T, is the nth smallest suffix lexicographically.
 			2     & NANA\$   \\
     \end{tabular}}
 		\hspace{1cm}
-        \subfloat[SA and ISA]{\begin{tabular}{c | c | c}
-				Index & SA & ISA \\
+        \subfloat[SA, ISA and LCP]{\begin{tabular}{c | c | c | c}
+                Index & SA & ISA & LCP \\
 				\hline
-				0     & 6  & 4   \\
-				1     & 5  & 3   \\
-				2     & 3  & 6   \\
-				3     & 1  & 2   \\
-				4     & 0  & 5   \\
-				5     & 4  & 1   \\
-				6     & 2  & 0   \\
+                0     & 6  & 4   & -1\\
+                1     & 5  & 3   & 0\\
+                2     & 3  & 6   & 0\\
+                3     & 1  & 2   & 0\\
+                4     & 0  & 5   & 0\\
+                5     & 4  & 1   & 0\\
+                6     & 2  & 0   & 0\\
         \end{tabular}}
         \caption{$T=\text{BANANA\$}$}
         \label{table:BANANA}
 	\end{center}
 \end{table}
 
-Table \ref{table:BANANA} shows the suffix array of a text $T=\text{BANANA\$}$ and the correlation
-between the sorted suffixes and the suffix array.
 
-% TODO describe LCP array here
+
+Table \ref{table:BANANA} shows the suffix array of a text \texttt{T=\text{BANANA\$}} and the correlation
+between the sorted suffixes and SA, ISA and LCP.
 
 % TODO add correlation between suffix array and tree here with applications
 
@@ -571,7 +622,11 @@ Suffix arrays can be constructed in linear time in terms of the length of T. Man
 so-called suffix array construction algorithms (SACA) have been discovered in the last
 decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm
 which has been shown to be very efficient in practice is Nong and
-Chan's\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting.
+Chan's\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting. Since ISA is
+the inverse of the suffix array, it can also be constructed in linear time by first
+constructing the suffix array.
+
+The LCP array can also be constructed in linear time, utilizing SA and ISA.
 
 % TODO, describe this algorithm more here
 
@@ -579,6 +634,10 @@ Chan's\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting.
 \subsection{Burrows-wheeler transform}
 
 % TODO write about BW transform
+
+\subsection{Dynamic bitsets}
+
+\subsection{Wavelet trees / matrices}
 
 \subsection{Dynamic suffix arrays}
 
@@ -606,7 +665,7 @@ code. Areas of focus will therefore be:
 The main area which we have explored is making the tool efficient in terms of
 incrementally updating whenever edits are performed in the editor. Most clone detection
 tools calculates clones from scratch and have no functionality to more efficiently
-calculate the clones after a small edit has been applied to the source-code. Our tool
+calculate the clones after a small edit has been applied to the source code. Our tool
 utilizes dynamic suffix arrays to quickly update and find/remove clones, often faster than
 calculating the clones from scratch using a linear time suffix array construction
 algorithm.
