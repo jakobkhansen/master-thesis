@@ -637,7 +637,108 @@ The LCP array can also be constructed in linear time, utilizing SA and ISA.
 
 \subsection{Dynamic bitsets}
 
-\subsection{Wavelet trees / matrices}
+A bitset is an array of bits, each bit representing either the value true or false. A bit
+with the value of 1 is usually referred to as a set bit, and a value of 0 is referred to
+as an unset or cleared bit. Bitsets have at least operations for setting the value at a
+position, and looking up the value at a position. Bitsets are useful for many problems,
+especially as a ``succinct data structure''. A succinct data structure is a data structure
+which attempts to use an amount of memory close to the theoretic lower bound, while still
+allowing effective queries on it. For example for a string of length $N$, we could store
+up to $O(n \log_{}\sigma)$ bits before the bit vector exceeds the size of the string
+itself, where $\sigma$ is the size of the string's alphabet.
+
+The most well known query to do on bitsets is the rank/select queries.
+
+\begin{definition}[Rank query]
+    A rank query $rank_1(i)$ on a bitset B, returns the number of set bits
+    up to, but not including position $i$. Conversely, $rank_0(B)$ returns the number of
+    unset bits up to $i$.
+\end{definition}
+\begin{definition}[Select query]
+    A select query $select_1(i)$ on a bitset B, returns the position of the ith
+    set bit in B. Conversely, $select_0(i)$ returns the position of the ith unset bit in
+    B.
+\end{definition}
+
+% TODO citation needed
+Jacobson's rank can calculate rank and select on static bitsets in $O(1)$ time by
+pre-calculating all answers in a space efficient table.
+
+A dynamic bitset is a bitset which also allows efficient insert and delete (indel) operations in the
+bitset.
+
+\begin{definition}[Dynamic bitset]
+    A dynamic bitset is a bitset which in addition to other operations allow inserting and
+    deleting bits.
+
+    An insert operation $insert(i, v)$ on a bitset B inserts the value v at position i in
+    B, pushing all values at position $\geq i$ one position up.
+
+    A delete operation $delete(i)$ on a bitset B removes the value at position i in B, pushing all
+    values at position $\geq i$ one position down.
+\end{definition}
+
+The standard implementation of a dynamic bitset would implement the whole bitset as a
+single array of bytes B, which allows for accessing values in $O(1)$ time, but inserting
+and deleting takes $O(n)$ time, where $n$ is $len(B)$.
+
+One way to speed up the indel operations would be to represent the bitset as a balanced
+tree containing multiple smaller bitsets. To represent a bitset of N bits, we can divide
+the bits such that $O(\frac{n}{log_2(n)})$ bitsets each contains $O(log_2(n))$ bits. Since
+the bitsets are now of size $O(log_2(n))$, inserting and deleting takes only $O(log_2(n))$
+time. The bitsets reside at the leaves of our balanced tree, and internal nodes
+contain only two integers, storing the number of bits in the left subtree ($N$), and the
+number of set bits in the left subtree ($S$). To access, insert or delete on index $i$,
+the tree is traversed to find the correct bitset where the ith bit is located, where the
+operation is done at that position. Finding the correct bitset and position is done by
+utilizing $N$ and $S$ in each node which is traversed.
+
+\begin{algorithm}
+    \begin{algorithmic}
+        \State $i\gets 0$
+        \Function{Test}{i}
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+\begin{lstlisting}
+    access(node, i)
+        if (isLeaf(node))
+            return node.bitset.access(i)
+        if (node.N <= i)
+            return access(node.left, i)
+
+        return access(node.right, i - node.N)
+\end{lstlisting}
+
+\begin{figure}
+	\begin{center}
+		\begin{tikzpicture}[every tree node,
+				level distance=2cm,sibling distance=2cm,
+				edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+			\Tree
+            [.\node[left, circle, draw, align=left, label={[align=left] above: $N = 8$\\$S = 3$}]{};
+                \edge node[midway, above, sloped] {};
+                [.\node[left, circle, draw, align=left, label={[align=left] above left:$N = 4$\\$S = 2$}]{};
+                    \edge node[midway, above, sloped] {};
+                    [.\addsquare{0101} ]
+                    \edge node[midway, above, sloped] {};
+                    [.\addsquare{0001} ]
+                ]
+                \edge node[midway, above, sloped] {};
+                [.\node[left, circle, draw, align=right, label={[align=right] above right:$N = 4$\\$S = 1$}]{};
+                    \edge node[midway, above, sloped] {};
+                    [.\addsquare{0100} ]
+                    \edge node[midway, above, sloped] {};
+                    [.\addsquare{0000} ]
+                ]
+            ]
+		\end{tikzpicture}
+		\caption{Dynamic bitset}
+        \label{DynamicBitset}
+	\end{center}
+\end{figure}
+
+\subsection{Wavelet trees and wavelet matrices}
 
 \subsection{Dynamic suffix arrays}
 

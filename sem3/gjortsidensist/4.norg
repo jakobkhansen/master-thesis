@@ -43,3 +43,7 @@
    - Future work
    --- Interesting things that could be worked on further
 
+
+* Meeting
+  - "Proving" correctness of LCP clone extraction and source-mapping
+  - Evaluating precision of clone detection (type-1)
