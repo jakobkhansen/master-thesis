@@ -1,3 +1,22 @@
 \chapter{Evaluation}
 
-Look at how bad duplicate code is
+
+We will evaluate this tool based on different criteria, which combined will provide a
+basis for evaluating the tool as a whole.
+
+Since the tool is focused on efficient detection and management of code clones, real-time
+performance of the tool will be a high priority in its evaluation. The tool will implement
+different techniques of detecting and merging clones. These will be empirically compared
+against each other. The tool will also be evaluated against existing tools empirically. We
+will utilize BigCloneBench~\cite{BigCloneBench} to evaluate detection techniques, by
+running our detection techniques in a standalone mode. We will distinguish between initial
+detection and incremental detection when evaluating.
+
+The tool will also be evaluated in how well it fits into the software development cycle.
+Can we determine if this tool is an effective way to detect a clone early in its lifecycle
+so that they can be removed before it manifests in the source code? In relation to this,
+we will evaluate if LSP is a suitable tool for use in clone management and refactoring in
+general. Can LSP provide all the features one would want in a modern analysis tool? What
+is missing, and how could the LSP protocol be extended in order to facilitate this? We
+believe that if LSP is an appropriate tool to use for clone management, LSP will also be
+an appropriate tool for static analysis tools in general.

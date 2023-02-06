@@ -16,14 +16,13 @@ make better refactorings and perform code analysis could be a solution to this p
 Duplicated code is a code smell which occurs in practically every large software project.
 Code clone analysis has recently become a highly active field of research and many tools
 have been developed to detect duplicated code~\cite[7]{Inoue_introduction_to_cc}. However,
-few of these have the capability of detecting intricate types of duplicated code and
-managing them in a real-time IDE environment.
+few of these have the capability of efficiently detecting duplicated code in a real-time
+IDE environment.
 
-This thesis will present a tool and possibly techniques for clone detection and management
-in real-time, which runs in modern IDE environments. The thesis will explore the topics
-such as finding and managing clones in real-time, incremental analysis of source code and
-providing clone management and refactoring tools in an editor and language
-agnostic environment.
+This thesis will present a tool and technique for language and IDE agnostic clone
+detection, which runs in an IDE environment. Special focus is put on incremental
+detection, since code clone detection can be expensive to perform, even if most clone
+detection results persist while editing source code.
 
 \section{Background}
 
@@ -43,16 +42,15 @@ software projects typically contains $10-15\%$ duplicated code~\cite{CloningByAc
 Therefore, research into tools and techniques which can reduce duplicated code will be of
 benefit to almost all software.
 
-As stated, duplicated code damages software quality in software projects. Duplicated code
-can lead to a plethora of antipatterns, and will often lead to an increase in technical
-debt. Technical debt occurs when developers make technical compromises that are expedient
-in the short term, but increases complexity in the long-term~\cite[111]{TechnicalDebt}. An
-example of this in the context of duplicated code is the
-``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} antipattern. This antipattern occurs when
-a developer wants to implement a change, but needs to change code at multiple locations
-for the change to take effect. This is a typical situation which slows down development
-and reduces maintainability when the amount of duplicated code increases in a software
-project.
+Duplicated code can lead to a plethora of antipatterns, and will often lead to an increase
+in technical debt. Technical debt occurs when developers make technical compromises that
+are expedient in the short term, but increases complexity in the
+long-term~\cite[111]{TechnicalDebt}. An example of this in the context of duplicated code
+is the ``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} antipattern. This antipattern
+occurs when a developer wants to implement a change, but needs to change code at multiple
+locations for the change to take effect. This is a typical situation which slows down
+development and reduces maintainability when the amount of duplicated code increases in a
+software project.
 
 \subsection{Code clones}
 
@@ -104,19 +102,21 @@ The code clone types are defined as follows:
 \textbf{Type-1} clones are syntactically identical. The only differences allowed are elements
 without meaning, like comments and white-space. Example:
 
+% TODO this looks like shit
 \begin{tcolorbox}
 	\begin{center}
 		\begin{tabular}{c | c}
-			\begin{lstlisting}
-// Clone 1
+            \begin{lstlisting}
 for (int i = 0; i < 10;   i++) {
+
     print(i);
 }
         \end{lstlisting} &
 			\begin{lstlisting}
-// Clone 2
+
 for (int i = 0; i < 10; i++) {
-    // A comment without meaning
+    // A comment
+
     print(i);
 }
         \end{lstlisting}
@@ -125,27 +125,21 @@ for (int i = 0; i < 10; i++) {
 \end{tcolorbox}
 
 
-
-
 \textbf{Type-2} clones are structurally identical. Possible differences include
 identifiers, literals and types. Type-2 clones are relatively easy to detect by
 consistently renaming identifiers and literals~\cite[2]{Zibran_real_time_search}. This
-type of clone is relevant to consider in merging scenarios because this type
-of clone is relatively simple to parameterize in order to merge two Type-2 clones.
-Example:
-
+type of clone is relevant to consider in merging scenarios because this type of clone can
+be relatively simple to parameterize in order to merge two Type-2 clones. Example:
 
 \begin{center}
 	\begin{tcolorbox}
 		\begin{tabular}{c | c}
 			\begin{lstlisting}
-// Clone 1
 for (int i = 0; i < 10; i++) {
     print(i);
 }
     \end{lstlisting} &
-			\begin{lstlisting}
-// Clone 2
+	\begin{lstlisting}
 for (int (*\textbf j*) = (*\textbf 1*); (*\textbf j*) < 10; (*\textbf j++*)) {
     print((*\textbf j*));
 }
@@ -188,9 +182,9 @@ In this example there is a one line difference between the two snippets, so if $
 	\geq
 	1$, the two snippets would be considered Type-3 clones.
 
-\textbf{Type-4} clones have no requirement for syntactical or structural similarity.
-Therefore, the only requirement is equal functionality. Detecting this type of clone is
-very challenging, but attempts have been made using program dependency
+\textbf{Type-4} clones have no requirement for syntactical or structural similarity, but
+are generally only relevant to detect when they have similar functionality. Detecting this
+type of clone is very challenging, but attempts have been made using program dependency
 graphs~\cite{SeedType4Detection}. The following example shows two code snippets which have
 no clear syntactic or structural similarity, but is functionally equal:
 
@@ -198,13 +192,11 @@ no clear syntactic or structural similarity, but is functionally equal:
 	\begin{center}
 		\begin{tabular}{c | c}
 			\begin{lstlisting}
-// Clone 1
 print((n*(n-1))/2)
 
 print(sum);
 \end{lstlisting} &
 			\begin{lstlisting}
-// Clone 2
 int sum = 0;
 for (int i = 0; i < n; i++) {
     for (int j = i+1; j < n; j++) {
@@ -243,18 +235,16 @@ against each other and filtering. The steps are generally as follows:
 	      \end{enumerate}
 	\item \textbf{Match detection}: Perform comparisons which outputs a set of
 	      candidate clone pairs.
-	\item \textbf{Formatting}: Convert candidate clone pairs from the transformed
+	\item \textbf{Source-mapping / Formatting}: Convert candidate clone pairs from the transformed
 	      code back to clone pairs in the original source code.
-	\item \textbf{Post-processing/Filtering}: Ranking and filtering manually or with
+	\item \textbf{Post-processing / Filtering}: Ranking and filtering manually or with
 	      automated heuristics
 	\item \textbf{Aggregation}: Optionally aggregating sets of clone pairs into clone sets
 \end{enumerate}
 
-Not all clone detection techniques will necessarily follow all these steps.
-
-\paragraph{Matching techniques} are techniques which can be applied to match source-code to
-detect clone-pairs. The matching technique will also require specific pre-processing to be
-done in the earlier steps, for example creating an AST. Some of the most explored
+\paragraph{Matching techniques} are techniques which can be applied to source-code to
+detect clone-pairs. Most matching technique will also require specific pre-processing to be
+done in the earlier steps, for example building an AST. Some of the most explored
 techniques are as follows~\cite{ComparisonAndEvaluationOfTechniques}:
 
 \paragraph{Text-based} approaches do very little processing on the source code before
@@ -262,19 +252,20 @@ comparing. Simple techniques such as fingerprinting or incremental hashing have 
 in this approach. Dot plots have also been used in newer text-based approaches, placing
 the hashes of fragments in a dot plot for use in comparisons.
 
-\paragraph{Token-based} approaches transform source code into a stream of tokens, similar to
-lexical scanning in compilers. The token stream is then scanned for duplicated
+\paragraph{Token-based} approaches transform source code into a stream of tokens, similar
+to lexical scanning in compilers. The token stream is then scanned for duplicated
 subsequences of tokens. Since token streams can easily filter out superficial differences
 such as whitespace, indentation and comments, this approach is more robust to such
-differences. Concrete names of identifiers and values can be abstracted away when comparing
-the token-stream, therefore Type-2 clones can easily be identified. Type-3 clones can also
-be identified by comparing the fragments tokens and keeping clone pairs with a lexical
-difference lower than a given threshold. This can be solved with dynamic
+differences. Concrete names of identifiers and values can be abstracted away when
+comparing the token-stream, therefore Type-2 clones can easily be identified. Type-3
+clones can also be identified by comparing the fragments tokens and keeping clone pairs
+with a lexical difference lower than a given threshold. This can be solved with dynamic
 programming~\cite{BakerSparseDynamicProgramming}. A common approach to detect clones using
 token-streams is with a suffix-tree. A suffix-tree can solve the \textit{Find all maximal
-	repeats} problem efficiently, which in essence is the same problem as finding clone pairs.
+repeats} problem efficiently, which in essence is the same problem as finding clone pairs.
 This algorithm can also be improved to use a suffix-array instead, which requires less
-memory.
+memory. This type of code clone detection is regarded as very fast compared to more
+intricate types of matching techniques.
 
 \paragraph{Syntactic} approaches transform source code into either concrete syntax trees
 or abstract syntax trees and find clones using either tree matching algorithms or
@@ -330,6 +321,12 @@ such as syntax-highlighting, refactoring and code navigation.
 
 \subsubsection{Incremental clone detection}
 
+Incremental clone detection involves avoiding recalculation of already calculated results
+when doing code clone detection. Since most code of a codebase will not change between
+revisions, a lot of processing can be avoided. However, this is not a simple problem,
+since changes in a single location can affect clone detection results across the entire
+codebase.
+
 In order to incrementally detect code clones, an algorithm which first calculates the
 initial code clones is run, and for successive revisions of the source code, this list is
 incrementally updated, more efficiently than the initial run. Different approaches have
@@ -350,8 +347,7 @@ Hummel et al.~\cite{IndexBasedIncrementalCloneDetection} later introduced the fi
 scalable and distributed clone detection technique for Type-1 and Type-2 clones. This
 approach utilizes a custom ``clone index'' data structure which can be updated
 efficiently. The implementation of this data structure is similar to that of an inverted
-index.
-
+index. This technique uses distributed computing to speed up its detection process.
 
 More recently, Ragkhitwetsagul and Krinke~\cite{SiameseScalableAndIncrementalClone}
 presented the tool ``Siamese'', which uses a novel approach of having multiple
@@ -360,7 +356,7 @@ support for incremental detection. The tool can detect up to Type-3 clones, but 
 give clones based on ``queries'' given to it by the user. Queries are either files or
 methods in source-code, which are then checked for existing code clone.
 
-\subsection{IDE tooling}
+\subsection{IDE tooling and LSP}
 
 \subsubsection{Existing IDE tools for clone management}
 
@@ -452,6 +448,13 @@ server sends a corresponding response, also in the form of JSON-RPC messages.
 
 The following algorithms and data structures will be useful in following chapters to
 define the detection algorithm
+
+\subsection{Incremental-parsing}
+
+% TODO Write about incremental parsing algorithms here
+
+In our detection algorithm we will need to be able to parse our source-code in order to select
+specific syntactic regions and extract the tokens.
 
 \subsection{Suffix trees}
 
@@ -757,7 +760,7 @@ lexicographically and extracting a new string from the last column of the cyclic
 matrix. The terminating character \$ is always the smallest character lexicographically.
 Table \ref{table:bwt} shows the BWT for the string T = BANANA\$.
 
-There is a strict correlation between the suffix array of T and the BWT of T. Figure
+There is a direct correlation between the suffix array of T and the BWT of T. Figure
 \ref{table:bwt} also shows that the indices of the sorted cyclic-shifts correspond to
 exactly the SA of T. This coincides because when sorting cyclic-shifts, everything that
 occurs after the \$ of the cyclic-shift will not affect its lexicographical ordering. This
@@ -765,25 +768,25 @@ is because no cyclic-shift will have a \$ in the same position, so comparing two
 shifts lexicographically will always terminate whenever a \$ is found. This means that the
 ordering of cyclic shifts is essentially the same as sorting all suffixes of T. Algorithm
 \ref{alg:bwt} shows how the BWT of T can be calculated directly from the SA of T in linear
-time. Since there is a 1:1 correlation between the SA and BWT, dynamic updates to a BWT
+time. Since this is a 1:1 correlation between the SA and BWT, dynamic updates to a BWT
 would correspond to similar dynamic updates in the SA (and ISA). This will be useful in
-the following code clone detection algorithm.
+the following implementation chapter for the dynamic code clone detection algorithm.
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\bwt{T, SA}}{
-        N $\gets$ len(T)
+        $N \gets len(T)$
 
-        bwt $\gets$ string of length N
+        $BWT \gets \text{string of length } N$
 
         \For{$i \in 0..N$}{
 
             pos $\gets$ (SA[i] - 1) \% N
 
-            $bwt[i] = T[pos]$
+            $BWT[i] = T[pos]$
         }
 
-        \Return bwt
+        \Return BWT
     }
 
   \vspace{0.5cm}
@@ -797,26 +800,29 @@ the BWT of a string T, we see that the BWT is a permutation of T. We will also s
 there is a correlation between the characters in the first column of the cyclic-shift
 matrix and the last column (the BWT).
 
-T can be calculated from the BWT, as long as there is a unique terminating character (\$)
+T can be calculated from the BWT as long as there is a unique terminating character (\$),
 or the position of the final character is stored. T is computed backwards by starting at
 the final character ($T[n - 1]$) and then finding the cyclic-shift where that character
-occurs in the first column. The character in the last column of that cyclic-shift is $T[n
-- 2]$. If there are multiple of the same character the nth character of a certain symbol
-in the last column will map to the nth character in the first column. This process is
-repeated until we finish the cycle, returning to the final character in the last column.
-Essentially, this process consists of traversing cyclic-shifts backwards and looking at
-the final character, which will give us T, since the final character of the cyclic-shift
-is continually shifting one position.
+occurs in the first column (the previous cyclic-shift). The character in the last column
+of that cyclic-shift is $T[n - 2]$. If there are multiple of the same character, the nth
+occurrence of a certain symbol in the last column will map to the nth occurrence of the
+same symbol in the first column. This process is repeated until we finish the cycle,
+returning to the final character in the last column. Essentially, this process consists of
+traversing cyclic-shifts backwards and looking at the final character, which will give us
+T, since the final character of the cyclic-shift is continually shifting one position.
 
-Determining the previous cyclic-shift requires some insight about the first column of the
-BWT matrix.  It also means that the first column of
-the BWT matrix contain all the characters in T in a sorted order. Therefore, we can
-calculate the next cyclic shift from only the last column by determining how many
-characters are lexicographically smaller than the current character, and
-also the rank of the current character at this position. The sum of these two values is
-the location of the previous cyclic-shift. This function called the Last-to-first
-mapping (LF-mapping).
+We can use the fact that the first column consists of the letters of T in sorted order to
+determine the previous cyclic-shift with only the last column. We can calculate the
+previous cyclic-shift from only the last column by determining how many characters are
+lexicographically smaller than the current character, and also the rank of the current
+character at this position. The sum of these two values is the location of the previous
+cyclic-shift. This function is called the Last-to-first mapping (LF-mapping). Calculating
+the LF-mapping can be done efficiently by using a rank/select data structure to calculate
+the rank of all the characters in the BWT, and an array which contains the number of
+occurrences of each letter in the BWT.
 
+The LF-mapping will also be useful in the detection algorithm when dynamically updating
+the suffix array.
 
 \begin{table}
 	\begin{center}
@@ -844,6 +850,18 @@ mapping (LF-mapping).
 			4     & NA\$BAN\textbf{A} \\
 			2     & NANA\$B\textbf{A} \\
     \end{tabular}}
+		\hspace{1cm}
+        \subfloat[LF-mapping]{\begin{tabular}{c | l}
+			L & F   \\
+			\hline
+            0     & $Rank_A(0) + Smaller(A) = 0 + 1 = 1$\\
+            1     & $Rank_N(1) + Smaller(N) = 0 + 5 = 5$ \\
+			2     & $Rank_N(2) + Smaller(N) = 1 + 5 = 6$ \\
+			3     & $Rank_B(3) + Smaller(B) = 0 + 4 = 4$ \\
+			4     & $Rank_\$(4) + Smaller(\$) = 0 + 0 = 0$ \\
+			5     & $Rank_A(5) + Smaller(A) = 1 + 1 = 2$ \\
+			6     & $Rank_A(6) + Smaller(A) = 2 + 1 = 3$ \\
+    \end{tabular}}
     \caption{T = BANANA\$, BWT = ANNB\$AA}
     \label{table:bwt}
 	\end{center}
@@ -851,24 +869,24 @@ mapping (LF-mapping).
 
 \subsection{Dynamic suffix arrays}
 
-% Write about dynamic SA's
-
-\subsection{Incremental-parsing and error-recovery}
-
-% Write about incremental parsing algorithms here
-
-
 \section{Our contribution}
 
 This thesis will present and evaluate a tool which provides clone detection capabilities
 in a real-time IDE environment. The main goal will be to create an incremental tool which
 fits well into the development cycle and can efficiently update its results while writing
-code. Areas of focus will therefore be:
+code. 
+    
+Existing incremental clone detection tools either do not fit into an IDE scenario
+(techniques based on distributed computing) or have not been shown to scale well in terms
+of processing time or memory usage for larger codebases of multiple million lines of code.
+Areas of focus will therefore be:
 
 \begin{itemize}
-	\item Real-time / Incremental detection of code clones using dynamic suffix arrays
+	\item Real-time / Incremental detection of code clones for IDE's 
+    \item A novel application and extension of dynamic suffix arrays for code clone detection
 	\item IDE and language agnostic tooling such as LSP and Tree-sitter
 \end{itemize}
+
 
 \subsection{Incremental clone detection using dynamic suffix arrays}
 
@@ -886,9 +904,9 @@ clones, or time spent calculating them.
 
 \subsection{LSP for IDE-based clone management}
 
-The tool gives programmers the ability to view clones in their IDE. We will utilize
-features of LSP such as diagnostics and code-actions, in order to provide clone management
-to any editor which implements the LSP protocol.
+The tool gives programmers the ability to view clones in their IDE. Utilizing features of
+LSP such as diagnostics and code-actions, the tool provides clone management to any
+editor which implements the LSP protocol.
 
 The following user-stories shows how interaction with the LSP server works.
 
@@ -917,27 +935,3 @@ The following user-stories shows how interaction with the LSP server works.
 The interaction with the LSP server will depend on the client's implementation of LSP. If
 the LSP client is limited in its capabilities, meaning it does not implement the entire
 protocol, the tool will be limited in how the programmer can interact with it.
-
-
-
-\subsection{Evaluation}
-
-We will evaluate this tool based on different criteria, which combined will provide a
-basis for evaluating the tool as a whole.
-
-Since the tool is focused on efficient detection and management of code clones, real-time
-performance of the tool will be a high priority in its evaluation. The tool will implement
-different techniques of detecting and merging clones. These will be empirically compared
-against each other. The tool will also be evaluated against existing tools empirically. We
-will utilize BigCloneBench~\cite{BigCloneBench} to evaluate detection techniques, by
-running our detection techniques in a standalone mode. We will distinguish between initial
-detection and incremental detection when evaluating.
-
-The tool will also be evaluated in how well it fits into the software development cycle.
-Can we determine if this tool is an effective way to detect a clone early in its lifecycle
-so that they can be removed before it manifests in the source code? In relation to this,
-we will evaluate if LSP is a suitable tool for use in clone management and refactoring in
-general. Can LSP provide all the features one would want in a modern analysis tool? What
-is missing, and how could the LSP protocol be extended in order to facilitate this? We
-believe that if LSP is an appropriate tool to use for clone management, LSP will also be
-an appropriate tool for static analysis tools in general.
