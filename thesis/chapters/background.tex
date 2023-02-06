@@ -451,11 +451,11 @@ server sends a corresponding response, also in the form of JSON-RPC messages.
 \section{Preliminary algorithms and data structures}
 
 The following algorithms and data structures will be useful in following chapters to
-describe the detection algorithm
+define the detection algorithm
 
-% TODO add section about suffix trees here
 \subsection{Suffix trees}
 
+% TODO cite suffix tree algorithms here
 A classic algorithm for code clone detection traverses a suffix-tree in order to find
 maximal repeats in all suffixes of the input string T.
 
@@ -628,9 +628,6 @@ constructing the suffix array.
 
 The LCP array can also be constructed in linear time, utilizing SA and ISA.
 
-% TODO, describe this algorithm more here
-
-
 \subsection{Burrows-wheeler transform}
 
 % TODO write about BW transform
@@ -684,31 +681,24 @@ and deleting takes $O(n)$ time, where $n$ is $len(B)$.
 
 One way to speed up the indel operations would be to represent the bitset as a balanced
 tree containing multiple smaller bitsets. To represent a bitset of N bits, we can divide
-the bits such that $O(\frac{n}{log_2(n)})$ bitsets each contains $O(log_2(n))$ bits. Since
-the bitsets are now of size $O(log_2(n))$, inserting and deleting takes only $O(log_2(n))$
-time. The bitsets reside at the leaves of our balanced tree, and internal nodes
-contain only two integers, storing the number of bits in the left subtree ($N$), and the
-number of set bits in the left subtree ($S$). To access, insert or delete on index $i$,
-the tree is traversed to find the correct bitset where the ith bit is located, where the
-operation is done at that position. Finding the correct bitset and position is done by
-utilizing $N$ and $S$ in each node which is traversed.
+the bits into smaller bitsets, such that $O(\frac{n}{log_2(n)})$ bitsets each contains
+$O(log_2(n))$ bits. Since the bitsets are now of size $O(log_2(n))$, inserting and
+deleting takes only $O(log_2(n))$ time. The bitsets reside at the leaves of our balanced
+tree, and internal nodes contain only two integers, storing the number of bits in the left
+subtree ($N$), and the number of set bits in the left subtree ($S$). To access, insert or
+delete on index $i$, the tree is traversed to find the correct bitset where the ith bit is
+located, where the operation is done at that position. Finding the correct bitset and
+position is done by utilizing $N$ and $S$ in each node which is traversed.
 
-\begin{algorithm}
-    \begin{algorithmic}
-        \State $i\gets 0$
-        \Function{Test}{i}
-        \EndFunction
-    \end{algorithmic}
-\end{algorithm}
-\begin{lstlisting}
-    access(node, i)
-        if (isLeaf(node))
-            return node.bitset.access(i)
-        if (node.N <= i)
-            return access(node.left, i)
 
-        return access(node.right, i - node.N)
-\end{lstlisting}
+% TODO should I add pseudocode for all operations?
+Figure \ref{fig:DynamicBitset} shows how a dynamic bitset tree is structured, and Algorithm
+\ref{alg:dynbitaccess} shows how to access a value in the tree. Traversing the
+tree to calculate rank and select queries can be done similarly by summing set
+bits in left-subtrees (rank) or selecting which subtree to descend based on the number of
+set bits (select).
+
+
 
 \begin{figure}
 	\begin{center}
@@ -734,9 +724,31 @@ utilizing $N$ and $S$ in each node which is traversed.
             ]
 		\end{tikzpicture}
 		\caption{Dynamic bitset}
-        \label{DynamicBitset}
+        \label{fig:DynamicBitset}
 	\end{center}
 \end{figure}
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \SetKwInOut{Input}{input}
+    \SetKwInOut{Output}{output}
+    \Output{}
+    \algo{access(node, i)}{
+
+        \If{isLeaf(node)}{
+            \Return node.bitset.access(i)
+        }
+
+        \If{node.N $\leq$ i}{
+            \Return access(node.left, i)
+        }
+
+        \Return access(node.right, i - node.N)
+    }
+
+  \caption{Accessing a value in a dynamic bitset}
+  \label{alg:dynbitaccess}
+\end{algorithm}
 
 \subsection{Wavelet trees and wavelet matrices}
 

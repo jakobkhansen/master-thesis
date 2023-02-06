@@ -21,8 +21,10 @@
 \usepackage{listings}
 \usepackage{extarrows}
 \usepackage{bold-extra}
-\usepackage{algpseudocode}
-\usepackage{algorithm}
+
+\usepackage{algorithm2e}
+
+\SetKwProg{algo}{Algorithm}{}{}
 
 
 \addbibresource{refs.bib}
@@ -33,7 +35,7 @@
 \def\addsquare#1{\tikz\node[draw]{#1};}
 \def\addcircle#1{\tikz\node[draw,circle]{#1};}
 
-\title{CCDetect-lsp: Language and editor agnostic code clone detector}
+\title{CC-LSP: Language and editor agnostic code clone detection}
 \subtitle{Incremental code clone detection for text editors}
 
 
@@ -42,7 +44,7 @@
 % \duoforside[dept={Department of Informatics},
 % program={Informatics: Programming and System Architecture},
 % long]
-\uiomasterfp[color=green]
+\uiomasterfp[color=blue]
 
 \include{chapters/abstract}
 
