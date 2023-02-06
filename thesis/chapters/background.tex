@@ -613,7 +613,7 @@ the LCP array.
 
 
 
-Table \ref{table:BANANA} shows the suffix array of a text \texttt{T=\text{BANANA\$}} and the correlation
+Table \ref{table:BANANA} shows the suffix array of a text T = BANANA\$ and the correlation
 between the sorted suffixes and SA, ISA and LCP.
 
 % TODO add correlation between suffix array and tree here with applications
@@ -628,9 +628,7 @@ constructing the suffix array.
 
 The LCP array can also be constructed in linear time, utilizing SA and ISA.
 
-\subsection{Burrows-wheeler transform}
 
-% TODO write about BW transform
 
 \subsection{Dynamic bitsets}
 
@@ -661,34 +659,33 @@ The most well known query to do on bitsets is the rank/select queries.
 Jacobson's rank can calculate rank and select on static bitsets in $O(1)$ time by
 pre-calculating all answers in a space efficient table.
 
-A dynamic bitset is a bitset which also allows efficient insert and delete (indel) operations in the
-bitset.
-
 \begin{definition}[Dynamic bitset]
     A dynamic bitset is a bitset which in addition to other operations allow inserting and
-    deleting bits.
+    deleting bits (indel operations).
 
     An insert operation $insert(i, v)$ on a bitset B inserts the value v at position i in
     B, pushing all values at position $\geq i$ one position up.
 
     A delete operation $delete(i)$ on a bitset B removes the value at position i in B, pushing all
-    values at position $\geq i$ one position down.
+    values at position $> i$ one position down.
 \end{definition}
 
 The standard implementation of a dynamic bitset would implement the whole bitset as a
-single array of bytes B, which allows for accessing values in $O(1)$ time, but inserting
-and deleting takes $O(n)$ time, where $n$ is $len(B)$.
+single array of bytes $B$, which allows for accessing values in $O(1)$ time, but inserting
+and deleting takes $O(n)$ time, where $n$ is the number of bits in $B$.
 
 One way to speed up the indel operations would be to represent the bitset as a balanced
-tree containing multiple smaller bitsets. To represent a bitset of N bits, we can divide
-the bits into smaller bitsets, such that $O(\frac{n}{log_2(n)})$ bitsets each contains
-$O(log_2(n))$ bits. Since the bitsets are now of size $O(log_2(n))$, inserting and
-deleting takes only $O(log_2(n))$ time. The bitsets reside at the leaves of our balanced
+tree containing multiple smaller bitsets. To represent a bitset of $N$ bits, we can divide
+the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each contains
+$O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, inserting and
+deleting takes only $O(log(n))$ time. The bitsets reside at the leaves of our balanced
 tree, and internal nodes contain only two integers, storing the number of bits in the left
 subtree ($N$), and the number of set bits in the left subtree ($S$). To access, insert or
 delete on index $i$, the tree is traversed to find the correct bitset where the ith bit is
 located, where the operation is done at that position. Finding the correct bitset and
-position is done by utilizing $N$ and $S$ in each node which is traversed.
+position is done by utilizing $N$ and $S$ in each node which is traversed. All operations
+now run in $O(\log(n))$ time, since traversing the tree to the correct bitset takes
+$O(\log(\frac{n}{\log(n)}))$ and performing the operation takes $O(\log(n))$ time.
 
 
 % TODO should I add pseudocode for all operations?
@@ -730,24 +727,127 @@ set bits (select).
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
-    \algo{access(node, i)}{
-
-        \If{isLeaf(node)}{
-            \Return node.bitset.access(i)
+    \algo{\access{node, i}}{
+        \If{{\isLeaf{node}}}{
+            \Return $node.bitset[i]$
         }
 
         \If{node.N $\leq$ i}{
-            \Return access(node.left, i)
+            \Return \access{node.left, i}
         }
 
-        \Return access(node.right, i - node.N)
+        \Return \access{node.right, i - node.N}
     }
 
+  \vspace{0.5cm}
   \caption{Accessing a value in a dynamic bitset}
   \label{alg:dynbitaccess}
 \end{algorithm}
 
 \subsection{Wavelet trees and wavelet matrices}
+
+
+\subsection{Burrows-Wheeler transform}
+
+% TODO add source
+
+The Burrows-Wheeler transform (BWT) is a transform on strings, often done to improve
+compression. The transform is computed by sorting all ``cyclic-shifts'' of the string
+lexicographically and extracting a new string from the last column of the cyclic-shift''
+matrix. The terminating character \$ is always the smallest character lexicographically.
+Table \ref{table:bwt} shows the BWT for the string T = BANANA\$.
+
+There is a strict correlation between the suffix array of T and the BWT of T. Figure
+\ref{table:bwt} also shows that the indices of the sorted cyclic-shifts correspond to
+exactly the SA of T. This coincides because when sorting cyclic-shifts, everything that
+occurs after the \$ of the cyclic-shift will not affect its lexicographical ordering. This
+is because no cyclic-shift will have a \$ in the same position, so comparing two cyclic
+shifts lexicographically will always terminate whenever a \$ is found. This means that the
+ordering of cyclic shifts is essentially the same as sorting all suffixes of T. Algorithm
+\ref{alg:bwt} shows how the BWT of T can be calculated directly from the SA of T in linear
+time. Since there is a 1:1 correlation between the SA and BWT, dynamic updates to a BWT
+would correspond to similar dynamic updates in the SA (and ISA). This will be useful in
+the following code clone detection algorithm.
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\bwt{T, SA}}{
+        N $\gets$ len(T)
+
+        bwt $\gets$ string of length N
+
+        \For{$i \in 0..N$}{
+
+            pos $\gets$ (SA[i] - 1) \% N
+
+            $bwt[i] = T[pos]$
+        }
+
+        \Return bwt
+    }
+
+  \vspace{0.5cm}
+  \caption{Calculating the BWT of a string T from its suffix array}
+  \label{alg:bwt}
+\end{algorithm}
+
+
+An essential property of the BWT is that the transformation is reversible. By examining
+the BWT of a string T, we see that the BWT is a permutation of T. We will also see that
+there is a correlation between the characters in the first column of the cyclic-shift
+matrix and the last column (the BWT).
+
+T can be calculated from the BWT, as long as there is a unique terminating character (\$)
+or the position of the final character is stored. T is computed backwards by starting at
+the final character ($T[n - 1]$) and then finding the cyclic-shift where that character
+occurs in the first column. The character in the last column of that cyclic-shift is $T[n
+- 2]$. If there are multiple of the same character the nth character of a certain symbol
+in the last column will map to the nth character in the first column. This process is
+repeated until we finish the cycle, returning to the final character in the last column.
+Essentially, this process consists of traversing cyclic-shifts backwards and looking at
+the final character, which will give us T, since the final character of the cyclic-shift
+is continually shifting one position.
+
+Determining the previous cyclic-shift requires some insight about the first column of the
+BWT matrix.  It also means that the first column of
+the BWT matrix contain all the characters in T in a sorted order. Therefore, we can
+calculate the next cyclic shift from only the last column by determining how many
+characters are lexicographically smaller than the current character, and
+also the rank of the current character at this position. The sum of these two values is
+the location of the previous cyclic-shift. This function called the Last-to-first
+mapping (LF-mapping).
+
+
+\begin{table}
+	\begin{center}
+        \subfloat[Cyclic shifts]{
+		\begin{tabular}{c | l }
+			Index & Cyclic-shift   \\
+			\hline
+			0     & BANANA\$ \\
+			1     & ANANA\$B \\
+			2     & NANA\$BA \\
+			3     & ANA\$BAN \\
+			4     & NA\$BANA \\
+			5     & A\$BANAN \\
+			6     & \$BANANA \\
+    \end{tabular}}
+		\hspace{1cm}
+        \subfloat[Sorted cyclic shifts and BWT]{\begin{tabular}{c | l}
+			Index & Cyclic-shift   \\
+			\hline
+            6     & \$BANAN\textbf{A} \\
+            5     & A\$BANA\textbf{N} \\
+			3     & ANA\$BA\textbf{N} \\
+			1     & ANANA\$\textbf{B} \\
+			0     & BANANA\textbf{\$} \\
+			4     & NA\$BAN\textbf{A} \\
+			2     & NANA\$B\textbf{A} \\
+    \end{tabular}}
+    \caption{T = BANANA\$, BWT = ANNB\$AA}
+    \label{table:bwt}
+	\end{center}
+\end{table}
 
 \subsection{Dynamic suffix arrays}
 
