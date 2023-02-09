@@ -21,18 +21,18 @@ code~\cite[7]{Inoue_introduction_to_cc}.
 Many tools and algorithms exist for duplicate code detection, however few of these have
 the capability of efficiently detecting duplicated code in a real-time IDE environment.
 Incremental algorithms which do not recompute all clones from scratch are interesting for
-use-cases such as IDEs and git revisions of the same source code, but this type of
-algorithm is not thoroughly explored for code clone analysis.
+use-cases such as IDEs and Git revisions of the same source code, but this type of
+algorithm has not been thoroughly explored for code clone analysis.
 
 \section{Problem statement}
 
 The current landscape of clone detection algorithms and tools is lacking in terms of
-integration and support for incremental updates within an IDE. This limits the ability for
-developers to easily detect duplicated code as they work, as these tools are often limited
-to specific programming languages or IDEs.
+integration and support for fast incremental updates within an IDE. This limits the
+ability for developers to easily detect duplicated code as they work, as these tools are
+also often limited to specific programming languages or IDEs.
 
 Our proposed solution addresses this issue by introducing a new algorithm/pipeline that is
-capable of detecting and updating code clones in real-time as source code changes. The
-tool which integrates this algorithm is also language and IDE agnostic. This will allow
-developers to seamlessly incorporate the detection of duplicated code into their existing
-development processes and environments.
+capable of detecting and updating code clones in real-time as source code changes, faster
+than redoing the analysis from scratch. The tool which implements this algorithm is also
+language and IDE agnostic, which allows developers to seamlessly incorporate the detection
+of duplicated code into their existing development environment.
