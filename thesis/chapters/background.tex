@@ -1,37 +1,12 @@
 \chapter{Background}
 
-\section{Introduction}
-
-Refactoring is the process of restructuring source code in order to improve the internal behavior
-of the code, without changing the external behavior~\cite[9]{fowlerrefactoring}.
-Refactoring on source code is often performed in order to eliminate instances of bad
-design quality in code, otherwise known as code smells.
-
-A study conducted by Diego Cedrim et al. has shown that while developers tend to refactor
-smelly code, they are rarely successful at eliminating the smells they are
-targeting~\cite{Rohit_Gheyi_Impact}. They also discovered that a large portion of
-refactorings tend to make the code quality worse. Automated tools which help developers
-make better refactorings and perform code analysis could be a solution to this problem.
-
-Duplicated code is a code smell which occurs in practically every large software project.
-Code clone analysis has recently become a highly active field of research and many tools
-have been developed to detect duplicated code~\cite[7]{Inoue_introduction_to_cc}. However,
-few of these have the capability of efficiently detecting duplicated code in a real-time
-IDE environment.
-
-This thesis will present a tool and technique for language and IDE agnostic clone
-detection, which runs in an IDE environment. Special focus is put on incremental
-detection, since code clone detection can be expensive to perform, even if most clone
-detection results persist while editing source code.
-
-\section{Background}
 
 \subsection{Software quality and duplicated code}
 
 Software quality is hard to define. The term ``quality'' is ambiguous and is in the case
 of software quality, multidimensional. Quality in itself has been defined as ``conformance
 to requirements''~\cite[8]{crosby1980quality}. In software, A simple measure of
-``conformance to requirements'' is a lack of bugs. However, software
+``conformance to requirements'' is correctness, and a lack of bugs. However, software
 quality is often measured in other metrics, including metrics which are not directly
 related to functionality~\cite[29]{MetricsAndModelsInSoftwareQuality}. These metrics
 often include maintainability, analyzability and changeability.
@@ -39,8 +14,8 @@ often include maintainability, analyzability and changeability.
 These metrics are affected negatively by duplicated code, code which is more or less
 copied to different locations in the source code. Multiple studies have shown that
 software projects typically contains $10-15\%$ duplicated code~\cite{CloningByAccident}.
-Therefore, research into tools and techniques which can reduce duplicated code will be of
-benefit to almost all software.
+Therefore, research into tools and techniques which can assist in reducing duplicated code
+will be of benefit to almost all software.
 
 Duplicated code can lead to a plethora of antipatterns, and will often lead to an increase
 in technical debt. Technical debt occurs when developers make technical compromises that
@@ -54,7 +29,8 @@ software project.
 
 \subsection{Code clones}
 
-Duplicated code is often described as ``code clones''.
+Duplicated code is often described as ``code clones'', as a pair of code snippets which
+are duplicated are considered clones of each other.
 
 \begin{definition}[Code snippet]
 	A code snippet is a piece of contiguous source code in a larger software system.
@@ -451,8 +427,6 @@ define the detection algorithm
 
 \subsection{Incremental-parsing}
 
-% TODO Write about incremental parsing algorithms here
-
 In our detection algorithm we will need to be able to parse our source-code in order to select
 specific syntactic regions and extract the tokens.
 
@@ -473,7 +447,7 @@ to avoid inserting suffixes before it needs to, to lower the complexity. \cite{U
 This data structure facilitates solving the maximal repeat problem. A repeat in a string T
 is a substring that occurs at least twice in T. A maximal repeat in T is a repeat which is not
 a substring of another repeat in T, meaning that the maximal repeat cannot be extended in
-any direction to form a bigger repeat. This problem can be solved with a suffix tree by
+any direction to form a bigger repeat. This problem can be solved with a suffix tree using
 the following theorem:
 
 \begin{theorem}[Repeats in suffix tree]
@@ -494,10 +468,10 @@ be. This can be found by traversing the suffix tree and looking at all internal 
 which represent a string of length $\geq k$. Every internal node which represents a string
 which is $\geq k$ would correspond to a substring of the source code which occurs at least
 twice. Finding where the duplication occurs can be done by finding all the leaves of the
-internal node, which holds the  position where the suffix starts in T. Since a substring
-can have multiple repeats of different lengths longer than $k$, different strategies can
-be used to select which substrings are selected or not, such as filtering out repeats
-which are not maximal or repeats which overlap each other.
+subtree rooted in the internal node, which each hold the position where the suffix starts in
+T. Since a substring can have multiple repeats of different lengths longer than $k$,
+different strategies can be used to select which substrings are selected or not, such as
+filtering out repeats which are not maximal or repeats which contain or overlap each other.
 
 
 \begin{figure}
@@ -621,10 +595,10 @@ between the sorted suffixes and SA, ISA and LCP.
 
 % TODO add correlation between suffix array and tree here with applications
 
-Suffix arrays can be constructed in linear time in terms of the length of T. Many
-so-called suffix array construction algorithms (SACA) have been discovered in the last
-decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm
-which has been shown to be very efficient in practice is Nong and
+Suffix arrays can be constructed in linear time in terms of the length of T. Many suffix
+array construction algorithms (SACA) have been discovered in the last
+decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm which
+has been shown to be very efficient in practice is Nong and
 Chan's\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting. Since ISA is
 the inverse of the suffix array, it can also be constructed in linear time by first
 constructing the suffix array.
@@ -890,8 +864,8 @@ Areas of focus will therefore be:
 
 \subsection{Incremental clone detection using dynamic suffix arrays}
 
-The main area which we have explored is making the tool efficient in terms of
-incrementally updating whenever edits are performed in the editor. Most clone detection
+The main area which we have focused on is making the tool efficient in terms of
+incrementally updating whenever edits are performed in the IDE. Most clone detection
 tools calculates clones from scratch and have no functionality to more efficiently
 calculate the clones after a small edit has been applied to the source code. Our tool
 utilizes dynamic suffix arrays to quickly update and find/remove clones, often faster than
@@ -902,35 +876,12 @@ We have also focused on how necessary information to calculate the clones are st
 memory in order to avoid too much memory usage, without loss in terms of accuracy of
 clones, or time spent calculating them.
 
-\subsection{LSP for IDE-based clone management}
+\subsection{LSP for IDE-based clone detection}
 
 The tool gives programmers the ability to view clones in their IDE. Utilizing features of
 LSP such as diagnostics and code-actions, the tool provides clone management to any
 editor which implements the LSP protocol.
 
-The following user-stories shows how interaction with the LSP server works.
-
-\begin{itemize}
-	\item A programmer wants to see code clones for a file in their project, the
-	      programmer opens the file in their IDE and is displayed diagnostics in the code
-	      wherever there are detected clones. The matching code clones are not necessarily
-	      in the same file.
-
-	\item A programmer wants to see all code clones for the current project. The
-	      programmer opens the IDEs diagnostic view and will see all code clones detected
-	      as diagnostics there. The diagnostic will contain information like where the clone
-	      exists, and where the matching clone(s) are.
-
-	\item A programmer wants to jump to the corresponding match of a code clone in their
-	      editor. The programmer moves their cursor to the diagnostic and will see a list of
-	      the matching code clones. The programmer will select the wanted code clone which
-	      will move the cursor to the file and location of the selected code clone.
-
-      \item A programmer wants to remove a set of clones by applying the
-          ``extract-method'' refactoring. The programmer performs the necessary
-          refactorings, saves the file and will get fast feedback whether the
-          clones are now eliminated.
-\end{itemize}
 
 The interaction with the LSP server will depend on the client's implementation of LSP. If
 the LSP client is limited in its capabilities, meaning it does not implement the entire
