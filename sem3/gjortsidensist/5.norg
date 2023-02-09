@@ -1,0 +1,6 @@
+* Programming
+  - Represent SA and LCP with trees
+  -- Allows faster inserts, deletes updates faster
+  - Smarter extraction of clone indices
+  -- Store all LCP nodes greater than token_threshold, look only at those when finding
+     clones
