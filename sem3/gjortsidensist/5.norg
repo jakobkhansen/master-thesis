@@ -4,3 +4,22 @@
   - Smarter extraction of clone indices
   -- Store all LCP nodes greater than token_threshold, look only at those when finding
      clones
+
+* Bug
+  - Seems like edits arent always found correctly, investigate
+  - Steps to reproduce:
+  --- Delete a chunk
+  --- Insert in another location
+  --- Edit operation for the edit doesn't show up
+
+* Initial thoughts on performance
+  - Time to update seems very dependent on the size of the area which is edited. This is
+    good!
+  - Therefore just writing and editing small portions of code is pretty much instant
+  - Using the "update for each edit" instead of updating on save actually seems faster
+  - Probably the most useful use-case for the tool however is when moving chunks of code
+    around, which can be slow if updating on save and moving a lot of chunks of code
+    around before saving
+  --- This seems to be mostly because the edit operations are not the best when doing
+      "complex" edits (both inserts and deletes).
+  - Moving code between files also seem fast
