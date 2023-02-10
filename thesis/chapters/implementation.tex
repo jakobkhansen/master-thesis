@@ -86,9 +86,46 @@ document.
 
 \section{Clone detection algorithm}
 
+This section discusses the detection module of the tool. It includes the detection algorithm
+which takes the document index as input, and outputs a list of code clones. The initial
+input to the algorithm will be the raw source code of each document in the index, in text
+format.
+
 \subsection{Fragment selection}
 
+The first phase of the algorithm considers how to extract the relevant fragments of source
+code which should be considered for detection. A fragment in this case is considered as a
+section of abstract syntax, meaning that a particular type of node in the AST and the
+tokens it encompasses should be extracted. 
+Since the algorithm is language agnostic, it is not feasible to have a single algorithm
+for fragment extraction or to define a separate fragment extraction algorithm for every
+possible language. Therefore, the tool allows the user to define a fragment query via
+tree-sitter\cite{treesitter} queries. Tree-sitter queries are flexible queries to extract
+specific nodes or subtrees in an AST. For example, in Java it would be natural to
+consider only methods and each token a method contains. The tree-sitter query for
+selecting only the method nodes in a Java programs AST would be:
+
+\begin{equation}
+    (\mathrm{method\_declaration\ } \text{@method})
+\end{equation}
+
+This tree-sitter query selects the node with type \verb|method_declaration| and
+``captures'' it with the \verb|@method| name, for further processing by the program.
+Readers interested in the details of the query system are referred to the tree-sitter
+documentation\cite{treesitter}.
+
+Implementing something similar for another parser/AST could be as simple as traversing
+the tree until a node of a specific type is found, using the visitor pattern.
+
+Using a tree-sitter query, the algorithm parses the program into an AST, queries the tree
+for all the nodes which matches the query (taking care not to capture nodes which are
+children of already captured nodes) and extracts all the tokens which the node covers.
+
 \subsection{Fingerprinting}
+
+The next phase of the algorithm is to transform the selected source code into something
+which is less computationally heavy to execute the matching algorithm on. The goal is to
+reduce the total size of the input which needs to be processed by the matching algorithm.
 
 \subsection{Suffix array construction}
 
