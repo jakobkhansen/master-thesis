@@ -226,9 +226,92 @@ public class Math() {
 
 \subsection{Suffix array construction}
 
-The next step is to feed the fingerprint into a suffix array construction algorithm
-(SACA). All the fingerprints which are stored in each document object is concatenated to
-be stored in a single integer array
+The next step is to input the fingerprint into a suffix array construction algorithm
+(SACA). All the fingerprints which are stored in each document object are concatenated to
+be stored in a single integer array (with terminators after each fragment), which the
+suffix array (SA), inverse suffix array (ISA) and longest-common prefix array (LCP) is
+computed from.
+
+We have utilized a straight-forward implementation of the ``Induced sorting
+variable-length LMS-substrings'' algorithm which calculates a suffix array in linear time. The following section will give an overview of
+how the algorithm works, but readers interested in the full details are referred
+elsewhere\cite{LinearTimeSuffixArraySAIS}. 
+
+The algorithm will be explained with a string input, as this is most common for suffix
+arrays, and working with strings can be more clear to the reader when looking at suffixes.
+The algorithm is still applicable to our fingerprint, since an array of integers will work
+similarly to a string when given as input.
+
+The ``Induced sorting variable-length LMS-substrings'' algorithm (often abbreviated SA-IS)
+is an algorithm that works by divide and conquering the array and inducing how to sort the
+bigger problem from the smaller problems. First, we will introduce some definitions and
+theorems used for the algorithm.
+
+Input to the algorithm is a string $S$ with length $n$. Let $\text{suffix}(S, i)$ be the
+suffix in S starting at position i.
+
+\begin{definition}[L-type and S-type suffixes] A suffix starting at position $i$ in a
+    string $S$ is considered to be L-type if it is lexicographically larger than the next
+    suffix at position $i + 1$. Meaning that $\text{suffix}(S, i) > \text{suffix}(S,
+    i+1)$. Conversely, a suffix is considered to be S-type if $\text{suffix}(S, i) <
+    \text{suffix}(S, i+1)$. The final suffix (\$) of $S$ is always S-type.
+\end{definition}
+
+Note that two suffixes cannot be lexicographically equal, therefore all cases are handled
+by this definition. Determining the type of each suffix can be done in $O(n)$ by scanning
+$S$ from right-to-left and observing the following properties. $\text{suffix}(S, i)$ is
+L-type if $S[i] > S[i + 1]$. Similarly, $\text{suffix}(S, i)$ is S-type if $S[i] < S[i +
+1]$. If $S[i] = S[i + 1]$, then $\text{suffix}(S, i)$ is the same value as
+$\text{suffix}(S, i + 1)$. This is explained by the fact that if the first character of
+the current suffix is not equal to first character of the next suffix, we already know the
+type based on the first character. If the first character is equal however, we have
+effectively reduced the case to the next suffix, since we are now comparing the second
+character of the current suffix, with the next character of the second suffix. Since we
+have already computed the type of that suffix, we can reuse the value. Figure
+\ref{fig:sais-types} shows an algorithm which determines the type of each suffix in a
+string in $O(n)$ time.
+
+\begin{figure}
+	\begin{center}
+		\begin{lstlisting}
+    private BitSet getSuffixTypes(String text) {
+        boolean s_type = true;
+        boolean l_type = false;
+        int n = text.length;
+        BitSet types = new BitSet(n + 1);
+        
+        if (n == 0) {
+             return types;
+        }
+
+        types.set(n, s_type);
+        types.set(n - 1, l_type);
+        for (int i = n - 2; i >= 0; i--) {
+            if (text[i] < text[i + 1]) {
+                types.set(i, s_type);
+            } else if (text[i] > text[i + 1]) {
+                types.set(i, l_type);
+            } else {
+            types.set(i, types.get(i + 1))
+            }
+        }
+
+    }
+\end{lstlisting}
+	\end{center}
+	\caption{Algorithm to determine types of each suffix in a string}
+	\label{fig:sais-types}
+\end{figure}
+
+
+
+
+\begin{definition}[LMS-characters]
+    
+    
+\end{definition}
+
+
 
 \subsection{Clone detection}
 
