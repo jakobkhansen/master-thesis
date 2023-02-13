@@ -86,24 +86,43 @@ document.
 
 \section{Clone detection algorithm}
 
-This section discusses the detection module of the tool. It includes the detection algorithm
-which takes the document index as input, and outputs a list of code clones. The initial
-input to the algorithm will be the raw source code of each document in the index, in text
-format.
+This section discusses the detection module of the tool. It consists of the detection
+algorithm which takes the document index as input, and outputs a list of code clones. The
+initial input to the algorithm will be the raw source code of each document in the index,
+in text format.
+
+The algorithm detects syntactical type-1 code clones, based on a token-threshold. Clones
+detected are therefore snippets of source-code which has at least $N$ equal tokens, where
+$N$ is a configurable parameter. There are also two types of clones which are filtered:
+
+% TODO explain why where?
+\begin{itemize}
+    \item Clones which are completely contained within another larger clone.
+    \item Clones which start in one fragment and ends in the next are cut off at the end
+        of the first fragment.
+\end{itemize}
+
+
+In broad strokes, the algorithm first selects the relevant parts of source code to detect
+code clones in (fragment selection), then transforms the selected fragments into a smaller
+representation (fingerprinting). For the matching, an extended suffix array for the fingerprint
+is constructed, where the LCP array is used to find matching instances of source-code.
+Finally, clones are filtered and aggregated into clone classes before they are
+source-mapped back to the original source-code locations, which the LSP server can display
+as diagnostics.
 
 \subsection{Fragment selection}
 
 The first phase of the algorithm considers how to extract the relevant fragments of source
 code which should be considered for detection. A fragment in this case is considered as a
 section of abstract syntax, meaning that a particular type of node in the AST and the
-tokens it encompasses should be extracted. 
-Since the algorithm is language agnostic, it is not feasible to have a single algorithm
-for fragment extraction or to define a separate fragment extraction algorithm for every
-possible language. Therefore, the tool allows the user to define a fragment query via
-tree-sitter\cite{treesitter} queries. Tree-sitter queries are flexible queries to extract
-specific nodes or subtrees in an AST. For example, in Java it would be natural to
-consider only methods and each token a method contains. The tree-sitter query for
-selecting only the method nodes in a Java programs AST would be:
+tokens it encompasses should be extracted. Since the algorithm is language agnostic, it is
+not feasible to have a single algorithm for fragment extraction or to define a separate
+fragment extraction algorithm for every possible language. Therefore, the tool allows the
+user to define a fragment query via tree-sitter queries\cite{treesitter}. Tree-sitter
+queries are flexible queries to extract specific nodes or subtrees in an AST. For example,
+in Java it would be natural to consider only methods. The tree-sitter query for selecting
+only the method nodes in a Java programs AST would be:
 
 \begin{equation}
     (\mathrm{method\_declaration\ } \text{@method})
@@ -123,14 +142,98 @@ children of already captured nodes) and extracts all the tokens which the node c
 
 \subsection{Fingerprinting}
 
-The next phase of the algorithm is to transform the selected source code into something
-which is less computationally heavy to execute the matching algorithm on. The goal is to
-reduce the total size of the input which needs to be processed by the matching algorithm.
+The next phase of the algorithm is to transform the extracted source code into a
+representation which is less computationally heavy for the matching algorithm. The goal is
+to reduce the total size of the input which needs to be processed by the matching
+algorithm.
+
+Since the algorithm that is used for matching is based on a suffix array, the
+representation should be in a format similar to a string, which is the standard input to a
+suffix array construction algorithm. However, it's not strictly necessary to use strings.
+The essential property of the input array is that each element is comparable. Therefore,
+we can use an array of integers instead, which is preferable, since there are often a lot
+more unique integers available than unique characters in a programming language. The
+algorithm will need to have a lot of unique elements in the representation because each
+unique token value should be represented by one unique element, therefore integers are a
+good choice.
+
+The algorithm utilizes fingerprinting in order to reduce the size of the representation.
+Fingerprinting is a technique which involves taking some part of the input and mapping it
+to a smaller bit string, which uniquely identifiers that part. In this case, the algorithm
+takes each token of the source-code, and maps it to an integers bit string. Each unique
+token value (tokenized by tree-sitter) is mapped to unique integer values. Note that the
+algorithm maps token values, not types. This ensures that tokens of different
+variable-names and literals are not seen as equal. Figure \ref{fig:fingerprint} shows how
+a sample Java program could theoretically be fingerprinted. The fingerprint mapping starts
+its ``count'' at 2 to make space for some terminating characters. Each fragment is
+terminated by a $1$ and the fingerprint is ultimately terminated by a $0$. Having these
+values in the fingerprint will be useful for the matching algorithm where the suffix array
+is constructed and utilized for detection.
+
+The fingerprint of each fragment is stored in a list which the relevant document object
+contains.
+
+\newsavebox{\firstlisting}
+\begin{lrbox}{\firstlisting}
+\begin{lstlisting}
+public class Math() {
+    public int multiplyByTwo(int param) {
+        return param * 2;
+    }
+
+    public int addTwo(int param) {
+        return param + 2;
+    }
+}
+\end{lstlisting}
+\end{lrbox}
+\begin{figure}
+	\begin{center}
+        \subfloat[Source-code] {
+            \usebox{\firstlisting}
+        }
+        \hspace{1cm}
+        \subfloat[Fingerprint mapping] {
+            \begin{tabular}{l | l}
+                Token & Fingerprint \\
+			    \hline
+                public & 2 \\
+                int & 3 \\
+                multiplyByTwo & 4 \\
+                ( & 5 \\
+                param & 6 \\
+                ) & 7 \\
+                \{ & 8 \\
+                return & 9 \\
+                * & 10 \\
+                2 & 11 \\
+                ; & 12 \\
+                \} & 13 \\
+                addTwo & 14 \\
+                + & 15 \\
+            \end{tabular}
+        }
+
+        \vspace{0.5cm}
+        \subfloat[Fingerprint, terminals highlighted] {
+            [ 2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, \textbf{1}, 2, 3, 14, 5, 3, 6, 7, 8, 9, 6, 15, 11, \textbf{1}, \textbf{0} ]
+        }
+	\end{center}
+	\caption{Example fingerprint of Java source-code}
+	\label{fig:fingerprint}
+\end{figure}
+
 
 \subsection{Suffix array construction}
+
+The next step is to feed the fingerprint into a suffix array construction algorithm
+(SACA). All the fingerprints which are stored in each document object is concatenated to
+be stored in a single integer array
 
 \subsection{Clone detection}
 
 \subsection{Source-mapping}
 
 \subsection{Incremental updates and optimizations}
+
+Remember to mention what we can afford to do and not.
