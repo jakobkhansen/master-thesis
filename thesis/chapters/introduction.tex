@@ -5,10 +5,10 @@ of the code, without changing the external behavior~\cite[9]{fowlerrefactoring}.
 Refactoring on source code is often performed in order to eliminate instances of bad
 design quality in code, otherwise known as code smells.
 
-A study conducted by Diego Cedrim et al. has shown that while developers tend to refactor
+A study conducted by Diego Cedrim et al. has shown that while programmers tend to refactor
 smelly code, they are rarely successful at eliminating the smells they are
 targeting~\cite{Rohit_Gheyi_Impact}. They also discovered that a large portion of
-refactorings tend to make the code quality worse. Automated tools which help developers
+refactorings tend to make the code quality worse. Automated tools which help programmers
 make better refactorings and perform code analysis could be a solution to this problem.
 
 Duplicated code is a code smell which occurs in practically every large software project.
@@ -16,23 +16,23 @@ Code clone analysis (duplicate code analysis) has recently become a highly activ
 of research and many tools have been developed to detect duplicated
 code~\cite[7]{Inoue_introduction_to_cc}. 
 
-\section{Motivation}
+\section{Motivation and problem statement}
 
 Many tools and algorithms exist for duplicate code detection, however few of these have
 the capability of efficiently detecting duplicated code in a real-time IDE environment.
 Incremental algorithms which do not recompute all clones from scratch are interesting for
-use-cases such as IDEs and Git revisions of the same source code, but this type of
+use-cases such as IDEs and different Git revisions of the same source code, but this type of
 algorithm has not been thoroughly explored for code clone analysis.
 
-\section{Problem statement}
-
-The current landscape of clone detection algorithms and tools is lacking in terms of
-integration and support for fast incremental updates within an IDE. This limits the
-ability for developers to easily detect duplicated code as they work, as these tools are
-also often limited to specific programming languages or IDEs.
+The current landscape of clone detection algorithms and tools is therefore lacking in
+terms of integration and support for fast incremental updates within an IDE. This limits
+the ability for programmers to easily detect duplicated code as they work, as these tools
+are also often limited to specific programming languages or IDEs.
 
 Our proposed solution addresses this issue by introducing a new algorithm/pipeline that is
 capable of detecting and updating code clones in real-time as source code changes, faster
 than redoing the analysis from scratch. The tool which implements this algorithm is also
-language and IDE agnostic, which allows developers to seamlessly incorporate the detection
-of duplicated code into their existing development environment.
+programming language and IDE agnostic, which allows programmers to seamlessly incorporate
+the detection of duplicated code into their existing development environment.
+
+\section{Structure}
