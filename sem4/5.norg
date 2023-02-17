@@ -1,16 +1,19 @@
 * Programming
   - Represent SA and LCP with trees
-  -- Allows faster inserts, deletes updates faster
+  -- Allows faster inserts, and deletes in the suffix array
   - Smarter extraction of clone indices
   -- Store all LCP nodes greater than token_threshold, look only at those when finding
      clones
 
 * Bug
-  - Seems like edits arent always found correctly, investigate
+  - Seems like edit operations arent always found correctly with the insert/delete
+    strategy, investigate
   - Steps to reproduce:
+  --- Update on save enabled
   --- Delete a chunk
   --- Insert in another location
-  --- Edit operation for the edit doesn't show up
+  --- Save
+  --- Edit operation for the insert doesn't show up
 
 * Initial thoughts on performance
   - Time to update seems very dependent on the size of the area which is edited. This is
@@ -23,3 +26,20 @@
   --- This seems to be mostly because the edit operations are not the best when doing
       "complex" edits (both inserts and deletes).
   - Moving code between files also seem fast
+
+* Writing
+  - Worked mostly on preliminary algorithms and implementation chapter
+  - Introduction chapter is a bit incoherent, haven't done a full readthrough of it since
+    last sem
+
+* Questions for evaluation
+  - How should I be evaluating the project?
+  --- Performance
+  ----- Test on IFI cluster
+  --- Different languages
+  --- Comparison with iClones
+  --- Correctness of clones detected
+
+
+  - Reduce size of prelem algorithms
+  --- keep suff trees/arrays
