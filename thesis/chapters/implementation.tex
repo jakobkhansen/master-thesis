@@ -1,8 +1,5 @@
-\chapter{Implementation}
 
-
-
-\section{LSP server}
+\chapter{Implementation: LSP server architecture}
 
 Our tool is integrated into IDEs via the Language server protocol. The goal is to give
 users of the tool an overview of all clones as they appear in source-code.
@@ -48,7 +45,7 @@ Figure \ref{fig:architecture} shows the architecture of the tool. The server com
 with the IDE and delegates the work of managing clones to the detection engine and the
 merge engine. The tool also stores an index of all source code files in the current project.
 
-\subsection{Document index}
+\section{Document index}
 
 Upon starting, the LSP server requires indexing of the project for conducting analysis.
 This involves creating an index and inserting the relevant documents. A document contains the
@@ -82,9 +79,10 @@ or it can provide only the changes and the location of the change. Receiving onl
 changes will be useful for this algorithm when the analysis incrementally reparses the
 document.
 
-\subsection{Displaying and interacting with clones}
+\section{Displaying and interacting with clones}
 
-\section{Clone detection algorithm}
+\chapter{Implementation: Initial detection}
+
 
 This section discusses the detection module of the tool. It consists of the detection
 algorithm which takes the document index as input, and outputs a list of code clones. The
@@ -111,7 +109,7 @@ Finally, clones are filtered and aggregated into clone classes before they are
 source-mapped back to the original source-code locations, which the LSP server can display
 as diagnostics.
 
-\subsection{Fragment selection}
+\section{Fragment selection}
 
 The first phase of the algorithm considers how to extract the relevant fragments of source
 code which should be considered for detection. A fragment in this case is considered as a
@@ -140,7 +138,7 @@ Using a tree-sitter query, the algorithm parses the program into an AST, queries
 for all the nodes which matches the query (taking care not to capture nodes which are
 children of already captured nodes) and extracts all the tokens which the node covers.
 
-\subsection{Fingerprinting}
+\section{Fingerprinting}
 
 The next phase of the algorithm is to transform the extracted source code into a
 representation which is less computationally heavy for the matching algorithm. The goal is
@@ -224,7 +222,7 @@ public class Math() {
 \end{figure}
 
 
-\subsection{Suffix array construction}
+\section{Suffix array construction}
 
 The next step is to input the fingerprint into a suffix array construction algorithm
 (SACA). All the fingerprints which are stored in each document object are concatenated to
@@ -313,10 +311,19 @@ string in $O(n)$ time.
 
 
 
-\subsection{Clone detection}
+\section{Clone extraction}
 
-\subsection{Source-mapping}
+\section{Source-mapping}
 
-\subsection{Incremental updates and optimizations}
+\chapter{Implementation: Incremental detection}
+
+\section{Updating the document index}
+
+\section{Extracting edit operations}
+
+\section{Dynamic suffix arrays}
+
+\section{Storing old clones}
+
 
 Remember to mention what we can afford to do and not.

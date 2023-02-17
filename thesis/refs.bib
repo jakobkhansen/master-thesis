@@ -1,3 +1,20 @@
+@article{DynamicExtendedSuffixArrays,
+    title = {Dynamic extended suffix arrays},
+    journal = {Journal of Discrete Algorithms},
+    volume = {8},
+    number = {2},
+    pages = {241-257},
+    year = {2010},
+    note = {Selected papers from the 3rd Algorithms and Complexity in Durham Workshop ACiD 2007},
+    issn = {1570-8667},
+    doi = {https://doi.org/10.1016/j.jda.2009.02.007},
+    url = {https://www.sciencedirect.com/science/article/pii/S1570866709000343},
+    author = {M. Salson and T. Lecroq and M. Léonard and L. Mouchard},
+    keywords = {Dynamic, Suffix array, Edit operations, Algorithm design, Self-index data structures, FM-index},
+    abstract = {The suffix tree data structure has been intensively described, studied and used in the eighties and nineties, its linear-time construction counterbalancing his space-consuming requirements. An equivalent data structure, the suffix array, has been described by Manber and Myers in 1990. This space-economical structure has been neglected during more than a decade, its construction being too slow. Since 2003, several linear-time suffix array construction algorithms have been proposed, and this structure has slowly replaced the suffix tree in many string processing problems. All these constructions are building the suffix array from the text, and any edit operation on the text leads to the construction of a brand new suffix array. In this article, we are presenting an algorithm that modifies the suffix array and the Longest Common Prefix (LCP) array when the text is edited (insertion, substitution or deletion of a letter or a factor). This algorithm is based on a recent four-stage algorithm developed for dynamic Burrows–Wheeler Transforms (BWT). For minimizing the space complexity, we are sampling the Suffix Array, a technique used in BWT-based compressed indexes. We furthermore explain how this technique can be adapted for maintaining a sample of the Extended Suffix Array, containing a sample of the Suffix Array, a sample of the Inverse Suffix Array and the whole LCP array. Our practical experiments show that it operates very well in practice, being quicker than the fastest suffix array construction algorithm.}
+}
+
+
 @book{fowlerrefactoring,
   author    = {Martin Fowler},
   title     = {Refactoring - Improving the Design of Existing Code},
@@ -222,6 +239,14 @@ series = {CASCON '15}
   note = {Accessed: 2022-04-16}
 }
 
+@misc{lsp,
+  title = {Language Server Protocol},
+  author = {Microsoft},
+  howpublished = {\url{https://microsoft.github.io/language-server-protocol/}},
+  note = {Accessed: 2023-02-17}
+}
+
+
 @article{IncrementalParsing,
   author    = {Carlo Ghezzi and
                Dino Mandrioli},
@@ -410,5 +435,41 @@ url="https://doi.org/10.1007/978-1-4939-2864-4_412"
   pages={249--260},
   year={1995},
   publisher={Springer}
+}
+
+
+@INPROCEEDINGS{Deckard,
+  author={Jiang, Lingxiao and Misherghi, Ghassan and Su, Zhendong and Glondu, Stephane},
+  booktitle={29th International Conference on Software Engineering (ICSE'07)}, 
+  title={DECKARD: Scalable and Accurate Tree-Based Detection of Code Clones}, 
+  year={2007},
+  volume={},
+  number={},
+  pages={96-105},
+  doi={10.1109/ICSE.2007.30}
+}
+
+
+@inproceedings{ASTCloneDetection,
+    author = {Baxter, Ira and Yahin, Andrew and de Moura, Leonardo and Sant'Anna, Marcelo and Bier, Lorraine},
+    year = {1998},
+    month = {01},
+    pages = {368-377},
+    title = {Clone Detection Using Abstract Syntax Trees.},
+    volume = {368-377},
+    journal = {Proc. of International Conference on Software Maintenance},
+    doi = {10.1109/ICSM.1998.738528}
+}
+
+
+@INPROCEEDINGS{JacobsonsRank,
+  author={Jacobson, G.},
+  booktitle={30th Annual Symposium on Foundations of Computer Science}, 
+  title={Space-efficient static trees and graphs}, 
+  year={1989},
+  volume={},
+  number={},
+  pages={549-554},
+  doi={10.1109/SFCS.1989.63533}
 }
 

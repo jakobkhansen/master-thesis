@@ -1,4 +1,4 @@
-\documentclass[a4paper,english]{report}
+\documentclass[a4paper,english,hidelinks]{report}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{frontpage/uiomasterfp}
@@ -10,6 +10,8 @@
 \usepackage{amsthm}
 \usepackage{tikz-qtree}
 \usepackage{amsmath}
+\usepackage{parskip}
+
 
 
 \usepackage{graphicx}
@@ -56,8 +58,8 @@
 \def\addsquare#1{\tikz\node[draw]{#1};}
 \def\addcircle#1{\tikz\node[draw,circle]{#1};}
 
-\title{CC-LSP: Language and IDE agnostic code clone detection}
-\subtitle{Incremental code clone detection for text editors}
+\title{CCDetect-LSP: Incremental code clone detection for IDEs}
+\subtitle{Language- and IDE agnostic incremental code clone detection for IDEs}
 
 
 \author{Jakob Konrad Hansen}
