@@ -1,7 +1,7 @@
 
 \chapter{Implementation: LSP server architecture}
 
-Our tool is integrated into IDEs via the Language server protocol. The goal is to give
+The tool is integrated into IDEs via the Language server protocol. The goal is to give
 users of the tool an overview of all clones as they appear in source-code.
 
 The tool shows error-messages (diagnostics in LSP terms) which indicate which section of
@@ -225,15 +225,15 @@ public class Math() {
 \section{Suffix array construction}
 
 The next step is to input the fingerprint into a suffix array construction algorithm
-(SACA). All the fingerprints which are stored in each document object are concatenated to
-be stored in a single integer array (with terminators after each fragment), which the
-suffix array (SA), inverse suffix array (ISA) and longest-common prefix array (LCP) is
-computed from.
+(SACA), so that the suffix array can be used to find maximal repeats. All the fingerprints
+which are stored in each document object are concatenated to be stored in a single integer
+array (with terminators after each fragment), which the suffix array (SA), inverse suffix
+array (ISA) and longest-common prefix array (LCP) is computed from.
 
 We have utilized a straight-forward implementation of the ``Induced sorting
-variable-length LMS-substrings'' algorithm which calculates a suffix array in linear time. The following section will give an overview of
-how the algorithm works, but readers interested in the full details are referred
-elsewhere\cite{LinearTimeSuffixArraySAIS}. 
+variable-length LMS-substrings'' algorithm which calculates a suffix array in linear time.
+The following section will give high-level overview of how the algorithm
+works~\cite{LinearTimeSuffixArraySAIS}. 
 
 The algorithm will be explained with a string input, as this is most common for suffix
 arrays, and working with strings can be more clear to the reader when looking at suffixes.
@@ -269,6 +269,7 @@ have already computed the type of that suffix, we can reuse the value. Figure
 \ref{fig:sais-types} shows an algorithm which determines the type of each suffix in a
 string in $O(n)$ time.
 
+% TODO redo with pseudo-code
 \begin{figure}
 	\begin{center}
 		\begin{lstlisting}
@@ -302,14 +303,55 @@ string in $O(n)$ time.
 \end{figure}
 
 
-
-
-\begin{definition}[LMS-characters]
-    
-    
+\begin{definition}[LMS character]
+    An LMS (Left-most S-type) character in a string $S$ is a position $i$ in $S$ such that
+    $S[i]$ is S-type and $S[i-1]$ is L-type. An LMS-suffix is a suffix in $S$ which begins
+    with an LMS character.
 \end{definition}
 
+\begin{definition}[LMS-substring]
+    An LMS-substring in a string $S$ is a substring $S[i..j]$ in $S$ such that
+    $i \neq j$, $S[i]$ and $[j]$ are LMS-characters and there are no other LMS-character between.
+\end{definition}
 
+Using the notion of LMS-substrings, we can sort all LMS suffixes recursively with the
+following theorems:
+
+\begin{theorem}
+    There are at most $n / 2$ LMS-substrings in a string $S$ of length n.
+\end{theorem}
+
+\begin{theorem}
+    Given sorted LMS-substrings, the rest of the suffix array can be induced in linear
+    time.
+\end{theorem}
+
+The details of the theorems are left out, the second theorem is the essential part of
+explaining how the recursion allows us to build the suffix array in linear time.
+
+We can construct a smaller string $S_1$ by bucketing each LMS-substring, and giving each
+bucket a unique value (such as the buckets index in an array). Two LMS-substrings are
+considered equal if they are equal in terms of length, characters and types. Bucketing can
+be done in $O(n)$ time by scanning $S$ from right to left in $S$. This smaller
+string will be the reduced case which is used in the recursion. The string is at most $n /
+2$ in size, meaning there will be at most $\log_2(n)$ recursive calls. The recursive call
+will return the suffix array of the $S_1$.
+
+The base-case of the recursion will be when there are no LMS-substrings, and when the
+recursive call returns, we will use the suffix array of the $S_1$, to sort the suffixes of
+$S$ in linear time. The details of sorting the bigger suffix array using the smaller
+suffix array is left out. There will be $O(\log_2(n))$ recursive call, where each
+recursive call takes $O(n)$ time, with $n$ halving in each call. Therefore, the recurrence
+will have the complexity of:
+
+\begin{gather*}
+    T(n) =
+\begin{cases}
+    O(1) & \text{if } n = 1. \\
+    T(n / 2) + O(n) & \text{if } n > 1.
+\end{cases}
+= O(n)
+\end{gather*}
 
 \section{Clone extraction}
 
