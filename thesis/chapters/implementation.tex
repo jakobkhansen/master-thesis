@@ -353,6 +353,78 @@ will have the complexity of:
 = O(n)
 \end{gather*}
 
+\subsubsection{Building ISA and LCP arrays}
+
+Computing the ISA after constructing the SA is trivial. Since the ISA is simply the inverse
+of SA, it can be constructed in linear time with a single loop as seen in Algorithm
+\ref{alg:isa}
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\ISA{SA}}{
+        $N \gets \text{SA.length}$ \\
+        $\text{ISA} \gets int[N]$
+
+        \For{$i \in 0..N$}{
+
+            $\text{ISA}[\text{SA}[i]] \gets i$
+        }
+
+        \Return ISA
+    }
+
+  \vspace{0.5cm}
+  \caption{Compute ISA from SA}
+  \label{alg:isa}
+\end{algorithm}
+
+
+% TODO rewrite this shit
+Computing the LCP in linear time is more complicated and requires some thought about which
+order to insert LCP values. We will also add one extra restriction to the LCP values,
+being that the LCP values cannot match past a $1$, which were the terminal value between
+fragments. This restriction will be useful when we want to extract clones using the LCP.
+The algorithm to compute the LCP is shown in Algorithm \ref{alg:lcp}. The intuition for
+this algorithm is that if a suffix at position $i$ which has an LCP value $l$ describing
+the common-prefix between it and some other suffix at position $j$, then the LCP value of
+the suffix at position $i + 1$ is at least $l - 1$, since the suffix at $i + 1$ and $j +
+1$ is the same suffix as the suffixes at position $i$ and $j$, with the first character
+cut off. Therefore, they share at least $l - 1$ characters, and the algorithm can start
+comparing the characters of the suffixes from the characters at position $l - 1$ of the
+suffixes.
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\LCP{S, SA, ISA}}{
+        $N \gets \text{SA.length}$
+
+        $\text{LCP} \gets int[N]$
+
+        $l \gets 0$
+
+        \For{$i \in 0..N - 1$}{
+            $r \gets \text{ISA}[i]$
+
+            $\text{prevSuffix} \gets \text{SA}[r - 1]$
+
+            \While{$S[i + l] = S[\text{prevSuffix} + l] \text{ and } S[i + l] \neq 1$}{
+                $l \gets l + 1$
+            }
+
+            $\text{LCP}[r] \gets l$
+
+            $l \gets \max{0, l - 1}$
+        }
+
+        \Return ISA
+    }
+
+  \vspace{0.5cm}
+  \caption{Compute LCP from input string S, SA, and ISA}
+  \label{alg:lcp}
+\end{algorithm}
+
+
 \section{Clone extraction}
 
 \section{Source-mapping}
