@@ -385,7 +385,7 @@ theorem which shows that sorting $S_1$ is equivalent to sorting the LMS suffixes
 Therefore, the suffix array of $S_1$ can be mapped to the LMS suffixes of $S$, which is a
 subset of the SA of $S$. Now that we have
 
-The base-case of the recursion will be when there is one LMS-substring, the sentinel
+The base-case of the recursion is when there is one LMS-substring, the sentinel
 character. Intuitively, it is trivial to compute the suffix array of $S$ when there is
 only one LMS-substring, since all suffixes except the sentinel are either in
 lexicographically increasing or decreasing order. When the recursive call returns, the SA
@@ -529,8 +529,11 @@ following theorem:
 
     The LCP of a suffix at position $i$ is completely contained in the LCP of the previous
     suffix at position $i - 1$ if the LCP value of the suffix at position $i - 1$ is
-    greater than the LCP value of the suffix at position $i$. Meaning $LCP[ISA[i - 1]] >
-    LCP[ISA[i]]$ 
+    greater than the LCP value of the suffix at position $i$. Meaning:
+
+    $$
+    LCP[ISA[i - 1]] > LCP[ISA[i]]
+    $$
 
 \end{theorem}
 
@@ -575,6 +578,74 @@ tokens, but where neither contains the other.
 \end{algorithm}
 
 \section{Source-mapping}
+
+With the clone indices in the fingerprint ready, we are almost done computing the clones.
+The final step is to map the clone indices back to the original source code. In order to
+correctly identify where a clone is located, we need to know which file the clone is
+located in, and the range of the source code in that file the code clone covers.
+
+To accomplish this, each document in the index needs to store the range of each of its
+tokens and keep track of which portion of the fingerprint consists of the documents
+tokens. This is done by storing two integer variables, each storing the start position and
+end position that the document has in the fingerprint. 
+
+\begin{algorithm}[htp!]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\SourceMap{documents, i}}{
+        $left \gets 0$ \;
+        $right \gets \text{documents.length - 1}$ \;\;
+
+
+        \While{$left \leq right$}{
+            $mid \gets (left + right) / 2$
+
+            \uIf{$documents[mid].fingerprintEnd < i$}{
+                $left = mid + 1$
+            }
+            \uElseIf{$documents[mid].fingerprintStart > i$}{
+                $right = mid - 1$
+            }
+            \Else {
+                $document \gets documents[mid]$ \;
+                $range \gets document.ranges[i - document.fingerprintEnd]$
+
+                \Return (document.uri, range)
+            }
+
+        }
+
+        \Return \null
+    }
+
+  \vspace{0.5cm}
+  \caption{Get source-map for a position $i$ in the fingerprint}
+  \label{alg:sourcemap}
+\end{algorithm}
+
+To determine which document a fingerprint position corresponds to, we can perform a binary
+search on the list of the documents, which is sorted based on the start position of the
+documents fingerprint. The goal is to find the document where the fingerprint position $i$
+is 
+
+$$
+\text{document.fingerprintStart} \leq i \leq \text{document.fingerprintEnd}
+$$
+
+Once the correct document has been found, we simply have to look up the correct range
+which the document stores. The index of this range is $i -
+\text{document.fingerprintStart}$.
+
+Algorithm \ref{alg:sourcemap} shows this algorithm and how the URI for the document and
+the range which the token at a position $i$ occupies.
+
+This algorithm only shows how to look up the position of a single token. Since a code
+clone is a range between two tokens, we have to look up the position of both the
+fingerprint index $i$ extracted in the previous phase, and the position where the clone
+ends, which is the fingerprint index $i + \text{LCP}[\text{ISA}[i]]$. The range of the
+code clone is therefore the combination of the starting range of the first token (at
+position $i$) and the ending range of the second token (at position $i +
+\text{LCP}[\text{ISA}[i]]$).
+
 
 \chapter{Implementation: Incremental detection}
 
