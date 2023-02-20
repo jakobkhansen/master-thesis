@@ -140,37 +140,6 @@ children of already captured nodes) and extracts all the tokens which the node c
 
 \section{Fingerprinting}
 
-The next phase of the algorithm is to transform the extracted source code into a
-representation which is less computationally heavy for the matching algorithm. The goal is
-to reduce the total size of the input which needs to be processed by the matching
-algorithm.
-
-Since the algorithm that is used for matching is based on a suffix array, the
-representation should be in a format similar to a string, which is the standard input to a
-suffix array construction algorithm. However, it's not strictly necessary to use strings.
-The essential property of the input array is that each element is comparable. Therefore,
-we can use an array of integers instead, which is preferable, since there are often a lot
-more unique integers available than unique characters in a programming language. The
-algorithm will need to have a lot of unique elements in the representation because each
-unique token value should be represented by one unique element, therefore integers are a
-good choice.
-
-The algorithm utilizes fingerprinting in order to reduce the size of the representation.
-Fingerprinting is a technique which involves taking some part of the input and mapping it
-to a smaller bit string, which uniquely identifiers that part. In this case, the algorithm
-takes each token of the source-code, and maps it to an integers bit string. Each unique
-token value (tokenized by tree-sitter) is mapped to unique integer values. Note that the
-algorithm maps token values, not types. This ensures that tokens of different
-variable-names and literals are not seen as equal. Figure \ref{fig:fingerprint} shows how
-a sample Java program could theoretically be fingerprinted. The fingerprint mapping starts
-its ``count'' at 2 to make space for some terminating characters. Each fragment is
-terminated by a $1$ and the fingerprint is ultimately terminated by a $0$. Having these
-values in the fingerprint will be useful for the matching algorithm where the suffix array
-is constructed and utilized for detection.
-
-The fingerprint of each fragment is stored in a list which the relevant document object
-contains.
-
 \newsavebox{\firstlisting}
 \begin{lrbox}{\firstlisting}
 \begin{lstlisting}
@@ -185,7 +154,7 @@ public class Math() {
 }
 \end{lstlisting}
 \end{lrbox}
-\begin{figure}
+\begin{figure}[htp]
 	\begin{center}
         \subfloat[Source-code] {
             \usebox{\firstlisting}
@@ -221,6 +190,39 @@ public class Math() {
 	\label{fig:fingerprint}
 \end{figure}
 
+The next phase of the algorithm is to transform the extracted source code into a
+representation which is less computationally heavy for the matching algorithm. The goal is
+to reduce the total size of the input which needs to be processed by the matching
+algorithm.
+
+Since the algorithm that is used for matching is based on a suffix array, the
+representation should be in a format similar to a string, which is the standard input to a
+suffix array construction algorithm. However, it's not strictly necessary to use strings.
+The essential property of the input array is that each element is comparable. Therefore,
+we can use an array of integers instead, which is preferable, since there are often a lot
+more unique integers available than unique characters in a programming language. The
+algorithm will need to have a lot of unique elements in the representation because each
+unique token value should be represented by one unique element, therefore integers are a
+good choice.
+
+
+The algorithm utilizes fingerprinting in order to reduce the size of the representation.
+Fingerprinting is a technique which involves taking some part of the input and mapping it
+to a smaller bit string, which uniquely identifiers that part. In this case, the algorithm
+takes each token of the source-code, and maps it to an integers bit string. Each unique
+token value (tokenized by tree-sitter) is mapped to unique integer values. Note that the
+algorithm maps token values, not types. This ensures that tokens of different
+variable-names and literals are not seen as equal. Figure \ref{fig:fingerprint} shows how
+a sample Java program could theoretically be fingerprinted. The fingerprint mapping starts
+its ``count'' at 2 to make space for some terminating characters. Each fragment is
+terminated by a $1$ and the fingerprint is ultimately terminated by a $0$. Having these
+values in the fingerprint will be useful for the matching algorithm where the suffix array
+is constructed and utilized for detection.
+
+The fingerprint of each fragment is stored in a list which the relevant document object
+contains.
+
+
 
 \section{Suffix array construction}
 
@@ -231,9 +233,9 @@ array (with terminators after each fragment), which the suffix array (SA), inver
 array (ISA) and longest-common prefix array (LCP) is computed from.
 
 We have utilized a straight-forward implementation of the ``Induced sorting
-variable-length LMS-substrings'' algorithm which calculates a suffix array in linear time.
-The following section will give high-level overview of how the algorithm
-works~\cite{LinearTimeSuffixArraySAIS}. 
+variable-length LMS-substrings'' algorithm~\cite{LinearTimeSuffixArraySAIS} which computes
+a suffix array in linear time. The following section will give high-level overview of how
+the algorithm works. 
 
 The algorithm will be explained with a string input, as this is most common for suffix
 arrays, and working with strings can be more clear to the reader when looking at suffixes.
@@ -242,17 +244,16 @@ similarly to a string when given as input.
 
 The ``Induced sorting variable-length LMS-substrings'' algorithm (often abbreviated SA-IS)
 is an algorithm that works by divide and conquering the array and inducing how to sort the
-bigger problem from the smaller problems. First, we will introduce some definitions and
-theorems used for the algorithm.
-
-Input to the algorithm is a string $S$ with length $n$. Let $\text{suffix}(S, i)$ be the
-suffix in S starting at position i.
+bigger string from the smaller string, where the smaller string consists of the ``building
+blocks'' of the bigger string. First, we will introduce some definitions and theorems used
+for the algorithm. Input to the algorithm is a string $S$ with length $n$. Let
+$\text{suffix}(S, i)$ be the suffix in S starting at position i.
 
 \begin{definition}[L-type and S-type suffixes] A suffix starting at position $i$ in a
     string $S$ is considered to be L-type if it is lexicographically larger than the next
     suffix at position $i + 1$. Meaning that $\text{suffix}(S, i) > \text{suffix}(S,
     i+1)$. Conversely, a suffix is considered to be S-type if $\text{suffix}(S, i) <
-    \text{suffix}(S, i+1)$. The final suffix (\$) of $S$ is always S-type.
+    \text{suffix}(S, i+1)$. The sentinel suffix (\$) of $S$ is always S-type.
 \end{definition}
 
 Note that two suffixes cannot be lexicographically equal, therefore all cases are handled
@@ -302,47 +303,97 @@ string in $O(n)$ time.
 	\label{fig:sais-types}
 \end{figure}
 
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\SuffixTypes{S}}{
+        $n \gets \text{S.length}$ \;
+        $\text{Stype} \gets \text{true}$ \;
+        $\text{Ltype} \gets \text{false}$ \;\;
+
+        $\text{types} \gets \text{BitSet of size n}$ \;\;
+
+        $\text{types.set}(n, \text{Stype})$ \;
+        $\text{types.set}(n - 1, \text{Ltype})$ \;\;
+
+        \For{$i \in (n - 2)..0$}{
+
+            \uIf{$S[i] < S[i + 1]$}{
+                $\text{types.set}(i, \text{Stype})$
+            }
+            \uElseIf{$S[i] > S[i + 1]$}{
+                $\text{types.set}(i, \text{Ltype})$
+            }
+            \Else{
+                $\text{types.set}(i, \text{types.get}(i + 1))$
+            }
+        }
+
+        \Return types
+    }
+
+  \vspace{0.5cm}
+  \caption{Compute suffix types of a string}
+  \label{alg:suffixtypes}
+\end{algorithm}
+
 
 \begin{definition}[LMS character]
+
     An LMS (Left-most S-type) character in a string $S$ is a position $i$ in $S$ such that
     $S[i]$ is S-type and $S[i-1]$ is L-type. An LMS-suffix is a suffix in $S$ which begins
-    with an LMS character.
+    with an LMS character. The final character of $S$ (the sentinel) is always S-type and
+    the first character is always $L$ type
+
 \end{definition}
 
 \begin{definition}[LMS-substring]
-    An LMS-substring in a string $S$ is a substring $S[i..j]$ in $S$ such that
-    $i \neq j$, $S[i]$ and $[j]$ are LMS-characters and there are no other LMS-character between.
+
+    An LMS-substring in a string $S$ is a substring $S[i..j]$ in $S$ such that $i \neq j$,
+    $S[i]$ and $[j]$ are LMS-characters and there are no other LMS-character between. The
+    sentinel character is also an LMS-substring and is the only LMS-substring of length
+    $\leq 3$
+
 \end{definition}
 
-Using the notion of LMS-substrings, we can sort all LMS suffixes recursively with the
-following theorems:
+LMS-substrings form "basic-blocks" in the string $S$. Each LMS-substring overlap on two
+characters, and each substring should be monotonically decreasing, because of the type.
+Using this notion, we can sort all LMS suffixes recursively with the following theorems:
+
+\begin{theorem}
+    Given sorted LMS-suffixes of $S$, the rest of the suffix array can be induced in linear
+    time. 
+\end{theorem}
 
 \begin{theorem}
     There are at most $n / 2$ LMS-substrings in a string $S$ of length n.
 \end{theorem}
 
-\begin{theorem}
-    Given sorted LMS-substrings, the rest of the suffix array can be induced in linear
-    time.
-\end{theorem}
+The details of the theorems are left out, but the intuition of the second theorem will be
+explained as it is the essential part of how the recursion allows us to build the suffix
+array in linear time.
 
-The details of the theorems are left out, the second theorem is the essential part of
-explaining how the recursion allows us to build the suffix array in linear time.
-
-We can construct a smaller string $S_1$ by bucketing each LMS-substring, and giving each
-bucket a unique value (such as the buckets index in an array). Two LMS-substrings are
-considered equal if they are equal in terms of length, characters and types. Bucketing can
-be done in $O(n)$ time by scanning $S$ from right to left in $S$. This smaller
+We can construct a smaller string $S_1$ by first sorting the LMS-substrings. Sorting
+LMS-substrings can be done in linear time with a three-pass operation (details left out).
+After sorting, each equal LMS-substring is given a unique increasing integer value. Two
+LMS-substrings are considered equal if they are equal in terms of length, characters and
+types. The smaller string is now built by mapping each LMS-substring in the original
+ordering to its unique value, and forming a smaller string of it. of $S$ This smaller
 string will be the reduced case which is used in the recursion. The string is at most $n /
 2$ in size, meaning there will be at most $\log_2(n)$ recursive calls. The recursive call
-will return the suffix array of the $S_1$.
+will return the suffix array of the $S_1$. ~\cite{SuffixArrayConstruction} proves a
+theorem which shows that sorting $S_1$ is equivalent to sorting the LMS suffixes of $S$.
+Therefore, the suffix array of $S_1$ can be mapped to the LMS suffixes of $S$, which is a
+subset of the SA of $S$. Now that we have
 
-The base-case of the recursion will be when there are no LMS-substrings, and when the
-recursive call returns, we will use the suffix array of the $S_1$, to sort the suffixes of
-$S$ in linear time. The details of sorting the bigger suffix array using the smaller
-suffix array is left out. There will be $O(\log_2(n))$ recursive call, where each
-recursive call takes $O(n)$ time, with $n$ halving in each call. Therefore, the recurrence
-will have the complexity of:
+The base-case of the recursion will be when there is one LMS-substring, the sentinel
+character. Intuitively, it is trivial to compute the suffix array of $S$ when there is
+only one LMS-substring, since all suffixes except the sentinel are either in
+lexicographically increasing or decreasing order. When the recursive call returns, the SA
+of $S_1$ is used in another three-pass operation where the LMS suffixes guide the rest of
+the suffixes to their correct location in SA.
+
+There will be $O(\log_2(n))$ recursive call, where each recursive call takes $O(n)$ time,
+with $n$ halving in each call. Therefore, the recurrence will have the complexity of:
 
 \begin{gather*}
     T(n) =
@@ -390,8 +441,7 @@ the common-prefix between it and some other suffix at position $j$, then the LCP
 the suffix at position $i + 1$ is at least $l - 1$, since the suffix at $i + 1$ and $j +
 1$ is the same suffix as the suffixes at position $i$ and $j$, with the first character
 cut off. Therefore, they share at least $l - 1$ characters, and the algorithm can start
-comparing the characters of the suffixes from the characters at position $l - 1$ of the
-suffixes.
+comparing the characters at that offset.
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
@@ -426,6 +476,57 @@ suffixes.
 
 
 \section{Clone extraction}
+
+With the extended suffix array structure, we can now consider which substrings (prefixes
+of suffixes) we want to extract as potential code clones. In this phase the indices of the
+fingerprint which we consider to be code clones are extracted, which will in the next
+phase be used to map back to the original source code.
+
+A solution is to extract every suffix which has an LCP value which is $\geq$ the token
+threshold. This would be a single loop over $S$, using the inverse suffix array to find
+the corresponding LCP value. This finds the clone indices, as shown in Algorithm
+\ref{alg:simplecloneextraction}.
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\SimpleCloneExtraction{S, ISA, LCP}}{
+        $n \gets \text{S.length}$ \;
+        $\text{Clones} \gets List$ \;
+
+
+        \For{$i \in 0..n - 1$}{
+            \If{$\text{ISA}[i] = 0$}{
+                \continue \;
+            } \;
+
+            \If{$LCP[ISA[i]] \geq \text{THRESHOLD}$}{
+                $\text{clones.add}(i)$
+            }
+        }
+
+        \Return clones
+    }
+
+  \vspace{0.5cm}
+  \caption{Compute LCP from input string S, SA, and ISA}
+  \label{alg:simplecloneextraction}
+\end{algorithm}
+
+However, this algorithm will return a lot of nested clones. This is because in a case
+where there is a suffix with an LCP value of $100$, the next suffix will be of at least
+$99$. Because of this, for any large code clone, there will be a lot of smaller clones
+which are completely contained within it, but these clones are also likely to match with
+another clone which is also contained within the larger clones match. In this way, the
+contained clones are not very useful, and should not be considered. We extend our clone
+extraction algorithm to account for this, by utilizing the following theorem:
+
+\begin{theorem} The common prefix of a suffix at position $i$ is completely contained in
+    the previous suffix at position $i - 1$ if the LCP value of the suffix at position $i
+    - 1$ is greater than the LCP value of the suffix at position $i$. Meaning $LCP[ISA[i -
+    1]] > LCP[ISA[i]]$
+    
+\end{theorem}
+
 
 \section{Source-mapping}
 
