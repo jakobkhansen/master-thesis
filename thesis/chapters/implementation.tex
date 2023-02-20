@@ -482,10 +482,10 @@ of suffixes) we want to extract as potential code clones. In this phase the indi
 fingerprint which we consider to be code clones are extracted, which will in the next
 phase be used to map back to the original source code.
 
-A solution is to extract every suffix which has an LCP value which is $\geq$ the token
-threshold. This would be a single loop over $S$, using the inverse suffix array to find
-the corresponding LCP value. This finds the clone indices, as shown in Algorithm
-\ref{alg:simplecloneextraction}.
+A solution is to extract every suffix which has an LCP value which is greater than the
+token threshold (except for the suffix at index 0 in SA). The algorithm would be a single
+loop over $S$, using ISA to find the corresponding LCP value. This
+finds the clone indices, as shown in Algorithm \ref{alg:simplecloneextraction}.
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
@@ -499,7 +499,7 @@ the corresponding LCP value. This finds the clone indices, as shown in Algorithm
                 \continue \;
             } \;
 
-            \If{$LCP[ISA[i]] \geq \text{THRESHOLD}$}{
+            \If{$\text{LCP}[\text{ISA}[i]] \geq \text{THRESHOLD}$}{
                 $\text{clones.add}(i)$
             }
         }
@@ -508,25 +508,71 @@ the corresponding LCP value. This finds the clone indices, as shown in Algorithm
     }
 
   \vspace{0.5cm}
-  \caption{Compute LCP from input string S, SA, and ISA}
+  \caption{Extract clones indices in a string $S$}
   \label{alg:simplecloneextraction}
 \end{algorithm}
 
-However, this algorithm will return a lot of nested clones. This is because in a case
-where there is a suffix with an LCP value of $100$, the next suffix will be of at least
-$99$. Because of this, for any large code clone, there will be a lot of smaller clones
-which are completely contained within it, but these clones are also likely to match with
-another clone which is also contained within the larger clones match. In this way, the
-contained clones are not very useful, and should not be considered. We extend our clone
-extraction algorithm to account for this, by utilizing the following theorem:
 
-\begin{theorem} The common prefix of a suffix at position $i$ is completely contained in
-    the previous suffix at position $i - 1$ if the LCP value of the suffix at position $i
-    - 1$ is greater than the LCP value of the suffix at position $i$. Meaning $LCP[ISA[i -
-    1]] > LCP[ISA[i]]$
-    
+However, this algorithm will return a lot of contained clones. A contained clone is a
+clone where all the tokens of the clone is a part of another, larger clone. The algorithm
+will give a lot of contained clones because in a case where there is a suffix with an LCP
+value of $100$, the next suffix will have the LCP value of at least $99$ and likely
+matches with the same code clone as the previous suffix, but with an offset of 1. Because
+of this, for any large code clone, there will be a lot of smaller clones which are
+completely contained within it, but these clones are also likely to match with another
+clone which is also contained within the larger clones match. Since the code clones point
+at mostly the same area, the contained clones are not very useful, and should not be
+considered. We extend our clone extraction algorithm to account for this, by using the
+following theorem:
+
+\begin{theorem} 
+
+    The LCP of a suffix at position $i$ is completely contained in the LCP of the previous
+    suffix at position $i - 1$ if the LCP value of the suffix at position $i - 1$ is
+    greater than the LCP value of the suffix at position $i$. Meaning $LCP[ISA[i - 1]] >
+    LCP[ISA[i]]$ 
+
 \end{theorem}
 
+
+Algorithm \ref{alg:cloneextraction} adds a while-loop to the clone extraction algorithm
+which skips over all clones with LCP values which should be skipped according to the
+theorem. Note that this algorithm doesn't disallow contained clones entirely, but any
+clone which is a shorter version of another clone pointing to the same match, will be
+skipped. Also note that overlapping clones are allowed, meaning two clones which share
+tokens, but where neither contains the other.
+
+\begin{algorithm}[htp!]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\CloneExtraction{S, ISA, LCP}}{
+        $n \gets \text{S.length}$ \;
+        $\text{Clones} \gets List$ \;
+
+
+        \For{$i \in 0..n - 1$}{
+            \If{$\text{ISA}[i] = 0$}{
+                \continue \;
+            } \;
+
+            \If{$\text{LCP}[\text{ISA}[i]] \geq \text{THRESHOLD}$}{
+                $\text{clones.add}(i)$
+
+                $i \gets i + 1$
+
+                \While{$i < n \text{ and } LCP[ISA[i]] < LCP[ISA[i - 1]]$}{
+                    $i \gets i + 1$
+                }
+
+            }
+        }
+
+        \Return clones
+    }
+
+  \vspace{0.5cm}
+  \caption{Extract clones indices in a string $S$, ignoring contained clones}
+  \label{alg:cloneextraction}
+\end{algorithm}
 
 \section{Source-mapping}
 
