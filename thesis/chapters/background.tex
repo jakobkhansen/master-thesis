@@ -74,7 +74,7 @@ The code clone types are defined as follows:
 \textbf{Type-1} clones are syntactically identical. The only differences allowed are elements
 without meaning, like comments and white-space. Example:
 
-% TODO this looks like shit
+\Todo{Redo these}
 \begin{tcolorbox}
 	\begin{center}
 		\begin{tabular}{c | c}
@@ -433,9 +433,9 @@ specific syntactic regions and extract the tokens.
 
 \subsubsection{Suffix trees}
 
-% TODO cite suffix tree algorithms here
-A classic algorithm~\cite{Zibran_real_time_search, GodeIncrementalCloneDetection} for code clone detection traverses a suffix-tree in order to find
-maximal repeats in all suffixes of the input string T.
+A classic algorithm~\cite{Zibran_real_time_search, GodeIncrementalCloneDetection} for code
+clone detection traverses a suffix-tree in order to find maximal repeats in all suffixes
+of the input string T.
 
 The suffix tree of a string $T$ is a compressed trie where all the suffixes of $T$ have been
 inserted. The tree is compressed by combining consecutive nodes in a row which has
@@ -558,9 +558,9 @@ suffix. These are the values in the LCP array.
 
 \begin{definition}[LCP array]
     Let T be a text of length N and SA be the suffix array of T.
-    The LCP array of T is an array of length N where \texttt{LCP[i] = n} if the suffix
-    \texttt{T[SA[i]..N]} and \texttt{T[SA[i-1]..N]} has a common prefix of length
-    \texttt{n}. \texttt{LCP[0]} is undefined or {0}.
+    The LCP array of T is an array of length N where $\text{LCP[i] = n}$ if the suffix
+    $\text{T[SA[i]..N]}$ and $\text{T[SA[i-1]..N]}$ has a maximal common prefix of length
+    $\text{n}$. $\text{LCP[0]}$ is undefined or {0}.
 \end{definition}
 
 For example, in table \ref{table:BANANA}, the LCP value at position 3 contains the number
@@ -611,21 +611,19 @@ the LCP value at position 3 is 3.
 	\end{center}
 \end{table}
 
-% TODO add correlation between suffix array and tree here with applications
 
 Suffix arrays can be constructed in linear time in terms of the length of T. Many suffix
 array construction algorithms (SACA) have been discovered in the last
 decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm which
-has been shown to be very efficient in practice is Nong and
-Chan's\cite{LinearTimeSuffixArraySAIS} algorithm based on induction sorting. Since ISA is
-the inverse of the suffix array, it can also be constructed in linear time by first
-constructing the suffix array.
+has been shown to be very efficient in practice is Nong and Chan's algorithm based on
+recursive suffix sorting of smaller strings~\cite{LinearTimeSuffixArraySAIS}. 
 
-The LCP array can also be constructed in linear time, utilizing SA and ISA.
+The enhanced (extended) suffix array is the suffix array and the additional LCP array,
+which has been shown to be as powerful as a suffix tree, in terms of what can be computed
+with it with the same time complexity, but uses a smaller amount of
+memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}.
 
-
-
-\subsubsection{Dynamic bitsets}
+ \subsubsection{Dynamic bitsets}
 
 A bitset is an array of bits, each bit representing either the value true or false. A bit
 with the value of 1 is usually referred to as a set bit, and a value of 0 is referred to
@@ -650,7 +648,6 @@ The most well known query to do on bitsets is the rank/select queries.
     B.
 \end{definition}
 
-% TODO citation needed
 Jacobson's rank can calculate rank and select on static bitsets in $O(1)$ time by
 pre-calculating all answers in a space efficient table~\cite{JacobsonsRank}.
 
@@ -683,14 +680,11 @@ now run in $O(\log(n))$ time, since traversing the tree to the correct bitset ta
 $O(\log(\frac{n}{\log(n)}))$ and performing the operation takes $O(\log(n))$ time.
 
 
-% TODO should I add pseudocode for all operations?
 Figure \ref{fig:DynamicBitset} shows how a dynamic bitset tree is structured, and Algorithm
 \ref{alg:dynbitaccess} shows how to access a value in the tree. Traversing the
 tree to calculate rank and select queries can be done similarly by summing set
 bits in left-subtrees (rank) or selecting which subtree to descend based on the number of
 set bits (select).
-
-
 
 \begin{figure}
 	\begin{center}
@@ -744,7 +738,6 @@ set bits (select).
 
 \subsubsection{Burrows-Wheeler transform}
 
-% TODO add source
 
 \begin{table}[!htb]
 	\begin{center}
@@ -789,12 +782,13 @@ set bits (select).
 	\end{center}
 \end{table}
 
-The Burrows-Wheeler transform (BWT) is a transform on strings, often done to improve
-compression. The transform is computed by sorting all ``cyclic-shifts'' of the string
-lexicographically and extracting a new string from the last column of the cyclic-shift''
-matrix. \$ is added to the string as a unique terminating character, this makes some of
-the algorithms on the BWT simpler. \$ is always the smallest character lexicographically.
-Table \ref{table:bwt} shows the BWT for the string T = BANANA\$.
+The Burrows-Wheeler transform (BWT) is a transform on strings, often performed on strings
+to improve compression~\cite{BWT}. The transform is computed by sorting all
+``cyclic-shifts'' of the string lexicographically and extracting a new string from the
+last column of the cyclic-shift'' matrix. \$ is added to the string as a unique
+terminating character, this makes some of the algorithms on the BWT simpler. \$ is always
+the smallest character lexicographically. Table \ref{table:bwt} shows the BWT for the
+string T = BANANA\$.
 
 There is a direct correlation between the suffix array of T and the BWT of T. Table
 \ref{table:bwt} also shows that the indices of the sorted cyclic-shifts correspond to

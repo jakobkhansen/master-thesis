@@ -34,7 +34,7 @@ The following user-stories shows how interaction with the LSP server works.
           clones are now gone.
 \end{itemize}
 
-% TODO redo this figure
+\Todo{Redo this figure}
 \begin{figure}
 	\includegraphics[width=\textwidth]{images/ToolArchitecture.png}
 	\caption{Tool architecture}
@@ -496,7 +496,7 @@ finds the clone indices, as shown in Algorithm \ref{alg:simplecloneextraction}.
 
         \For{$i \in 0..n - 1$}{
             \If{$\text{ISA}[i] = 0$}{
-                \continue \;
+                \Continue \;
             } \;
 
             \If{$\text{LCP}[\text{ISA}[i]] \geq \text{THRESHOLD}$}{
@@ -554,7 +554,7 @@ tokens, but where neither contains the other.
 
         \For{$i \in 0..n - 1$}{
             \If{$\text{ISA}[i] = 0$}{
-                \continue \;
+                \Continue \;
             } \;
 
             \If{$\text{LCP}[\text{ISA}[i]] \geq \text{THRESHOLD}$}{
@@ -644,7 +644,36 @@ fingerprint index $i$ extracted in the previous phase, and the position where th
 ends, which is the fingerprint index $i + \text{LCP}[\text{ISA}[i]]$. The range of the
 code clone is therefore the combination of the starting range of the first token (at
 position $i$) and the ending range of the second token (at position $i +
-\text{LCP}[\text{ISA}[i]]$).
+\text{LCP}[\text{ISA}[i]]$). This range is therefore:
+
+$$
+\text{clone range} = (\text{firstToken.start}, \text{secondToken.end})
+$$
+
+\subsubsection{Aggregating clones}
+
+With this algorithm to build the clone objects, the next step is to make sure that
+matching code clones are collected into buckets of clone classes. Remember that the LCP
+array only gives us the longest match between two suffixes, but it is of course possible
+to have more than two clones of the same code snippet. This case happens when multiple
+consecutive indices in SA are considered to be clones. Since we only look for type-1
+clones, the transitivity property holds, meaning that if
+
+$$
+SA[i] \xrightarrow{clone} SA[i+1] \xrightarrow{clone} SA[i + 2]
+$$
+
+Then clones at position $i$, $i+1$ and $i + 2$ are all clones of each other.
+
+Therefore, each code clone object has a list of its matching clones. We will build a
+clone-map, where the key is an integer which corresponds to which index in the fingerprint
+that a clone starts at, and the value will be the clone object. For each clone index $i$
+which was extracted in the last phase, we get the corresponding match index $j$
+($\text{SA}[\text{ISA[i]} - 1]$), and for both $i$ and $j$ we look in the clone-map if
+there already is a clone at that position, or a  new clone object is created and put in
+the map with that position as the key. Then, in order to aggregate all the clones
+together, the list of matching clones is unioned between the two clones. In this way, all
+the previous existing clones of $i$ is added as a clone in $j$ and vice versa.
 
 
 \chapter{Implementation: Incremental detection}
@@ -658,4 +687,4 @@ position $i$) and the ending range of the second token (at position $i +
 \section{Storing old clones}
 
 
-Remember to mention what we can afford to do and not.
+\Todo{Remember to mention what we can afford to do and not.}
