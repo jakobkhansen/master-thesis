@@ -49,8 +49,23 @@ merge engine. The tool also stores an index of all source code files in the curr
 
 Upon starting, the LSP server requires indexing of the project for conducting analysis.
 This involves creating an index and inserting the relevant documents. A document contains the
-content of a file along with extra information such as the file's URI and information
-about its clones.
+content of a file along with extra information such as the file's URI and some information
+which is useful for the later clone detection. We define the following interface for our
+documents:
+
+\begin{lstlisting}
+    interface Document {
+        String uri,
+        String content,
+        AST ast,
+
+        // Used for incremental updates
+        boolean open,
+        boolean changed,
+        int start,
+        int end
+    }
+\end{lstlisting}
 
 There are two things to consider when determining which files should be inserted into the
 index. First, we are considering only files of a specific file type, since the tool does
@@ -84,7 +99,7 @@ document.
 \chapter{Implementation: Initial detection}
 
 
-This section discusses the detection module of the tool. It consists of the detection
+This chapter discusses the detection module of the tool. It consists of the detection
 algorithm which takes the document index as input, and outputs a list of code clones. The
 initial input to the algorithm will be the raw source code of each document in the index,
 in text format.
@@ -550,10 +565,10 @@ tokens, but where neither contains the other.
 
 \section{Source-mapping}
 
-With the clone indices in the fingerprint ready, we are almost done computing the clones.
-The final step is to map the clone indices back to the original source code. In order to
-correctly identify where a clone is located, we need to know which file the clone is
-located in, and the range of the source code in that file the code clone covers.
+With the clone indices in the fingerprint now computed, we are almost done computing the
+clones. The final step is to map the clone indices back to the original source code. In
+order to correctly identify where a clone is located, we need to know which file the clone
+is located in, and the range of the source code in that file the code clone covers.
 
 To accomplish this, each document in the index needs to store the range of each of its
 tokens and keep track of which portion of the fingerprint consists of the documents
