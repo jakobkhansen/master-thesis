@@ -222,8 +222,6 @@ is constructed and utilized for detection.
 The fingerprint of each fragment is stored in a list which the relevant document object
 contains.
 
-
-
 \section{Suffix array construction}
 
 The next step is to input the fingerprint into a suffix array construction algorithm
@@ -247,88 +245,57 @@ is an algorithm that works by divide and conquering the array and inducing how t
 bigger string from the smaller string, where the smaller string consists of the ``building
 blocks'' of the bigger string. First, we will introduce some definitions and theorems used
 for the algorithm. Input to the algorithm is a string $S$ with length $n$. Let
-$\text{suffix}(S, i)$ be the suffix in S starting at position i.
+$\mathrm{suffix}(S, i)$ be the suffix in S starting at position i.
 
 \begin{definition}[L-type and S-type suffixes] A suffix starting at position $i$ in a
     string $S$ is considered to be L-type if it is lexicographically larger than the next
-    suffix at position $i + 1$. Meaning that $\text{suffix}(S, i) > \text{suffix}(S,
-    i+1)$. Conversely, a suffix is considered to be S-type if $\text{suffix}(S, i) <
-    \text{suffix}(S, i+1)$. The sentinel suffix (\$) of $S$ is always S-type.
+    suffix at position $i + 1$. Meaning that $\mathrm{suffix}(S, i) > \mathrm{suffix}(S,
+    i+1)$. Conversely, a suffix is considered to be S-type if $\mathrm{suffix}(S, i) <
+    \mathrm{suffix}(S, i+1)$. The sentinel suffix (\$) of $S$ is always S-type.
 \end{definition}
 
 Note that two suffixes cannot be lexicographically equal, therefore all cases are handled
 by this definition. Determining the type of each suffix can be done in $O(n)$ by scanning
-$S$ from right-to-left and observing the following properties. $\text{suffix}(S, i)$ is
-L-type if $S[i] > S[i + 1]$. Similarly, $\text{suffix}(S, i)$ is S-type if $S[i] < S[i +
-1]$. If $S[i] = S[i + 1]$, then $\text{suffix}(S, i)$ is the same value as
-$\text{suffix}(S, i + 1)$. This is explained by the fact that if the first character of
-the current suffix is not equal to first character of the next suffix, we already know the
-type based on the first character. If the first character is equal however, we have
-effectively reduced the case to the next suffix, since we are now comparing the second
-character of the current suffix, with the next character of the second suffix. Since we
-have already computed the type of that suffix, we can reuse the value. Figure
-\ref{fig:sais-types} shows an algorithm which determines the type of each suffix in a
-string in $O(n)$ time.
+$S$ from right-to-left and observing the following properties: $\mathrm{suffix}(S, i)$ is
+L-type if $\Access{S}{i} > \Access{S}{i + 1}$. Similarly, $\mathrm{suffix}(S, i)$ is
+S-type if $\Access{S}{i} < \Access{S}{i + 1}$. If $\Access{S}{i} = \Access{S}{i + 1}$,
+then $\mathrm{suffix}(S, i)$ is the same value as $\mathrm{suffix}(S, i + 1)$. This is
+explained by the fact that if the first character of the current suffix is not equal to
+first character of the next suffix, we already know the type based on the first character.
+If the first character is equal however, we have effectively reduced the case to the next
+suffix, since we are now comparing the second character of the current suffix, with the
+next character of the second suffix. Since we have already computed the type of that
+suffix, we can reuse the value. Figure \ref{alg:suffixtypes} shows an algorithm which
+determines the type of each suffix in a string in $O(n)$ time.
 
-% TODO redo with pseudo-code
-\begin{figure}
-	\begin{center}
-		\begin{lstlisting}
-    private BitSet getSuffixTypes(String text) {
-        boolean s_type = true;
-        boolean l_type = false;
-        int n = text.length;
-        BitSet types = new BitSet(n + 1);
-        
-        if (n == 0) {
-             return types;
-        }
-
-        types.set(n, s_type);
-        types.set(n - 1, l_type);
-        for (int i = n - 2; i >= 0; i--) {
-            if (text[i] < text[i + 1]) {
-                types.set(i, s_type);
-            } else if (text[i] > text[i + 1]) {
-                types.set(i, l_type);
-            } else {
-            types.set(i, types.get(i + 1))
-            }
-        }
-
-    }
-\end{lstlisting}
-	\end{center}
-	\caption{Algorithm to determine types of each suffix in a string}
-	\label{fig:sais-types}
-\end{figure}
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\SuffixTypes{S}}{
-        $n \gets \text{S.length}$ \;
-        $\text{Stype} \gets \text{true}$ \;
-        $\text{Ltype} \gets \text{false}$ \;\;
+        $\Var{n} \gets \Access{\Var{S}}{len}$ \;
+        $\Var{Stype} \gets \True$ \;
+        $\Var{Ltype} \gets \False$ \;\;
 
-        $\text{types} \gets \text{BitSet of size n}$ \;\;
+        $\Var{types} \gets \mathrm{Bitset\ of\ size\ n}$ \;\;
 
-        $\text{types.set}(n, \text{Stype})$ \;
-        $\text{types.set}(n - 1, \text{Ltype})$ \;\;
+        $\Set{$\Var{types}, \Var{n}, \Var{Stype}$}$ \;
+        $\Set{$\Var{types}, \Var{n} - 1, \Var{Ltype}$}$ \;\;
 
-        \For{$i \in (n - 2)..0$}{
+        \For{$i \From n - 2 \To 0$}{
 
-            \uIf{$S[i] < S[i + 1]$}{
-                $\text{types.set}(i, \text{Stype})$
+            \uIf{$\Access{\Var{S}}{\Var{i}} <  \Access{\Var{S}}{\Var{i} + 1}$}{
+                $\Set{$\Var{types}, \Var{i}, \Var{Stype}$}$
             }
-            \uElseIf{$S[i] > S[i + 1]$}{
-                $\text{types.set}(i, \text{Ltype})$
+            \uElseIf{$\Access{\Var{S}}{\Var{i}} >  \Access{\Var{S}}{\Var{i} + 1}$}{
+                $\Set{$\Var{types}, \Var{i}, \Var{Ltype}$}$
             }
             \Else{
-                $\text{types.set}(i, \text{types.get}(i + 1))$
+                $\Set{$\Var{types}, \Var{i}, \Get{$\Var{types}, \Var{i} + 1$}$}$
+
             }
         }
 
-        \Return types
+        \Return $\Var{types}$
     }
 
   \vspace{0.5cm}
@@ -412,16 +379,15 @@ of SA, it can be constructed in linear time with a single loop as seen in Algori
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
-    \algo{\ISA{SA}}{
-        $N \gets \text{SA.length}$ \\
-        $\text{ISA} \gets int[N]$
+    \algo{\ComputeISA{SA}}{
+    $\Var{n} \gets \Access{\Var{SA}}{\Var{len}}$ \\
+    $\Var{ISA} \gets \mathrm{array\ of\ size\ n}$
 
-        \For{$i \in 0..N$}{
-
-            $\text{ISA}[\text{SA}[i]] \gets i$
+        \For{$\Var{i} \From 0 \To \Var{n}$}{
+            $\ISA{\SA{i}} \gets \Var{i}$
         }
 
-        \Return ISA
+        \Return $\Var{ISA}$
     }
 
   \vspace{0.5cm}
@@ -445,25 +411,27 @@ comparing the characters at that offset.
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
-    \algo{\LCP{S, SA, ISA}}{
-        $N \gets \text{SA.length}$
+    \algo{\ComputeLCP{S, SA, ISA}}{
+        $\Var{n} \gets \Access{\Var{SA}}{len}$
 
-        $\text{LCP} \gets int[N]$
+        $\Var{LCP} \gets \mathrm{array\ of\ size\ n}$
 
-        $l \gets 0$
+        $\Var{lcpLen} \gets 0$
 
-        \For{$i \in 0..N - 1$}{
-            $r \gets \text{ISA}[i]$
+        \For{$\Var{i} \From 0 \To \Var{n} - 1$}{
+            $\Var{r} \gets \ISA{i}$
 
-            $\text{prevSuffix} \gets \text{SA}[r - 1]$
+            $\Var{prevSuffix} \gets \SA{\Var{r} - 1}$
 
-            \While{$S[i + l] = S[\text{prevSuffix} + l] \text{ and } S[i + l] \neq 1$}{
-                $l \gets l + 1$
+            \While{$\ArrayAccess{\Var{S}}{\Var{i} + \Var{lcpLen}} =
+            \ArrayAccess{S}{\Var{prevSuffix} + \Var{lcpLen}} \And \ArrayAccess{S}{\Var{i} +
+        \Var{lcpLen}} \neq 1$}{
+                $\Var{lcpLen} \gets \Var{lcpLen} + 1$
             }
 
-            $\text{LCP}[r] \gets l$
+            $\LCP{\Var{r}} \gets \Var{lcpLen}$
 
-            $l \gets \max{0, l - 1}$
+            $\Var{lcpLen} \gets \Max{$0, \Var{lcpLen} - 1$}$
         }
 
         \Return ISA
@@ -487,20 +455,21 @@ token threshold (except for the suffix at index 0 in SA). The algorithm would be
 loop over $S$, using ISA to find the corresponding LCP value. This
 finds the clone indices, as shown in Algorithm \ref{alg:simplecloneextraction}.
 
+
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\SimpleCloneExtraction{S, ISA, LCP}}{
-        $n \gets \text{S.length}$ \;
-        $\text{Clones} \gets List$ \;
+        $n \gets \Access{S}{len}$ \;
+        $\Var{clones} \gets \Var{list}$ \;
 
 
-        \For{$i \in 0..n - 1$}{
-            \If{$\text{ISA}[i] = 0$}{
+        \For{$i \From 0 \To n - 1$}{
+            \If{$\ISA{\Var{i}} = 0$}{
                 \Continue \;
             } \;
 
-            \If{$\text{LCP}[\text{ISA}[i]] \geq \text{THRESHOLD}$}{
-                $\text{clones.add}(i)$
+            \If{$\LCP{\ISA{\Var{i}}} \geq \text{THRESHOLD}$}{
+                $\Insert{$\Var{clones}, \Var{i}$}$ \Comment{Adds i to the clone-list}
             }
         }
 
@@ -532,7 +501,7 @@ following theorem:
     greater than the LCP value of the suffix at position $i$. Meaning:
 
     $$
-    LCP[ISA[i - 1]] > LCP[ISA[i]]
+    \LCP{\ISA{\Var{i}}} < \LCP{\ISA{\Var{i} - 1}}
     $$
 
 \end{theorem}
@@ -548,28 +517,30 @@ tokens, but where neither contains the other.
 \begin{algorithm}[htp!]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\CloneExtraction{S, ISA, LCP}}{
-        $n \gets \text{S.length}$ \;
-        $\text{Clones} \gets List$ \;
+        $\Var{n} \gets \Access{S}{len}$ \;
+        $\Var{clones} \gets \Var{List}$ \;
 
 
-        \For{$i \in 0..n - 1$}{
-            \If{$\text{ISA}[i] = 0$}{
+        \For{$\Var{i} \From 0 \To \Var{n} - 1$}{
+            \If{$\ArrayAccess{\Var{ISA}}{i} = 0$}{
                 \Continue \;
             } \;
 
-            \If{$\text{LCP}[\text{ISA}[i]] \geq \text{THRESHOLD}$}{
-                $\text{clones.add}(i)$
+            \If{$\ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i}}}  \geq \Var{THRESHOLD}$}{
+                $\Insert{$\Var{clones}, \Var{i}$}$ \tcp{Adds i to the clone-list}
 
-                $i \gets i + 1$
+                $\Var{i} \gets \Var{i} + 1$
 
-                \While{$i < n \text{ and } LCP[ISA[i]] < LCP[ISA[i - 1]]$}{
-                    $i \gets i + 1$
+                \While{$\Var{i} < \Var{n} \And
+                \ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i}}} <
+            \ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i} - 1}}$}{
+                    $\Var{i} \gets \Var{i} + 1$
                 }
 
             }
         }
 
-        \Return clones
+        \Return $\Var{clones}$
     }
 
   \vspace{0.5cm}
@@ -592,24 +563,25 @@ end position that the document has in the fingerprint.
 \begin{algorithm}[htp!]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\SourceMap{documents, i}}{
-        $left \gets 0$ \;
-        $right \gets \text{documents.length - 1}$ \;\;
+        $\Var{left} \gets 0$ \;
+        $\Var{right} \gets \Access{\Var{documents}}{\Var{len}} - 1$ \;\;
 
 
-        \While{$left \leq right$}{
-            $mid \gets (left + right) / 2$
+        \While{$\Var{left} \leq \Var{right}$}{
+            $\Var{mid} \gets (\Var{left} + \Var{right}) / 2$
 
-            \uIf{$documents[mid].fingerprintEnd < i$}{
-                $left = mid + 1$
+            \uIf{$\Access{\ArrayAccess{\Var{documents}}{\Var{mid}}}{\Var{end}} < i$}{
+                $\Var{left} = \Var{mid} + 1$
             }
-            \uElseIf{$documents[mid].fingerprintStart > i$}{
-                $right = mid - 1$
+            \uElseIf{$\Access{\ArrayAccess{\Var{documents}}{\Var{mid}}}{\Var{start}} > i$}{
+                $\Var{right} = \Var{mid} - 1$
             }
             \Else {
-                $document \gets documents[mid]$ \;
-                $range \gets document.ranges[i - document.fingerprintEnd]$
+                $\Var{D} \gets \ArrayAccess{\Var{documents}}{\Var{mid}}$ \;
+                $\Var{range} \gets \ArrayAccess{\Access{\Var{D}}{\Var{ranges}}}{\Var{i} -
+                \Access{\Var{D}}{end}}$
 
-                \Return (document.uri, range)
+                \Return $(\Access{\Var{D}}{\Var{uri}}, \Var{range})$
             }
 
         }
@@ -624,16 +596,16 @@ end position that the document has in the fingerprint.
 
 To determine which document a fingerprint position corresponds to, we can perform a binary
 search on the list of the documents, which is sorted based on the start position of the
-documents fingerprint. The goal is to find the document where the fingerprint position $i$
+documents fingerprint. The goal is to find the document $D$ where the fingerprint position $i$
 is 
 
 $$
-\text{document.fingerprintStart} \leq i \leq \text{document.fingerprintEnd}
+\Access{D}{start} \leq i \leq \Access{D}{end}
 $$
 
 Once the correct document has been found, we simply have to look up the correct range
 which the document stores. The index of this range is $i -
-\text{document.fingerprintStart}$.
+\Access{D}{fStart}$.
 
 Algorithm \ref{alg:sourcemap} shows this algorithm and how the URI for the document and
 the range which the token at a position $i$ occupies.
@@ -663,7 +635,7 @@ $$
 SA[i] \xrightarrow{clone} SA[i+1] \xrightarrow{clone} SA[i + 2]
 $$
 
-Then clones at position $i$, $i+1$ and $i + 2$ are all clones of each other.
+Then clones at position $SA[i]$, $SA[i+1]$ and $SA[i + 2]$ are all clones of each other.
 
 Therefore, each code clone object has a list of its matching clones. We will build a
 clone-map, where the key is an integer which corresponds to which index in the fingerprint
