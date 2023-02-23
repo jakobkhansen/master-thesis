@@ -59,13 +59,20 @@ documents:
         String content,
         AST ast,
 
-        // Used for incremental updates
-        boolean open,
-        boolean changed,
+        // Location in fingerprint
         int start,
         int end
+
+        // Used for incremental updates
+        int[] fingerprint,
+        boolean open,
+        boolean changed,
     }
 \end{lstlisting}
+
+Each document in the index primarily consists of the contents, the URI and the AST of the
+document in its current state. Storing the AST will be useful for the incremental
+detection algorithm.
 
 There are two things to consider when determining which files should be inserted into the
 index. First, we are considering only files of a specific file type, since the tool does
@@ -665,13 +672,113 @@ the previous existing clones of $i$ is added as a clone in $j$ and vice versa.
 
 \chapter{Implementation: Incremental detection}
 
+The following chapter will present the algorithm which efficiently updates the list of
+clones, without having to rebuild the different structures from scratch. Given an edit
+to a file in the project, we will be able to update the document index, fingerprints,
+suffix array and list of clones faster than the initial detection.
+
+An incremental update is run whenever a document is changed. The document index is
+signalized of a change either when a file is saved, or on any keystroke. This is
+configurable by the client. When the document index is changed, an incremental update of
+the clones is run, and the clone-list is updated.
+
+\section{Affordable operations}
+
+Before looking at the approach, it is useful to determine the time cost associated with
+different operations. If we can for example afford to iterate over the contents of a
+single file, that will be useful for our algorithm. Table \ref{table:affordableoperations}
+shows which operations are affordable or not for an incremental update.
+
+\begin{table}[t!]
+	\begin{center}
+		\begin{tabular}{|p{1in} | p{1in} | p{0.6in} | p{2.5in}|}
+			\hline
+
+			Description                    & Complexity              & Affordable & Explanation                               \\\hline
+
+			Content of all files           & $O(|\Var{code\ base}|)$ & No         & Iterating over the
+			entire code base will be the same complexity as the initial detection,
+			therefore this operation is too slow.                                                                             \\\hline
+
+			Content of a file              & $O(|\Var{file}|)$       & Yes        & Iterating over the content
+			of a single file is likely a very small percentage of the entire code
+			base.                                                                                                             \\\hline
+
+			Parsing a file                 & $O(|\Var{file}|)$       & No         & While the complexity of
+			parsing a single file is still linear in the size of the file, parsing a large
+			file from scratch can take a significant amount of time in practice.                                              \\\hline
+
+			Incrementally reparsing a file & $O(|\Var{edit}|)$       & Yes        & Re-using the
+			AST of a file in order to speed up the parsing of the same file with
+			after an edit is significantly faster than parsing the entire file.                                               \\\hline
+
+			Document index                 & $O(|\Var{documents}|)$  & Yes        & The number of files in a code
+			base is likely many orders of magnitude smaller than the size of the code base
+			itself.                                                                                                           \\\hline
+
+			Clones                         & $O(|\Var{clones}|)$     & Yes        & The number of clones in the code base and
+			the area they cover is likely a very small portion of the code base itself.
+			itself.                                                                                                           \\\hline
+		\end{tabular}
+		\caption{Affordable operations for incremental updates}
+		\label{table:affordableoperations}
+	\end{center}
+\end{table}
+
+
 \section{Updating the document index}
+
+The first step of an incremental update is to update the document index. We will also look
+at how we can reduce memory usage of the index without a loss in terms of the time
+complexity of the updates.
+
+As shown in the document interface, each document stores its own content, AST and
+fingerprint. It is not strictly necessary to store either the content or the AST in memory
+all the time, as it is likely that only a handful of files are open in the IDE at once.
+Therefore, in the initial detection, we can free the memory of the file content and AST
+for each document after the fingerprint has been computed. However, if a file is opened in
+the IDE, the file can now be changed, so we should facilitate efficient updates for these
+files only. When a file is opened, the file content should be read from the disk and
+updated via the \verb|textDocument/didChange| messages sent from the client. It is also
+important to keep the AST of the opened file in memory in order to facilitate incremental
+reparsing of the opened files. 
+
+When a file is opened, the LSP client sends a \verb|textDocument/didOpen| message to the
+server, which finds the relevant document $D$ in the index, and sets the following fields:
+
+\begin{flalign*}
+&\Access{D}{open} = \True \\
+&\Access{D}{AST} = \Parse{D} \\
+&\Access{D}{content} = \Read{$\Access{D}{uri}$}
+\end{flalign*}
+
+After the document fields have been set, the document is ready to receive updates. When
+the LSP client sends a \verb|textDocument/didChange| message, the message consists of the
+URI of the edited file, the range of the content which has changed, and the content which
+has potentially been inserted. This range is then used in a tree-sitter incremental
+reparse of the file content. After this reparse, we have efficiently updated a documents
+content and AST. After this update, we also set $\Access{D}{changed} = \True$
+
+\section{Updating fingerprints}
+
+With the updated AST for all documents, we can update the fingerprint of all documents
+which have been changed. For each document $D$ where $\Access{D}{changed} = \True$, the
+fingerprint for D may have changed. Calculating the fingerprint is the same process as in
+the initial detection, where we first query the AST for all nodes of a certain type, then
+for each matched node $N$, we extract and fingerprint all the tokens which $N$ covers,
+using the same fingerprint mapping as was used for the initial detection.
+
+An additional change we have to consider when incrementally updating fingerprints is that
+for a document $D$, $\Access{D}{start}$ and $\Access{D}{end}$ which corresponds to the
+range which $D$ covers in the fingerprint, may have changed. Also, any document $D_1$
+where $\Access{D_1}{start} > \Access{D}{start}$ could also have its range changed. This is
+solved while updating each documents fingerprint by counting the number of tokens in each
+document after updating, and setting the appropriate \verb|start| and \verb|end| fields.
+
+\Todo{Algorithm for updating document index here}
 
 \section{Extracting edit operations}
 
 \section{Dynamic suffix arrays}
 
 \section{Storing old clones}
-
-
-\Todo{Remember to mention what we can afford to do and not.}
