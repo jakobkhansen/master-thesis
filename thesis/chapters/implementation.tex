@@ -777,7 +777,144 @@ document after updating, and setting the appropriate \verb|start| and \verb|end|
 
 \Todo{Algorithm for updating document index here}
 
+\Todo{Figure which displays three documents, with old and new fingerprint}
+
 \section{Extracting edit operations}
+
+Now that the fingerprint has been updated, we could build the suffix array from scratch
+and already see a huge improvement in performance. The major bottleneck of the initial
+detection is to parse and fingerprint the entire code base. However, the updating of the
+suffix array can and should also be updated incrementally.
+
+Before we can update the suffix array, we need to know what exactly has changed in the
+fingerprint. We need to determine what edit operations have happened. Edit operations are
+either deleting, inserting or substituting a section of the code.
+
+There are two approaches we could take to determine the edit operations. The first is to
+look at the ranges that the LSP client sends with each \verb|textDocument/didChange|
+message and determine which tokens in the fingerprint have been affected by this message.
+However, this approach tightly couples the algorithm to the scenario where we know the exact
+ranges of each change, which is not very flexible.
+
+The other approach which is more flexible is to determine the changes of the fingerprint
+via an edit distance algorithm. An edit distance algorithm is an algorithm which
+calculates the distance between two strings $S_1$ and $S_2$. Distance meaning the minimum
+number of edit operations (insert, delete, substitute) which is required to transform $S_1$
+into $S_2$. Many of the algorithms which calculates the edit distance also allows
+computing what the operations are.
+
+The classic algorithm for calculating edit distance operations is attributed to Wagner and
+Fischer~\cite{WagnerFischer}. The input to the algorithm is two strings $S_1$ and $S_2$ of
+length $n$ and $m$. The output will be the set of operations needed to turn $S_1$ into
+$S_2$. This algorithm is based on dynamic programming where a matrix $M$ is filled from
+top to bottom and then the operations are inferred from $M$. Algorithm
+\ref{alg:wagnerfischerfill} shows how the edit distance matrix is filled and
+\ref{table:wagnerfischermatrix} shows an example matrix.
+
+\begin{figure}[t]
+    \begin{center}
+	$$
+		\sum^{n}_{i = 0}{M[i][0] = i}
+	$$
+	$$
+		\sum^{m}_{j = 0}{M[0][j] = j}
+	$$
+
+	\begin{gather*}
+		M[i][j] =
+		\begin{cases}
+			M[i-1][j-1] & \mathrm{if\ } S_1[i] = S_2{j} \\
+			1 + \mathrm{min}
+			\begin{cases}
+				M[i-1][j-1] \\
+				M[i][j-1]   \\
+				M[i-1][j]
+			\end{cases}
+		\end{cases}
+	\end{gather*}
+	\caption{Edit distance recurrence}
+	\label{eq:editdistancerecurrence}
+    \end{center}
+\end{figure}
+
+Each index $i, j$ in $M$ contains the edit distance value between the substrings
+$\ArrayAccess{S_1}{0..i}$ and $\ArrayAccess{S_2}{0..j}$ Each index in $M$ is calculated by
+determining what is the cheapest operation to do at a certain location to make the
+substrings equal. This can be determined by looking at the three surrounding indices in
+$M$: $\MatrixAccess{M}{i - 1}{j - 1}$, $\MatrixAccess{M}{i - 1}{j}$ and
+$\MatrixAccess{M}{i}{j - 1}$. Each of these indices equate to deleting, inserting or
+substituting a character. The algorithm can be boiled down to the recurrence in figure
+\ref{eq:editdistancerecurrence}
+
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\WagnerFischerEditDistance{$S_1$, $S_2$}}{
+        $\Var{n} \gets \Access{\Var{S}_1}{len}$ \;
+        $\Var{m} \gets \Access{\Var{S}_2}{len}$ \;
+        $\Var{matrix} \gets \mathrm{new\ array}[\Var{n} + 1][\Var{m} + 1]$ \;\;
+
+
+        \For{$i \From 0 \To n$}{
+            $\MatrixAccess{\Var{matrix}}{\Var{i}}{0} = \Var{i}$
+        } \;
+
+        \For{$i \From 0 \To m$}{
+            $\MatrixAccess{\Var{matrix}}{\Var{0}}{i} = \Var{i}$
+        } \;
+
+        \For{$i \From 1 \To n$}{
+            \For{$j \From 1 \To m$}{
+                \If{$\ArrayAccess{\Var{S}_1}{\Var{i} - 1} = \ArrayAccess{\Var{S}_2}{\Var{j} - 1}$}{
+                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}} $
+                }
+                \Else {
+                    $\Var{delete} \gets \MatrixAccess{\Var{matrix}}{\Var{i} - 1}{\Var{j}}$ \;
+
+                    $\Var{insert} \gets \MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j - 1}}$ \;
+
+                    $\Var{substitute} \gets \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}}$ \;\;
+
+                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \Min{$\Var{insert},
+                    \Var{delete}, \Var{substitute}$} + 1$
+
+                }
+            }
+        }
+
+        \Return $\Var{matrix}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Fill edit distance matrix using Wagner-Fischer algorithm}
+  \label{alg:wagnerfischerfill}
+\end{algorithm}
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|}
+			  &                      & D                    & E                    & M                    & O                    & C                    & R                    & A                    & T                    \\\hline
+			  & \cellcolor{blue!25}0 & 1                    & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    & 8                    \\\hline
+			R & 1                    & \cellcolor{blue!25}1 & 2                    & 3                    & 4                    & 5                    & 5                    & 6                    & 7                    \\\hline
+			E & 2                    & 2                    & \cellcolor{blue!25}1 & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			P & 3                    & 3                    & \cellcolor{blue!25}2 & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			U & 4                    & 4                    & \cellcolor{blue!25}3 & 3                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			B & 5                    & 5                    & 4                    & \cellcolor{blue!25}4 & 4                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			L & 6                    & 6                    & 5                    & 5                    & \cellcolor{blue!25}5 & 5                    & 5                    & 6                    & 7                    \\\hline
+			I & 7                    & 7                    & 6                    & 6                    & 6                    & \cellcolor{blue!25}6 & 6                    & 6                    & 7                    \\\hline
+			C & 8                    & 8                    & 7                    & 7                    & 7                    & 6                    & \cellcolor{blue!25}7 & 7                    & 7                    \\\hline
+			A & 9                    & 9                    & 8                    & 8                    & 8                    & 7                    & 7                    & \cellcolor{blue!25}7 & 8                    \\\hline
+			N & 10                   & 10                   & 9                    & 9                    & 9                    & 8                    & 8                    & 8                    & \cellcolor{blue!25}8 \\\hline
+
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Edit distance matrix}
+	\label{table:wagnerfischermatrix}
+\end{table}
+
+
+
 
 \section{Dynamic suffix arrays}
 
