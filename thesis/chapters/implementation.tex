@@ -838,13 +838,13 @@ top to bottom and then the operations are inferred from $M$. Algorithm
 \end{figure}
 
 Each index $i, j$ in $M$ contains the edit distance value between the substrings
-$\ArrayAccess{S_1}{0..i}$ and $\ArrayAccess{S_2}{0..j}$ Each index in $M$ is calculated by
+$\ArrayAccess{S_1}{0..i}$ and $\ArrayAccess{S_2}{0..j}$ The values in $M$ is calculated by
 determining what is the cheapest operation to do at a certain location to make the
 substrings equal. This can be determined by looking at the three surrounding indices in
 $M$: $\MatrixAccess{M}{i - 1}{j - 1}$, $\MatrixAccess{M}{i - 1}{j}$ and
 $\MatrixAccess{M}{i}{j - 1}$. Each of these indices equate to deleting, inserting or
-substituting a character. The algorithm can be boiled down to the recurrence in figure
-\ref{eq:editdistancerecurrence}
+substituting a character in $S_1$. The algorithm can be boiled down to the recurrence in
+figure \ref{eq:editdistancerecurrence}
 
 
 \begin{algorithm}[htp]
@@ -914,6 +914,19 @@ substituting a character. The algorithm can be boiled down to the recurrence in 
 \end{table}
 
 
+The edit operations can then be inferred from $M$ by backtracking from the bottom-right
+index, to the top-left, giving us the edit operations in reverse. At each position $i, j$
+we choose either of the 3 surrounding indices, the same indices which were used to
+determine the value originally. Choosing the left index ($i, j - 1$) equates to inserting
+the character $\ArrayAccess{S_2}{j - 1}$ at position $i - 1$. Choosing the top index ($i -
+1, j$) equates to deleting the character $\ArrayAccess{S_1}{i - 1}$. Choosing the top-left
+index ($i - 1, j - 1$) equates to substituting $\ArrayAccess{S_1}{i - 1}$ with
+$\ArrayAccess{S_2}{j - 1}$. If these characters are already equal, the operation can be
+ignored.
+
+\Todo{Example with DEMOCRAT -\> REPUBLICAN}
+
+\Todo{Now collect operations together and explain memory issue + Hirschbergs}
 
 
 \section{Dynamic suffix arrays}
