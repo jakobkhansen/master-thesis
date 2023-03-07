@@ -297,31 +297,6 @@ for incremental detection. The tool can detect up to Type-3 clones, but will onl
 clones based on ``queries'' given to it by the user. Queries are either files or methods
 in source-code, which are then checked for existing code clone.
 
-\section{Incremental editing and analysis}
-
-While writing code, programmers usually only edit small portions of text at a time. One
-``edit'' will therefore only affect small parts of the internal representations of the
-code which most tools use to perform analysis. Reusing parts of this representation would
-therefore be faster and allow programming tools to scale better.
-
-\textbf{Incremental parsing} is the process of reparsing only parts of a syntax tree whenever an
-edit is performed. The motivation behind incremental parsing is to have a readily
-available syntax tree after every edit, while doing as little computing as possible to
-maintain it.
-
-Ghezzi and Mandrioli introduced the notion of incremental parsing, with an incremental
-parser for LR $\land$ RL grammars. However, they were aware that this algorithm was both
-slow and did not allow expressive enough grammars~\cite{IncrementalParsing}.
-
-Tim A. Wagner et al.~\cite{PracticalAlgorithmsForIncremental} later published a large work
-on incremental software development environments, presenting many novel algorithms and
-techniques for incremental tooling in programming environments.
-
-``Tree-sitter'' is a parser generator tool which specializes in incremental parsing.
-Inspired by Wagner's work, it supports incremental parsing, error recovery and querying
-for specific nodes and subtrees~\cite{treesitter}. These features combined allow
-Tree-sitter to become a powerful tool for editing and has been used for IDE features
-such as syntax-highlighting, refactoring and code navigation.
 
 
 \section{Code clone IDE tooling}
@@ -426,10 +401,32 @@ define the detection algorithm
 
 \subsubsection{Incremental-parsing}
 
-In our detection algorithm we will need to be able to parse our source code in order to select
-specific syntactic regions and extract the tokens.
+While writing code, programmers usually only edit small regions of code at a time. One
+``edit'' will therefore only affect small parts of the internal representations of the
+code which most tools use to perform analysis. Reusing parts of this representation would
+therefore be faster and allow programming tools to scale better. 
 
-...
+In our detection algorithm we will need to be able to parse our source code into an AST
+representation in order to select specific syntactic regions and extract the tokens.
+Therefore, we need a parsing algorithm, and when source code is edited we need an
+incremental parsing algorithm to more efficiently parse the source code when only a
+small region has been changed.
+
+Incremental parsing is the process of reparsing only parts of a syntax tree whenever an
+edit is performed. The motivation behind incremental parsing is to have a readily
+available syntax tree after every edit, while doing as little computing as possible to
+maintain it.
+
+\verb|Tree-sitter| is a parser generator tool which specializes in incremental parsing. It
+supports incremental parsing, error recovery and querying for specific nodes and
+subtrees~\cite{treesitter}. These features combined allow Tree-sitter to become a powerful
+tool for editing and has been used for IDE features such as syntax-highlighting,
+refactoring and code navigation.
+
+The incremental reparsing in Tree-sitter is performed using Wagner's
+algorithm\cite{PracticalAlgorithmsForIncremental}.
+
+\Todo{Explain Wagner's algorithm with figure and example}
 
 \subsubsection{Suffix trees}
 
@@ -550,11 +547,11 @@ of SA, such that if $\text{SA}[i] = n$, then $\text{ISA}[n] = i$.
     suffix at $T[i..N-1]$ is the nth smallest suffix in T lexicographically.
 \end{definition}
 
-The Longest-common prefix (LCP) array is an array which describes how many common
-characters there are in a prefix between two suffixes which are next to each other in
-the suffix array. Since the suffix array represents suffixes in a sorted order, the prefix
-length between adjacent suffixes in SA will be the longest possible common prefix for each
-suffix. These are the values in the LCP array.
+The Longest-common prefix (LCP) array describes how many common characters there are in a
+prefix between two suffixes which are next to each other in the suffix array. Since the
+suffix array represents suffixes in a sorted order, the prefix length between adjacent
+suffixes in SA will be the longest possible common prefix for each suffix. These are the
+values in the LCP array.
 
 \begin{definition}[LCP array]
     Let T be a text of length N and SA be the suffix array of T.
@@ -718,14 +715,14 @@ set bits (select).
   \SetAlgoLined\DontPrintSemicolon
     \algo{\access{node, i}}{
         \If{{\isLeaf{node}}}{
-            \Return $node.bitset[i]$
+            \Return $\ArrayAccess{\Access{\Var{node}}{\Var{bitset}}}{\Var{i}}$
         }
 
-        \If{node.N $\leq$ i}{
-            \Return \access{node.left, i}
+        \If{$\Access{\Var{node}}{\Var{N}} \leq \Var{i}$}{
+            \Return \access{$\Access{\Var{node}}{\Var{left}}, \Var{i}$}
         }
 
-        \Return \access{node.right, i - node.N}
+        \Return \access{$\Access{\Var{node}}{\Var{right}}, \Var{i} - \Access{\Var{node}}{\Var{N}}$}
     }
 
   \vspace{0.5cm}
@@ -733,11 +730,7 @@ set bits (select).
   \label{alg:dynbitaccess}
 \end{algorithm}
 
-\subsubsection{Wavelet trees and wavelet matrices}
-
-
 \subsubsection{Burrows-Wheeler transform}
-
 
 \begin{table}[!htb]
 	\begin{center}
@@ -853,7 +846,3 @@ occurrences of each letter in the BWT.
 
 The LF-mapping will also be useful in the detection algorithm when dynamically updating
 the suffix array.
-
-
-\subsubsection{Dynamic suffix arrays}
-

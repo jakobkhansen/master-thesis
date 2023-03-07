@@ -94,7 +94,7 @@ which files are opened, and the state of the content of opened files.
 
 Upon opening a file, the client will send a \verb|textDocument/didOpen| message to the
 server, which contains the URI for the opened file. The index will at this point set the
-flag \verb|isOpened| for the relevant document and stops reading its contents from disk.
+flag \verb|open| for the relevant document and stops reading its contents from disk.
 Instead, updates to the file are obtained via the \verb|textDocument/didChange| message.
 This message can provide either the entire content of the file each time the file changes,
 or it can provide only the changes and the location of the change. Receiving only the
@@ -204,8 +204,9 @@ public class Math() {
         }
 
         \vspace{0.5cm}
-        \subfloat[Fingerprint, terminals highlighted] {
-            [ 2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, \textbf{1}, 2, 3, 14, 5, 3, 6, 7, 8, 9, 6, 15, 11, \textbf{1}, \textbf{0} ]
+        \subfloat[Fingerprint, terminals underlined] {
+            [ 2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, \underline{1}, 2, 3, 14, 5, 3, 6, 7,
+            8, 9, 6, 15, 11, \underline{1}, \underline{0} ]
         }
 	\end{center}
 	\caption{Example fingerprint of Java source-code}
@@ -257,17 +258,18 @@ variable-length LMS-substrings'' algorithm~\cite{LinearTimeSuffixArraySAIS} whic
 a suffix array in linear time. The following section will give high-level overview of how
 the algorithm works. 
 
-The algorithm will be explained with a string input, as this is most common for suffix
-arrays, and working with strings can be more clear to the reader when looking at suffixes.
-The algorithm is still applicable to our fingerprint, since an array of integers will work
-similarly to a string when given as input.
+The algorithm will be explained with a string as its input, as this is most common for
+suffix arrays, and working with strings can be more clear to the reader when considering
+suffixes. The algorithm is still applicable to our fingerprint, since an array of integers
+will work similarly to a string when given as input.
 
 The ``Induced sorting variable-length LMS-substrings'' algorithm (often abbreviated SA-IS)
-is an algorithm that works by divide and conquering the array and inducing how to sort the
-bigger string from the smaller string, where the smaller string consists of the ``building
-blocks'' of the bigger string. First, we will introduce some definitions and theorems used
-for the algorithm. Input to the algorithm is a string $S$ with length $n$. Let
-$\mathrm{suffix}(S, i)$ be the suffix in S starting at position i.
+is an algorithm that works by divide and conquering the suffix array and inducing how to
+sort the suffixes of the string $S$ from a smaller string, $S_1$. $S_1$ consists of the
+``building blocks'' of $S$ and will make it simple to compute the rest of the suffix array
+of $S$. First, we will introduce some definitions and theorems used for the algorithm.
+Input to the algorithm is a string $S$ with length $n$. Let $\mathrm{suffix}(S, i)$ be the
+suffix in S starting at position i.
 
 \begin{definition}[L-type and S-type suffixes] A suffix starting at position $i$ in a
     string $S$ is considered to be L-type if it is lexicographically larger than the next
@@ -275,21 +277,6 @@ $\mathrm{suffix}(S, i)$ be the suffix in S starting at position i.
     i+1)$. Conversely, a suffix is considered to be S-type if $\mathrm{suffix}(S, i) <
     \mathrm{suffix}(S, i+1)$. The sentinel suffix (\$) of $S$ is always S-type.
 \end{definition}
-
-Note that two suffixes cannot be lexicographically equal, therefore all cases are handled
-by this definition. Determining the type of each suffix can be done in $O(n)$ by scanning
-$S$ from right-to-left and observing the following properties: $\mathrm{suffix}(S, i)$ is
-L-type if $\Access{S}{i} > \Access{S}{i + 1}$. Similarly, $\mathrm{suffix}(S, i)$ is
-S-type if $\Access{S}{i} < \Access{S}{i + 1}$. If $\Access{S}{i} = \Access{S}{i + 1}$,
-then $\mathrm{suffix}(S, i)$ is the same value as $\mathrm{suffix}(S, i + 1)$. This is
-explained by the fact that if the first character of the current suffix is not equal to
-first character of the next suffix, we already know the type based on the first character.
-If the first character is equal however, we have effectively reduced the case to the next
-suffix, since we are now comparing the second character of the current suffix, with the
-next character of the second suffix. Since we have already computed the type of that
-suffix, we can reuse the value. Figure \ref{alg:suffixtypes} shows an algorithm which
-determines the type of each suffix in a string in $O(n)$ time.
-
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
@@ -326,60 +313,141 @@ determines the type of each suffix in a string in $O(n)$ time.
 \end{algorithm}
 
 
+\begin{table}
+    \begin{center}
+        \begin{tabular}[c]{l l l l l l l}
+            B & A & N & A & N & A & \$ \\ 
+            L & \underline{S} & L & \underline{S} & L & L & \underline{S} \\ 
+            0 & 1 & 2 & 3 & 4 & 5 & 6 \\ 
+        \end{tabular}
+    \end{center}
+    \caption{Suffix types of S = BANANA\$, LMS characters underlined}
+    \label{tab:suffixtypesbanana}
+\end{table}
+
+
+\begin{table}
+    \begin{center}
+        \begin{tabular}[c]{r|cccc}
+            Buckets & \$ & A & B & N\\
+            Initial & \{ -1 \} & \{ -1, -1, -1 \} & \{ -1 \} & \{ -1, -1 \}\\
+            Slot LMS & \{  6 \} & \{ -1,  3,  1 \} & \{ -1 \} & \{ -1, -1 \}\\
+            Slot L-type & \{  6 \} & \{  5,  3,  1 \} & \{  0 \} & \{  4,  2 \}\\
+            Slot S-type & \{  6 \} & \{  5,  3,  1 \} & \{  0 \} & \{  4,  2 \}\\
+        \end{tabular}
+
+        \vspace{0.5cm}
+        \begin{tabular}[c]{r|c|c}
+                    & \$ & 0 \\
+            Mapping & ANA\$ & 1 \\
+                    & ANA & 2 \\
+        \end{tabular}
+
+        \vspace{0.5cm}
+
+        \begin{tabular}[c]{l|c}
+                    $S_1$ & $210$ \\
+                    SA of $S_1$ & $[2, 1, 0]$ \\
+                    Sorted LMS-substrings & $[6, 3, 1]$ \\
+        \end{tabular}
+
+    \end{center}
+    \caption{Building $S_1$ and sorting LMS-substrings of S = BANANA\$}
+    \label{tab:bucketinglms}
+\end{table}
+
+
+Note that two suffixes in the same string cannot be lexicographically equal, therefore all
+cases are handled by this definition. Determining the type of each suffix can be done in
+$O(n)$ time by scanning $S$ from right-to-left and observing the following properties:
+$\mathrm{suffix}(S, i)$ is L-type if $\Access{S}{i} > \Access{S}{i + 1}$. Similarly,
+$\mathrm{suffix}(S, i)$ is S-type if $\Access{S}{i} < \Access{S}{i + 1}$. If
+$\Access{S}{i} = \Access{S}{i + 1}$, then $\mathrm{suffix}(S, i)$ is the same value as
+$\mathrm{suffix}(S, i + 1)$. This is true because if the first character of the current
+suffix is not equal to first character of the next suffix, we already know the type based
+on the first character. If the first character is equal however, we have effectively
+transformed the problem to finding the type of the next suffix, since we are now comparing
+the second character of the current suffix, with the second character of the second
+suffix. Since we have already computed the type of the next suffix, we can reuse the value.
+Figure \ref{alg:suffixtypes} shows an algorithm which determines the type of each suffix
+in a string in $O(n)$ time and \ref{tab:suffixtypesbanana} shows an example.
+
 \begin{definition}[LMS character]
 
     An LMS (Left-most S-type) character in a string $S$ is a position $i$ in $S$ such that
     $S[i]$ is S-type and $S[i-1]$ is L-type. An LMS-suffix is a suffix in $S$ which begins
-    with an LMS character. The final character of $S$ (the sentinel) is always S-type and
-    the first character is always $L$ type
+    with an LMS character. The final character of $S$ (the sentinel) is always an LMS
+    character and the first character is never an LMS character.
 
 \end{definition}
 
 \begin{definition}[LMS-substring]
 
     An LMS-substring in a string $S$ is a substring $S[i..j]$ in $S$ such that $i \neq j$,
-    $S[i]$ and $[j]$ are LMS-characters and there are no other LMS-character between. The
+    $S[i]$ and $[j]$ are LMS characters and there are no other LMS characters between. The
     sentinel character is also an LMS-substring and is the only LMS-substring of length
     $\leq 3$
 
 \end{definition}
 
-LMS-substrings form "basic-blocks" in the string $S$. Each LMS-substring overlap on two
-characters, and each substring should be monotonically decreasing, because of the type.
-Using this notion, we can sort all LMS suffixes recursively with the following theorems:
+LMS-substrings form "basic-blocks" in the string $S$. Each LMS-substring is mostly
+lexicographically decreasing or increasing, which is easier to sort. Table
+\ref{tab:bucketinglms} shows that in the string BANANA\$ there are 3 S-type suffixes
+and all of them form LMS-substrings (AN, ANA, \$). Using this notion, we can sort all
+suffixes recursively using the following theorems:
 
 \begin{theorem}
+
     Given sorted LMS-suffixes of $S$, the rest of the suffix array can be induced in linear
     time. 
+
 \end{theorem}
 
 \begin{theorem}
     There are at most $n / 2$ LMS-substrings in a string $S$ of length n.
 \end{theorem}
 
-The details of the theorems are left out, but the intuition of the second theorem will be
-explained as it is the essential part of how the recursion allows us to build the suffix
-array in linear time.
-
 We can construct a smaller string $S_1$ by first sorting the LMS-substrings. Sorting
-LMS-substrings can be done in linear time with a three-pass operation (details left out).
+LMS-substrings can be done by first bucket-sorting each LMS-substring by its first
+character. The buckets are represented by arrays and each LMS-substring is inserted at the
+end of the correct bucket. Afterwards, L-type suffixes are bucketed by iterating over the
+buckets, and for each suffix in the bucket, insert the suffix to the left, if it is
+L-type. Meaning that if we encounter the suffix at position 6, the suffix at position 5 is
+bucketed if it is L-type. Finally, S-type suffixes are bucketed similarly in the same
+fashion, but the buckets are scanned from right-to-left and suffixes are inserted at the
+end of the bucket. This final step could possibly change the ordering of the
+LMS-substrings.
+
 After sorting, each equal LMS-substring is given a unique increasing integer value. Two
 LMS-substrings are considered equal if they are equal in terms of length, characters and
-types. The smaller string is now built by mapping each LMS-substring in the original
-ordering to its unique value, and forming a smaller string of it. of $S$ This smaller
-string will be the reduced case which is used in the recursion. The string is at most $n /
-2$ in size, meaning there will be at most $\log_2(n)$ recursive calls. The recursive call
-will return the suffix array of the $S_1$. ~\cite{SuffixArrayConstruction} proves a
-theorem which shows that sorting $S_1$ is equivalent to sorting the LMS suffixes of $S$.
-Therefore, the suffix array of $S_1$ can be mapped to the LMS suffixes of $S$, which is a
-subset of the SA of $S$. Now that we have
+types. $S_1$ is now built by mapping each LMS-substring to its unique value, and
+concatenating them in the original ordering. $S_1$ is now a smaller case which is used in
+the recursion. The string is at most $n / 2$ in size, meaning there will be at most
+$\log_2(n)$ recursive calls. The recursive call will return the suffix array of the $S_1$.
+~\cite{SuffixArrayConstruction} proves a theorem which shows that sorting $S_1$ is
+equivalent to sorting the LMS suffixes of $S$. Therefore, the suffix array of $S_1$ can be
+mapped to the LMS suffixes of $S$.
 
-The base-case of the recursion is when there is one LMS-substring, the sentinel
-character. Intuitively, it is trivial to compute the suffix array of $S$ when there is
-only one LMS-substring, since all suffixes except the sentinel are either in
-lexicographically increasing or decreasing order. When the recursive call returns, the SA
-of $S_1$ is used in another three-pass operation where the LMS suffixes guide the rest of
-the suffixes to their correct location in SA.
+The base-case of the recursion is when the suffix array can be computed simply by
+bucketing each suffix, which happens when every suffix of the string starts with a unique
+character. 
+
+Table \ref{tab:bucketinglms} shows how the LMS-substrings are bucketed and how $S_1$ is
+constructed. We see that the final buckets are actually equal to the final SA which we are
+trying to compute. This is because the LMS-substrings are already sorted in reverse order,
+which is not true for any arbitrary input. $S_1$ consists of only unique characters,
+therefore the suffix array of $S_1$ is computed by simply bucketing each suffix and
+returning the array.
+
+When the recursive call returns, the SA of $S_1$ is used to determine the order which the
+LMS-substrings should be slotted into the bigger SA. By scanning the smaller SA and
+mapping those indices back to the indices of the original LMS-substrings, we get a sorted
+ordering of the LMS-substrings. We then scan the sorted LMS-substrings from right-to-left
+and slot each LMS-substring at the end of its bucket, the rest of the L-type and S-type
+suffixes will be slotted correctly afterwards. For BANANA\$ this will be the exact same
+process as in table \ref{tab:bucketinglms}, since the LMS-substrings were already inserted
+in reverse ordering.
+
 
 There will be $O(\log_2(n))$ recursive call, where each recursive call takes $O(n)$ time,
 with $n$ halving in each call. Therefore, the recurrence will have the complexity of:
@@ -387,15 +455,15 @@ with $n$ halving in each call. Therefore, the recurrence will have the complexit
 \begin{gather*}
     T(n) =
 \begin{cases}
-    O(1) & \text{if } n = 1. \\
-    T(n / 2) + O(n) & \text{if } n > 1.
+    O(n) & \text{if base-case.} \\
+    T(n / 2) + O(n)
 \end{cases}
 = O(n)
 \end{gather*}
 
 \subsubsection{Building ISA and LCP arrays}
 
-Computing the ISA after constructing the SA is trivial. Since the ISA is simply the inverse
+Computing the ISA after constructing the SA is simple. Since the ISA is simply the inverse
 of SA, it can be constructed in linear time with a single loop as seen in Algorithm
 \ref{alg:isa}
 
@@ -422,14 +490,14 @@ of SA, it can be constructed in linear time with a single loop as seen in Algori
 Computing the LCP in linear time is more complicated and requires some thought about which
 order to insert LCP values. We will also add one extra restriction to the LCP values,
 being that the LCP values cannot match past a $1$, which were the terminal value between
-fragments. This restriction will be useful when we want to extract clones using the LCP.
-The algorithm to compute the LCP is shown in Algorithm \ref{alg:lcp}. The intuition for
-this algorithm is that if a suffix at position $i$ which has an LCP value $l$ describing
-the common-prefix between it and some other suffix at position $j$, then the LCP value of
-the suffix at position $i + 1$ is at least $l - 1$, since the suffix at $i + 1$ and $j +
-1$ is the same suffix as the suffixes at position $i$ and $j$, with the first character
-cut off. Therefore, they share at least $l - 1$ characters, and the algorithm can start
-comparing the characters at that offset.
+fragments. This restriction will be useful when we want to extract clones using the LCP
+array. The algorithm to compute the LCP is shown in Algorithm \ref{alg:lcp}. The intuition
+for this algorithm is that if a suffix at position $i$ has an LCP value $l$ describing the
+common-prefix between it and some other suffix at position $j$, then the LCP value of the
+suffix at position $i + 1$ is at least $l - 1$, since the suffix at $i + 1$ and $j + 1$ is
+the same suffix as the suffixes at position $i$ and $j$, with the first character cut off.
+Therefore, they share at least $l - 1$ characters, and the algorithm can start comparing
+the characters at that offset.
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
@@ -464,21 +532,32 @@ comparing the characters at that offset.
   \label{alg:lcp}
 \end{algorithm}
 
+\begin{table}
+    \begin{center}
+        \begin{tabular}[c]{c|ccccccc}
+            Index & \multicolumn{6}{c}{Suffix} \\
+            \hline
+            1 & A & N & A & N & A & \$ \\ 
+            3 & A & N & A & \$ \\ 
+            2 & N & A & N & A & \$ \\ 
+            4 & N & A & \$ \\ 
+
+        \end{tabular}
+    \end{center}
+    \caption{Minimum common LCP values between suffixes for S = BANANA\$}
+    \label{tab:}
+\end{table}
+
+
 
 \section{Clone extraction}
 
-With the extended suffix array structure, we can now consider which substrings (prefixes
-of suffixes) we want to extract as potential code clones. In this phase the indices of the
-fingerprint which we consider to be code clones are extracted, which will in the next
-phase be used to map back to the original source code.
+With the extended suffix array data structure computed, we can now consider which
+substrings (prefixes of suffixes) we want to extract as potential code clones. In this
+phase the indices of the fingerprint which we consider to be code clones are extracted,
+which will be mapped back to the original source code in the next phase.
 
-A solution is to extract every suffix which has an LCP value which is greater than the
-token threshold (except for the suffix at index 0 in SA). The algorithm would be a single
-loop over $S$, using ISA to find the corresponding LCP value. This
-finds the clone indices, as shown in Algorithm \ref{alg:simplecloneextraction}.
-
-
-\begin{algorithm}[htp]
+\begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\SimpleCloneExtraction{S, ISA, LCP}}{
         $n \gets \Access{S}{len}$ \;
@@ -502,6 +581,11 @@ finds the clone indices, as shown in Algorithm \ref{alg:simplecloneextraction}.
   \caption{Extract clones indices in a string $S$}
   \label{alg:simplecloneextraction}
 \end{algorithm}
+
+A solution is to extract every suffix which has an LCP value which is greater than the
+token threshold. The algorithm would be a single loop over $S$, using ISA to find the
+corresponding LCP value. This finds the clone indices, as shown in Algorithm
+\ref{alg:simplecloneextraction}.
 
 
 However, this algorithm will return a lot of contained clones. A contained clone is a
@@ -536,10 +620,10 @@ clone which is a shorter version of another clone pointing to the same match, wi
 skipped. Also note that overlapping clones are allowed, meaning two clones which share
 tokens, but where neither contains the other.
 
-\begin{algorithm}[htp!]
+\begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\CloneExtraction{S, ISA, LCP}}{
-        $\Var{n} \gets \Access{S}{len}$ \;
+        $\Var{n} \gets \Access{\Var{S}}{\Var{len}}$ \;
         $\Var{clones} \gets \Var{List}$ \;
 
 
@@ -549,13 +633,12 @@ tokens, but where neither contains the other.
             } \;
 
             \If{$\ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i}}}  \geq \Var{THRESHOLD}$}{
-                $\Insert{$\Var{clones}, \Var{i}$}$ \tcp{Adds i to the clone-list}
+                $\Insert{$\Var{clones}, \Var{i}$}$ \tcp{Adds i to the clone-list} \;
 
-                $\Var{i} \gets \Var{i} + 1$
 
-                \While{$\Var{i} < \Var{n} \And
-                \ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i}}} <
-            \ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i} - 1}}$}{
+                \While{$\Var{i} + 1 < \Var{n} \And
+                \ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i} + 1}} <
+            \ArrayAccess{\Var{LCP}}{\ArrayAccess{\Var{ISA}}{\Var{i}}}$}{
                     $\Var{i} \gets \Var{i} + 1$
                 }
 
@@ -570,12 +653,16 @@ tokens, but where neither contains the other.
   \label{alg:cloneextraction}
 \end{algorithm}
 
+Finally, we have a list of positions in the fingerprint which is considered to be code
+clones.
+
 \section{Source-mapping}
 
 With the clone indices in the fingerprint now computed, we are almost done computing the
 clones. The final step is to map the clone indices back to the original source code. In
 order to correctly identify where a clone is located, we need to know which file the clone
-is located in, and the range of the source code in that file the code clone covers.
+is located in, the range of the source code in that file the code clone covers, and the
+other matching code clones.
 
 To accomplish this, each document in the index needs to store the range of each of its
 tokens and keep track of which portion of the fingerprint consists of the documents
@@ -633,16 +720,11 @@ Algorithm \ref{alg:sourcemap} shows this algorithm and how the URI for the docum
 the range which the token at a position $i$ occupies.
 
 This algorithm only shows how to look up the position of a single token. Since a code
-clone is a range between two tokens, we have to look up the position of both the
-fingerprint index $i$ extracted in the previous phase, and the position where the clone
-ends, which is the fingerprint index $i + \text{LCP}[\text{ISA}[i]]$. The range of the
-code clone is therefore the combination of the starting range of the first token (at
-position $i$) and the ending range of the second token (at position $i +
-\text{LCP}[\text{ISA}[i]]$). This range is therefore:
-
-$$
-\text{clone range} = (\text{firstToken.start}, \text{secondToken.end})
-$$
+clone is a range between two tokens, we have to look up the position at index $i$
+extracted in the previous phase, and the position where the clone ends, which is index $i
++ \text{LCP}[\text{ISA}[i]]$. The range of the code clone is therefore the combination of
+the starting range of the first token (at position $i$) and the ending range of the second
+token (at position $i + \text{LCP}[\text{ISA}[i]]$):
 
 \subsubsection{Aggregating clones}
 
@@ -660,14 +742,13 @@ $$
 Then clones at position $SA[i]$, $SA[i+1]$ and $SA[i + 2]$ are all clones of each other.
 
 Therefore, each code clone object has a list of its matching clones. We will build a
-clone-map, where the key is an integer which corresponds to which index in the fingerprint
-that a clone starts at, and the value will be the clone object. For each clone index $i$
-which was extracted in the last phase, we get the corresponding match index $j$
+clone-map, indexed by the index that a clone starts at in the fingerprint. For each clone
+index $i$ which was extracted in the last phase, we get the corresponding match index $j$
 ($\text{SA}[\text{ISA[i]} - 1]$), and for both $i$ and $j$ we look in the clone-map if
-there already is a clone at that position, or a  new clone object is created and put in
-the map with that position as the key. Then, in order to aggregate all the clones
-together, the list of matching clones is unioned between the two clones. In this way, all
-the previous existing clones of $i$ is added as a clone in $j$ and vice versa.
+there already is a clone at that position, or a new clone object is created and put in the
+map with that position as the key. Then, in order to aggregate all the clones together,
+the list of matching clones is unioned between the two clones. In this way, all the
+previous existing clones of $i$ is added as a clone in $j$ and vice versa.
 
 
 \chapter{Implementation: Incremental detection}
