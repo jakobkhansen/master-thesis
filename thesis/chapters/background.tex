@@ -42,8 +42,8 @@ are duplicated are considered clones of each other.
 	Similarity is determined by some metric such as number of equal lines of code.
 \end{definition}
 
-\begin{definition}[Clone set]
-	A clone set is a set of code snippets where all snippets are considered clones of each
+\begin{definition}[Clone class]
+	A clone class is a set of code snippets where all snippets are considered clones of each
 	other.
 \end{definition}
 
@@ -59,7 +59,7 @@ where $a,b,c$ are code snippets and $\xleftrightarrow{clone}$ gives the clone re
 $a$ is a clone of $b$, but not necessarily similar enough to be a clone of $c$, depending
 on the threshold for similarity. If the threshold for similarity is defined such that only
 equal clones are considered clones, the relation becomes transitive, and equivalence
-classes form clone sets.
+classes form clone classes.
 
 Code clones are generally classified into four types~\cite{Inoue_introduction_to_cc}. The
 types classify code snippets as code clones with an increasing amount of leniency.

@@ -220,7 +220,7 @@ algorithm.
 
 Since the algorithm that is used for matching is based on a suffix array, the
 representation should be in a format similar to a string, which is the standard input to a
-suffix array construction algorithm. However, it's not strictly necessary to use strings.
+suffix array construction algorithm. However, it is not strictly necessary to use strings.
 The essential property of the input array is that each element is comparable. Therefore,
 we can use an array of integers instead, which is preferable, since there are often a lot
 more unique integers available than unique characters in a programming language. The
@@ -582,44 +582,6 @@ which will be mapped back to the original source code in the next phase.
   \label{alg:simplecloneextraction}
 \end{algorithm}
 
-A solution is to extract every suffix which has an LCP value which is greater than the
-token threshold. The algorithm would be a single loop over $S$, using ISA to find the
-corresponding LCP value. This finds the clone indices, as shown in Algorithm
-\ref{alg:simplecloneextraction}.
-
-
-However, this algorithm will return a lot of contained clones. A contained clone is a
-clone where all the tokens of the clone is a part of another, larger clone. The algorithm
-will give a lot of contained clones because in a case where there is a suffix with an LCP
-value of $100$, the next suffix will have the LCP value of at least $99$ and likely
-matches with the same code clone as the previous suffix, but with an offset of 1. Because
-of this, for any large code clone, there will be a lot of smaller clones which are
-completely contained within it, but these clones are also likely to match with another
-clone which is also contained within the larger clones match. Since the code clones point
-at mostly the same area, the contained clones are not very useful, and should not be
-considered. We extend our clone extraction algorithm to account for this, by using the
-following theorem:
-
-\begin{theorem} 
-
-    The LCP of a suffix at position $i$ is completely contained in the LCP of the previous
-    suffix at position $i - 1$ if the LCP value of the suffix at position $i - 1$ is
-    greater than the LCP value of the suffix at position $i$. Meaning:
-
-    $$
-    \LCP{\ISA{\Var{i}}} < \LCP{\ISA{\Var{i} - 1}}
-    $$
-
-\end{theorem}
-
-
-Algorithm \ref{alg:cloneextraction} adds a while-loop to the clone extraction algorithm
-which skips over all clones with LCP values which should be skipped according to the
-theorem. Note that this algorithm doesn't disallow contained clones entirely, but any
-clone which is a shorter version of another clone pointing to the same match, will be
-skipped. Also note that overlapping clones are allowed, meaning two clones which share
-tokens, but where neither contains the other.
-
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\CloneExtraction{S, ISA, LCP}}{
@@ -653,6 +615,43 @@ tokens, but where neither contains the other.
   \label{alg:cloneextraction}
 \end{algorithm}
 
+A solution is to extract every suffix which has an LCP value which is greater than the
+token threshold. The algorithm would be a single loop over $S$, using ISA to find the
+corresponding LCP value. This finds the clone indices, as shown in Algorithm
+\ref{alg:simplecloneextraction}.
+
+
+However, this algorithm will return a lot of contained clones. A contained clone is a
+clone where all the tokens of the clone is a part of another, larger clone. The algorithm
+will give a lot of contained clones because in a case where there is a suffix with an LCP
+value of $100$, the next suffix will have the LCP value of at least $99$ and likely
+matches with the same code clone as the previous suffix, but with an offset of 1 token.
+For any large code clone, there will therefore be many smaller clones which are completely
+contained within it, but these clones are also likely to match with another clone which is
+also contained within the larger clones match. Since the code clones point at mostly the
+same area, the contained clones are not very useful, and should not be considered. We
+extend our clone extraction algorithm to account for this, by using the following theorem:
+
+\begin{theorem} 
+
+    The LCP of a suffix at position $i$ is completely contained in the LCP of the previous
+    suffix at position $i - 1$ if the LCP value of the suffix at position $i - 1$ is
+    greater than the LCP value of the suffix at position $i$. Meaning $\LCP{\ISA{\Var{i}}}
+    < \LCP{\ISA{\Var{i} - 1}}$.
+
+
+\end{theorem}
+
+
+Algorithm \ref{alg:cloneextraction} adds a while-loop to the clone extraction algorithm
+which skips over all clones with LCP values which should be skipped according to the
+theorem. Note that this algorithm doesn't disallow contained clones entirely, but any
+clone which is a shorter version of another clone pointing to the same match, will be
+skipped. Also note that overlapping clones, meaning two clones which share tokens, but
+where neither contains the other, will not be skipped.
+
+
+
 Finally, we have a list of positions in the fingerprint which is considered to be code
 clones.
 
@@ -669,7 +668,7 @@ tokens and keep track of which portion of the fingerprint consists of the docume
 tokens. This is done by storing two integer variables, each storing the start position and
 end position that the document has in the fingerprint. 
 
-\begin{algorithm}[htp!]
+\begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\SourceMap{documents, i}}{
         $\Var{left} \gets 0$ \;
@@ -694,8 +693,6 @@ end position that the document has in the fingerprint.
             }
 
         }
-
-        \Return \null
     }
 
   \vspace{0.5cm}
@@ -714,10 +711,10 @@ $$
 
 Once the correct document has been found, we simply have to look up the correct range
 which the document stores. The index of this range is $i -
-\Access{D}{fStart}$.
+\Access{D}{start}$.
 
-Algorithm \ref{alg:sourcemap} shows this algorithm and how the URI for the document and
-the range which the token at a position $i$ occupies.
+Algorithm \ref{alg:sourcemap} shows this algorithm which outputs the URI for the document and
+the source code range of the token at position $i$.
 
 This algorithm only shows how to look up the position of a single token. Since a code
 clone is a range between two tokens, we have to look up the position at index $i$
@@ -728,27 +725,104 @@ token (at position $i + \text{LCP}[\text{ISA}[i]]$):
 
 \subsubsection{Aggregating clones}
 
-With this algorithm to build the clone objects, the next step is to make sure that
+With this algorithm to get the clone locations, the next step is to make sure that
 matching code clones are collected into buckets of clone classes. Remember that the LCP
-array only gives us the longest match between two suffixes, but it is of course possible
+array only gives us the longest match between two suffixes, but it is naturally possible
 to have more than two clones of the same code snippet. This case happens when multiple
-consecutive indices in SA are considered to be clones. Since we only look for type-1
+consecutive indices in the SA are considered to be clones. Since we only look for type-1
 clones, the transitivity property holds, meaning that if
 
 $$
 SA[i] \xrightarrow{clone} SA[i+1] \xrightarrow{clone} SA[i + 2]
 $$
 
-Then clones at position $SA[i]$, $SA[i+1]$ and $SA[i + 2]$ are all clones of each other.
+then clones at position $SA[i]$, $SA[i+1]$ and $SA[i + 2]$ are all clones of each other.
+This should be achieved by making sure that every new clone-pair discovered adds
+previously detected clones to their clone sets, and previously discovered clones also add
+new clones to theirs. Figure \ref{fig:cloneaggregation} shows how a new match is found in
+two previously disjoint clone classes, and the resulting aggregated clone class.
 
-Therefore, each code clone object has a list of its matching clones. We will build a
-clone-map, indexed by the index that a clone starts at in the fingerprint. For each clone
-index $i$ which was extracted in the last phase, we get the corresponding match index $j$
+This is achieved in algorithm \ref{alg:buildclonemap} where we build a clone-map, where
+the key is the index that a clone starts at in the fingerprint. For each clone index $i$
+which was extracted in the last phase, we get the corresponding match index $j$
 ($\text{SA}[\text{ISA[i]} - 1]$), and for both $i$ and $j$ we look in the clone-map if
 there already is a clone at that position, or a new clone object is created and put in the
-map with that position as the key. Then, in order to aggregate all the clones together,
-the list of matching clones is unioned between the two clones. In this way, all the
-previous existing clones of $i$ is added as a clone in $j$ and vice versa.
+map. Then, in order to aggregate the previously discovered clones and the new clone
+together, the set of matching clones is unioned between the two clones. In this way, all
+the previous existing clones of $i$ is added as a clone in $j$ and vice versa. Every clone
+in the two clone classes will then receive the same set of code clones. The
+\verb|UnionCloneClass| function unions all the clone sets in both clone classes and then
+adds a match from all clones in one clone class to all clones in the other.
+
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{figures/cloneaggregation.drawio.pdf}
+    \end{center}
+    \caption{Clone class aggregation when a new match is found}
+    \label{fig:cloneaggregation}
+\end{figure}
+
+
+\begin{algorithm}[t]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\GetCloneMap{index, cloneIndices}}{
+        $\Var{n} \gets \Access{\Var{cloneIndices}}{\Var{len}}$ \;
+        $\Var{cloneMap} \gets \textrm{Map\textless int, CodeClone\textgreater}$ \;
+
+        
+        \For{$\Var{i} \From 0 \To \Var{n} - 1$}{
+            $\Var{firstIndex} \gets \ArrayAccess{\Var{cloneIndices}}{\Var{i}}$ \;
+            $\Var{secondIndex} \gets \ArrayAccess{\Var{cloneIndices}}{\Var{i}}$ \;
+            $\Var{cloneSize} \gets \LCP{\ISA{\Var{firstIndex}}} - 1$ \;\;
+
+
+            \Comment{Get sources for the first and last token of both clones}
+            $\Var{firstSourceStart} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
+            \Var{firstIndex}$}$ \;
+            $\Var{firstSourceEnd} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
+            \Var{firstIndex + cloneSize}$}$ \;\;
+
+            $\Var{secondSourceStart} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
+            \Var{secondIndex}$}$ \;
+            $\Var{secondSourceEnd} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
+            \Var{secondIndex + cloneSize}$}$ \;\;
+
+            \Comment{Build range between both source-pairs for both clones}
+            $\Var{firstRange} \gets (\Access{\Var{firstSourceStart}}{\Var{start}},
+            \Access{\Var{firstSourceEnd}}{\Var{end}})$ \;
+            $\Var{secondRange} \gets (\Access{\Var{secondSourceStart}}{\Var{start}},
+            \Access{\Var{secondSourceEnd}}{\Var{end}})$ \;\;
+
+            \Comment{Get the document of each clone}
+            $\Var{firstDocument} \gets \Access{\Var{firstSourceStart}}{\Var{document}}$ \;
+            $\Var{secondDocument} \gets \Access{\Var{firstSourceStart}}{\Var{document}}$ \;\;
+            
+            \Comment{Build clone objects if they don't exist}
+            \If{$\Var{firstIndex} \NotIn \Var{cloneMap}$}{
+                $\Var{firstClone} \gets \New
+                \CodeClone{$\Access{\Var{firstDocument}}{\Var{URI}},
+                \Var{firstRange}$}$ \;
+                $\Put{$\Var{cloneMap}, \Var{firstIndex}, \Var{firstClone}$}$ \Comment{Put
+                clone with firstIndex as key}
+            }
+            \If{$\Var{secondIndex} \NotIn \Var{cloneMap}$}{
+                $\Var{secondClone} \gets \New
+                \CodeClone{$\Access{\Var{secondDocument}}{\Var{URI}},
+                \Var{secondRange}$}$ \;
+                $\Put{$\Var{cloneMap}, \Var{i}, \Var{secondClone}$}$ \Comment{Put
+                clone with secondIndex as key}
+            } \;
+
+            \UnionCloneClass{\Get{$\Var{cloneMap}, \Var{firstIndex}$}, \Get{$\Var{cloneMap,
+            \Var{secondIndex}}$}} \;
+        }
+        \Return $\Var{cloneMap}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Build clone-map given the clone indices in the fingerprint}
+  \label{alg:buildclonemap}
+\end{algorithm}
 
 
 \chapter{Implementation: Incremental detection}
