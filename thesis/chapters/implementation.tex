@@ -5,7 +5,9 @@
 The tool is integrated into IDEs via the Language server protocol. The tool starts up as
 an LSP server, which an IDE client can connect to and send/receive messages from. The goal
 of the LSP server/client interaction is to give users of the tool an overview of all
-clones as they appear.
+clones as they appear. The LSP server is implemented in Java with the LSP4J library which
+provides an abstraction layer on top of the protocol which is easier to work with
+programmatically.
 
 The LSP server shows error-messages (diagnostics) which indicate which section of code a
 clone covers, they also provide information about the matching clones and code-actions to
@@ -110,7 +112,33 @@ document.
 
 \section{Displaying and interacting with clones}
 
-The
+When detection is finished and the list of clones is ready, the LSP module will convert
+clones into diagnostics and code-actions which can be interacted with from the client. For
+diagnostics, each clone object is converted into a diagnostic which has a range and some
+information about the clone. The diagnostic displays an error in the client which also has
+information for each matching clone. This is achieved this by attaching
+\verb|DiagnosticRelatedInformation| to a diagnostic which is defined in the protocol. When
+all the code clones have been converted to diagnostics, the server sends a
+\verb|textDocument/publishDiagnostics| which sends all the diagnostics in JSON-RPC format.
+For code-actions, the process is similar, for each clone pair, we create a code-action
+which navigates from one to the other, using the \verb|window/showDocument| message. These
+code-actions are similarly sent to the client via the \verb|textDocument/codeAction|
+message, but this message is only invoked when the client specifically requests code
+actions at a certain location.
+
+Figure \ref{fig:vscodeclones} shows how clones are displayed in the VSCode IDE. Code
+clones are displayed in the file as an ``Information'' diagnostic, and when hovered over,
+the client shows the \verb|DiagnosticRelatedInformation| part of the diagnostic where all
+the matching clones are displayed and can be clicked to navigate to the corresponding
+match. For a client which may not implement the \verb|DiagnosticRelatedInformation|
+message (which was added in version 3.16), invoking the code-action to navigate to the
+matching clone is another option.
+
+\begin{figure}
+	\includegraphics[width=\textwidth]{figures/vscodecodeclone.png}
+	\caption{Code clones displayed in the VSCode IDE}
+	\label{fig:vscodeclones}
+\end{figure}
 
 \chapter{Implementation: Initial detection}
 
