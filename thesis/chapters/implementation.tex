@@ -1,12 +1,17 @@
 
 \chapter{Implementation: LSP server architecture}
+\label{lspimplementation}
 
-The tool is integrated into IDEs via the Language server protocol. The goal is to give
-users of the tool an overview of all clones as they appear in source-code.
+The tool is integrated into IDEs via the Language server protocol. The tool starts up as
+an LSP server, which an IDE client can connect to and send/receive messages from. The goal
+of the LSP server/client interaction is to give users of the tool an overview of all
+clones as they appear.
 
-The tool shows error-messages (diagnostics in LSP terms) which indicate which section of
-code a clone covers, they also provide information about the matching clone and a
-code-action to navigate to it.
+The LSP server shows error-messages (diagnostics) which indicate which section of code a
+clone covers, they also provide information about the matching clones and code-actions to
+navigate between them. Whenever source code is edited, the LSP server receives a message
+containing information about what has changed. The LSP server then generates a new list of
+clones, and displays those to the client instead.
 
 The following user-stories shows how interaction with the LSP server works.
 
@@ -21,7 +26,7 @@ The following user-stories shows how interaction with the LSP server works.
 	      as diagnostics there. The diagnostic will contain information like where the clone
 	      exists, and where the matching clone(s) are.
 
-	\item A programmer wants to jump to the corresponding match of a code clone in their
+	\item A programmer wants to jump to one of the matches of a code clone in their
 	      editor. The programmer moves their cursor to the diagnostic and will see a list of
 	      the matching code clones. The programmer will select the wanted code clone which
 	      will move the cursor to the file and location of the selected code clone.
@@ -30,28 +35,30 @@ The following user-stories shows how interaction with the LSP server works.
 
       \item A programmer wants to remove a set of clones by applying the
           ``extract-method'' refactoring. The programmer performs the necessary
-          refactorings, saves the file and will get quick feedback whether the
-          clones are now gone.
+          refactorings, and will see that all the previously detected clones are gone when
+          the LSP server updates.
+
 \end{itemize}
 
-\Todo{Redo this figure}
 \begin{figure}
-	\includegraphics[width=\textwidth]{images/ToolArchitecture.png}
+	\includegraphics[width=\textwidth]{figures/architecture.drawio.pdf}
 	\caption{Tool architecture}
 	\label{fig:architecture}
 \end{figure}
 
-Figure \ref{fig:architecture} shows the architecture of the tool. The server communicates
-with the IDE and delegates the work of managing clones to the detection engine and the
-merge engine. The tool also stores an index of all source code files in the current project.
+Figure \ref{fig:architecture} shows the architecture of the tool. The LSP module
+communicates with the IDE and delegates the work of handling documents to the document
+index. Detection of clones is delegated to the detection module. The LSP module receives a
+list of clones from the detection module which is then converted to LSP diagnostics and
+code-actions which is finally sent to the client.
 
 \section{Document index}
 
 Upon starting, the LSP server requires indexing of the project for conducting analysis.
-This involves creating an index and inserting the relevant documents. A document contains the
-content of a file along with extra information such as the file's URI and some information
-which is useful for the later clone detection. We define the following interface for our
-documents:
+This involves creating an index and inserting all the relevant documents in the code base.
+A document contains the content of a file along with extra information such as the file's
+URI and some information which is useful for the later clone detection. We define the
+following interface for our documents:
 
 \begin{lstlisting}
     interface Document {
@@ -79,7 +86,7 @@ index. First, we are considering only files of a specific file type, since the t
 not allow analysis of multiple programming languages at the same time. Therefore, the
 index should contain for example only \verb|*.java| files if Java is the language to
 analyze. Secondly, all files of that file type might not be relevant to consider in the
-analysis. This could for example be generated code, which likely contains a lot of
+analysis. This could for example be generated code, which generally contains a lot of
 duplication, but is not practical or necessary to consider as duplicate code, since this
 is not code which the programmer interact with directly. Therefore, the default behavior
 is to consider only files of the correct file type, which are checked into Git. The tool
@@ -103,6 +110,8 @@ document.
 
 \section{Displaying and interacting with clones}
 
+The
+
 \chapter{Implementation: Initial detection}
 
 
@@ -115,11 +124,9 @@ The algorithm detects syntactical type-1 code clones, based on a token-threshold
 detected are therefore snippets of source-code which has at least $N$ equal tokens, where
 $N$ is a configurable parameter. There are also two types of clones which are filtered:
 
-% TODO explain why where?
 \begin{itemize}
-    \item Clones which are completely contained within another larger clone.
-    \item Clones which start in one fragment and ends in the next are cut off at the end
-        of the first fragment.
+    \item Clones which are completely contained within another larger clone are filtered.
+    \item Clones cannot extend past the end of a fragment.
 \end{itemize}
 
 
@@ -753,6 +760,10 @@ the previous existing clones of $i$ is added as a clone in $j$ and vice versa. E
 in the two clone classes will then receive the same set of code clones. The
 \verb|UnionCloneClass| function unions all the clone sets in both clone classes and then
 adds a match from all clones in one clone class to all clones in the other.
+
+Finally, we have a list of every code clone in the code base, which is then sent to the
+LSP module of the tool, which handles the displaying of code clones to the client as
+shown in \cref{lspimplementation}.
 
 \begin{figure}[t]
     \begin{center}

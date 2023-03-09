@@ -292,3 +292,5 @@ TSWLatexianTemp*
 articles/**/*.pdf
 /TestCodebases/
 .hypothesis/
+
+*.drawio.bkp
