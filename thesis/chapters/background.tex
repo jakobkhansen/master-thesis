@@ -236,7 +236,7 @@ comparing the token-stream, therefore Type-2 clones can easily be identified. Ty
 clones can also be identified by comparing the fragments tokens and keeping clone pairs
 with a lexical difference lower than a given threshold. This can be solved with dynamic
 programming~\cite{BakerSparseDynamicProgramming}. A common approach to detect clones using
-token-streams is with a suffix-tree\cite{Zibran_real_time_search}. A suffix-tree can solve
+token-streams is with a suffix-tree~\cite{Zibran_real_time_search}. A suffix-tree can solve
 the \textit{Find all maximal repeats} problem efficiently, which in essence is the same
 problem as finding clone pairs. A similar algorithm can also be performed using a suffix-array
 instead, which requires less memory. This type of code clone detection is very fast
@@ -357,7 +357,7 @@ The following tools have been developed as IDE tools to allow for clone-aware de
         which is currently being edited. It can detect Type-1 and Type-2 code clones and
         uses a token-based suffix array approach to detect clones. The paper does not
         describe how the suffix array is updated, but as the paper was released before the
-        first paper describing dynamic suffix arrays\cite{DynamicExtendedSuffixArrays},
+        first paper describing dynamic suffix arrays~\cite{DynamicExtendedSuffixArrays},
         one can assume that the suffix array is not dynamically updated.~\cite{SHINOBI}.
 
 	\item The modern IDE IntelliJ has a built-in duplication detection and refactoring
@@ -424,7 +424,7 @@ tool for editing and has been used for IDE features such as syntax-highlighting,
 refactoring and code navigation.
 
 The incremental reparsing in Tree-sitter is performed using Wagner's
-algorithm\cite{PracticalAlgorithmsForIncremental}.
+algorithm~\cite{PracticalAlgorithmsForIncremental}.
 
 \Todo{Explain Wagner's algorithm with figure and example}
 
@@ -611,7 +611,7 @@ the LCP value at position 3 is 3.
 
 Suffix arrays can be constructed in linear time in terms of the length of T. Many suffix
 array construction algorithms (SACA) have been discovered in the last
-decade\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm which
+decade~\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm which
 has been shown to be very efficient in practice is Nong and Chan's algorithm based on
 recursive suffix sorting of smaller strings~\cite{LinearTimeSuffixArraySAIS}. 
 
