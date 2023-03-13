@@ -1,0 +1,274 @@
+\chapter{Implementation: Incremental detection}
+
+The following chapter will present the algorithm which efficiently updates the list of
+clones, without having to rebuild the different structures from scratch. Given an edit
+to a file in the project, we will be able to update the document index, fingerprints,
+suffix array and list of clones faster than the initial detection.
+
+An incremental update is run whenever a document is changed. The document index is
+signalized of a change either when a file is saved, or on any keystroke. This is
+configurable by the client. When the document index is changed, an incremental update of
+the clones is run, and the clone-list is updated.
+
+\section{Affordable operations}
+
+Before looking at the approach, it is useful to determine the time cost associated with
+different operations. If we can for example afford to iterate over the contents of a
+single file, that will be useful for our algorithm. Table \ref{table:affordableoperations}
+shows which operations are affordable or not for an incremental update.
+
+\begin{table}[t!]
+	\begin{center}
+		\begin{tabular}{|p{1in} | p{1in} | p{0.6in} | p{2.5in}|}
+			\hline
+
+			Description                    & Complexity              & Affordable & Explanation                               \\\hline
+
+			Content of all files           & $O(|\Var{code\ base}|)$ & No         & Iterating over the
+			entire code base will be the same complexity as the initial detection,
+			therefore this operation is too slow.                                                                             \\\hline
+
+			Content of a file              & $O(|\Var{file}|)$       & Yes        & Iterating over the content
+			of a single file is likely a very small percentage of the entire code
+			base.                                                                                                             \\\hline
+
+			Parsing a file                 & $O(|\Var{file}|)$       & No         & While the complexity of
+			parsing a single file is still linear in the size of the file, parsing a large
+			file from scratch can take a significant amount of time in practice.                                              \\\hline
+
+			Incrementally reparsing a file & $O(|\Var{edit}|)$       & Yes        & Re-using the
+			AST of a file in order to speed up the parsing of the same file with
+			after an edit is significantly faster than parsing the entire file.                                               \\\hline
+
+			Document index                 & $O(|\Var{documents}|)$  & Yes        & The number of files in a code
+			base is likely many orders of magnitude smaller than the size of the code base
+			itself.                                                                                                           \\\hline
+
+			Clones                         & $O(|\Var{clones}|)$     & Yes        & The number of clones in the code base and
+			the area they cover is likely a very small portion of the code base itself.
+			itself.                                                                                                           \\\hline
+		\end{tabular}
+		\caption{Affordable operations for incremental updates}
+		\label{table:affordableoperations}
+	\end{center}
+\end{table}
+
+
+\section{Updating the document index}
+
+The first step of an incremental update is to update the document index. We will also look
+at how we can reduce memory usage of the index without a loss in terms of the time
+complexity of the updates.
+
+As shown in the document interface, each document stores its own content, AST and
+fingerprint. It is not strictly necessary to store either the content or the AST in memory
+all the time, as it is likely that only a handful of files are open in the IDE at once.
+Therefore, in the initial detection, we can free the memory of the file content and AST
+for each document after the fingerprint has been computed. However, if a file is opened in
+the IDE, the file can now be changed, so we should facilitate efficient updates for these
+files only. When a file is opened, the file content should be read from the disk and
+updated via the \verb|textDocument/didChange| messages sent from the client. It is also
+important to keep the AST of the opened file in memory in order to facilitate incremental
+reparsing of the opened files. 
+
+When a file is opened, the LSP client sends a \verb|textDocument/didOpen| message to the
+server, which finds the relevant document $D$ in the index, and sets the following fields:
+
+\begin{flalign*}
+&\Access{D}{open} = \True \\
+&\Access{D}{AST} = \Parse{D} \\
+&\Access{D}{content} = \Read{$\Access{D}{uri}$}
+\end{flalign*}
+
+After the document fields have been set, the document is ready to receive updates. When
+the LSP client sends a \verb|textDocument/didChange| message, the message consists of the
+URI of the edited file, the range of the content which has changed, and the content which
+has potentially been inserted. This range is then used in a tree-sitter incremental
+reparse of the file content. After this reparse, we have efficiently updated a documents
+content and AST. After this update, we also set $\Access{D}{changed} = \True$
+
+\section{Updating fingerprints}
+
+With the updated AST for all documents, we can update the fingerprint of all documents
+which have been changed. For each document $D$ where $\Access{D}{changed} = \True$, the
+fingerprint for D may have changed. Calculating the fingerprint is the same process as in
+the initial detection, where we first query the AST for all nodes of a certain type, then
+for each matched node $N$, we extract and fingerprint all the tokens which $N$ covers,
+using the same fingerprint mapping as was used for the initial detection.
+
+An additional change we have to consider when incrementally updating fingerprints is that
+for a document $D$, $\Access{D}{start}$ and $\Access{D}{end}$ which corresponds to the
+range which $D$ covers in the fingerprint, may have changed. Also, any document $D_1$
+where $\Access{D_1}{start} > \Access{D}{start}$ could also have its range changed. This is
+solved while updating each documents fingerprint by counting the number of tokens in each
+document after updating, and setting the appropriate \verb|start| and \verb|end| fields.
+
+\Todo{Algorithm for updating document index here}
+
+\Todo{Figure which displays three documents, with old and new fingerprint}
+
+\section{Computing edit operations}
+
+Now that the fingerprint has been updated, we could build the suffix array from scratch
+and already see a substantial improvement in performance. The major bottleneck of the initial
+detection is to parse and fingerprint the entire code base. However, the updating of the
+suffix array can and should also be updated incrementally to further improve efficiency.
+
+The input to the dynamic suffix array algorithm is a set of edit operations. Therefore, we
+need to know what exactly has changed in the fingerprint before we can update the suffix
+array. We need to determine what edit operations have happened. Edit operations are either
+deleting, inserting or substituting a section of the code.
+
+There are two approaches we could take to determine the edit operations. The first is to
+look at the ranges that the LSP client sends with each \verb|textDocument/didChange|
+message and determine which tokens in the fingerprint have been affected by this message.
+However, this approach tightly couples the algorithm to LSP and the scenario where we know
+the exact ranges of each change. Also, we might do unnecessary amounts of operations if we
+do multiple edits, since some operations could cancel each other out, for example by
+inserting and then deleting some text.
+
+The other approach is to determine the changes of the fingerprint via an edit distance
+algorithm. An edit distance algorithm is an algorithm which calculates the distance
+between two strings $S_1$ and $S_2$. Distance between two strings is the minimum number of
+edit operations (insert, delete, substitute) which is required to transform $S_1$ into
+$S_2$. Many of the algorithms which calculates the edit distance also allows computing
+what the operations are.
+
+The classic algorithm for calculating edit distance operations is attributed to Wagner and
+Fischer~\cite{WagnerFischer}. The input to the algorithm is two strings $S_1$ and $S_2$ of
+length $n$ and $m$. The output will be the set of operations needed to turn $S_1$ into
+$S_2$. This algorithm is based on dynamic programming where a matrix $M$ is filled from
+top to bottom and then the operations are inferred from $M$. Algorithm
+\ref{alg:wagnerfischerfill} shows how the edit distance matrix is filled and
+\ref{tab:wagnerfischermatrix} shows an example matrix.
+
+\begin{figure}[t]
+    \begin{center}
+	$$
+		\sum^{n}_{i = 0}{M[i][0] = i}
+	$$
+	$$
+		\sum^{m}_{j = 0}{M[0][j] = j}
+	$$
+
+	\begin{gather*}
+		M[i][j] =
+		\begin{cases}
+			M[i-1][j-1] & \mathrm{if\ } S_1[i] = S_2[j] \\
+            1 + \Min{$M[i-1][j-1], M[i][j-1], M[i-1][j-1]$}
+		\end{cases}
+	\end{gather*}
+	\caption{Edit distance recurrence}
+	\label{eq:editdistancerecurrence}
+    \end{center}
+\end{figure}
+
+Each index $i, j$ in $M$ contains the edit distance value between the substrings
+$\ArrayAccess{S_1}{0..i}$ and $\ArrayAccess{S_2}{0..j}$ The values in $M$ is calculated by
+determining what is the cheapest operation to do at a certain location to make the
+substrings equal. This can be determined by looking at the three surrounding indices in
+$M$: $\MatrixAccess{M}{i - 1}{j - 1}$, $\MatrixAccess{M}{i - 1}{j}$ and
+$\MatrixAccess{M}{i}{j - 1}$. Each of these indices equate to deleting, inserting or
+substituting a character in $S_1$. The recurrence in figure
+\ref{eq:editdistancerecurrence} describes the algorithm.
+
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\WagnerFischerEditDistance{$S_1$, $S_2$}}{
+        $\Var{n} \gets \Len{$\Var{S}_1$}$ \;
+        $\Var{m} \gets \Len{$\Var{S}_2$}$ \;
+        $\Var{matrix} \gets \mathrm{new\ array}[\Var{n} + 1][\Var{m} + 1]$ \;\;
+
+
+        \For{$i \From 0 \To n$}{
+            $\MatrixAccess{\Var{matrix}}{\Var{i}}{0} = \Var{i}$
+        } \;
+
+        \For{$i \From 0 \To m$}{
+            $\MatrixAccess{\Var{matrix}}{\Var{0}}{i} = \Var{i}$
+        } \;
+
+        \For{$i \From 1 \To n$}{
+            \For{$j \From 1 \To m$}{
+                \If{$\ArrayAccess{\Var{S}_1}{\Var{i} - 1} = \ArrayAccess{\Var{S}_2}{\Var{j} - 1}$}{
+                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}} $
+                }
+                \Else {
+                    $\Var{delete} \gets \MatrixAccess{\Var{matrix}}{\Var{i} - 1}{\Var{j}}$ \;
+
+                    $\Var{insert} \gets \MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j - 1}}$ \;
+
+                    $\Var{substitute} \gets \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}}$ \;\;
+
+                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \Min{$\Var{insert},
+                    \Var{delete}, \Var{substitute}$} + 1$
+
+                }
+            }
+        }
+
+        \Return $\Var{matrix}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Fill edit distance matrix using Wagner-Fischer algorithm}
+  \label{alg:wagnerfischerfill}
+\end{algorithm}
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|}
+			  &                      & D                    & E                    & M                    & O                    & C                    & R                    & A                    & T                    \\\hline
+			  & \cellcolor{blue!25}0 & 1                    & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    & 8                    \\\hline
+			R & 1                    & \cellcolor{blue!25}1 & 2                    & 3                    & 4                    & 5                    & 5                    & 6                    & 7                    \\\hline
+			E & 2                    & 2                    & \cellcolor{blue!25}1 & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			P & 3                    & 3                    & \cellcolor{blue!25}2 & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			U & 4                    & 4                    & \cellcolor{blue!25}3 & 3                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			B & 5                    & 5                    & 4                    & \cellcolor{blue!25}4 & 4                    & 4                    & 5                    & 6                    & 7                    \\\hline
+			L & 6                    & 6                    & 5                    & 5                    & \cellcolor{blue!25}5 & 5                    & 5                    & 6                    & 7                    \\\hline
+			I & 7                    & 7                    & 6                    & 6                    & 6                    & \cellcolor{blue!25}6 & 6                    & 6                    & 7                    \\\hline
+			C & 8                    & 8                    & 7                    & 7                    & 7                    & 6                    & \cellcolor{blue!25}7 & 7                    & 7                    \\\hline
+			A & 9                    & 9                    & 8                    & 8                    & 8                    & 7                    & 7                    & \cellcolor{blue!25}7 & 8                    \\\hline
+			N & 10                   & 10                   & 9                    & 9                    & 9                    & 8                    & 8                    & 8                    & \cellcolor{blue!25}8 \\\hline
+
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Edit distance matrix for REPUBLICAN $\rightarrow$ DEMOCRAT}
+	\label{tab:wagnerfischermatrix}
+\end{table}
+
+
+The edit operations can then be inferred from $M$ by backtracking from the bottom-right
+index, to the top-left, giving us the edit operations in reverse. At each position $i, j$
+we choose either of the 3 surrounding indices, the same indices which were used to
+determine the value originally. Choosing the left index ($i, j - 1$) equates to inserting
+the character $\ArrayAccess{S_2}{j - 1}$ at position $i - 1$. Choosing the top index ($i -
+1, j$) equates to deleting the character $\ArrayAccess{S_1}{i - 1}$. Choosing the top-left
+index ($i - 1, j - 1$) equates to substituting $\ArrayAccess{S_1}{i - 1}$ with
+$\ArrayAccess{S_2}{j - 1}$. If these characters are already equal, the operation can be
+ignored. For example in table \ref{tab:wagnerfischermatrix}, the first operation is to
+substitute \verb|R| with \verb|D| at position $0$. Afterwards \verb|P| and \verb|U| is
+deleted at position $2$. Then the \verb|B| which is now at position $2$ is substituted by
+\verb|M|. This continues with more substitutions until we finally have \verb|DEMOCRAT|.
+
+\Todo{Now collect operations together and explain memory issue + Hirschbergs}
+
+\subsubsection{Aggregating edit operations}
+
+In the next phase we will feed the edit operations into an algorithm which dynamically
+updates our suffix array based on those operations. However, this algorithm will be more
+efficient if the operations are combined to singular inserts, deletes or substitutes of
+strings more than one character. The edit distance algorithm outputs only single character
+operations, meaning we insert, delete or substitute a single character at a time. We
+therefore want a way to combine these operations to ``larger'' operations.
+
+One way to do this is to simply combine operations which are sequenced in the matrix. For
+example in...
+
+
+
+\section{Dynamic suffix arrays}
+
+\section{Storing old clones}
