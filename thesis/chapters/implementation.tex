@@ -2,7 +2,7 @@
 \chapter{Implementation: LSP server architecture}
 \label{lspimplementation}
 
-The tool is integrated into IDEs via the Language server protocol. The tool starts up as
+CCDetect-LSP is integrated into IDEs via the Language server protocol. The tool starts up as
 an LSP server, which an IDE client can connect to and send/receive messages from. The goal
 of the LSP server/client interaction is to give users of the tool an overview of all
 clones as they appear. The LSP server is implemented in Java with the LSP4J library which
@@ -127,12 +127,12 @@ message, but this message is only invoked when the client specifically requests 
 actions at a certain location.
 
 Figure \ref{fig:vscodeclones} shows how clones are displayed in the VSCode IDE. Code
-clones are displayed in the file as an ``Information'' diagnostic, and when hovered over,
-the client shows the \verb|DiagnosticRelatedInformation| part of the diagnostic where all
-the matching clones are displayed and can be clicked to navigate to the corresponding
-match. For a client which may not implement the \verb|DiagnosticRelatedInformation|
-message (which was added in version 3.16), invoking the code-action to navigate to the
-matching clone is another option.
+clones are displayed inline in the file as an ``Information'' diagnostic, and when hovered
+over, the client shows the \verb|DiagnosticRelatedInformation| information of the diagnostic
+where all the matching clones are displayed and can be clicked to navigate to the
+corresponding match. For a client which may not implement the
+\verb|DiagnosticRelatedInformation| message (which was added in LSP version 3.16), invoking
+the code-action to navigate to the matching clone is another option.
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{figures/vscodecodeclone.png}
@@ -143,7 +143,7 @@ matching clone is another option.
 \chapter{Implementation: Initial detection}
 
 
-This chapter discusses the detection module of the tool. It consists of the detection
+This chapter discusses the detection module of CCDetect-LSP. It consists of the detection
 algorithm which takes the document index as input, and outputs a list of code clones. The
 initial input to the algorithm will be the raw source code of each document in the index,
 in text format.
@@ -161,41 +161,44 @@ $N$ is a configurable parameter. There are also two types of clones which are fi
 In broad strokes, the algorithm first selects the relevant parts of source code to detect
 code clones in (fragment selection), then transforms the selected fragments into a smaller
 representation (fingerprinting). For the matching, an extended suffix array for the fingerprint
-is constructed, where the LCP array is used to find matching instances of source-code.
+is constructed, where the LCP array is used to find long matching instances of source code.
 Finally, clones are filtered and aggregated into clone classes before they are
 source-mapped back to the original source-code locations, which the LSP server can display
 as diagnostics.
 
 \section{Fragment selection}
 
-The first phase of the algorithm considers how to extract the relevant fragments of source
-code which should be considered for detection. A fragment in this case is considered as a
+The first phase of the algorithm involves extracting the relevant fragments of source code
+which should be considered for detection. A fragment in this case is considered as a
 section of abstract syntax, meaning that a particular type of node in the AST and the
 tokens it encompasses should be extracted. Since the algorithm is language agnostic, it is
 not feasible to have a single algorithm for fragment extraction or to define a separate
-fragment extraction algorithm for every possible language. Therefore, the tool allows the
-user to define a fragment query via tree-sitter queries~\cite{treesitter}. Tree-sitter
-queries are flexible queries to extract specific nodes or subtrees in an AST. For example,
-in Java it would be natural to consider only methods. The tree-sitter query for selecting
-only the method nodes in a Java programs AST would be:
+fragment extraction algorithm for every possible language. Therefore, a parser generator
+tool is used, which can generate the code for parsing any programming language given a
+grammar. We use Tree-sitter, a parser generator with incremental parsing and
+error-recovery capabilities, as well as a query language for finding any type of node in
+the AST~\cite{treesitter}. Tree-sitter queries are flexible queries to extract specific
+nodes or subtrees. For example, in Java it would be natural to consider only methods. The
+Tree-sitter query for selecting only the method nodes in a Java programs AST would be:
 
 \begin{equation}
     (\mathrm{method\_declaration\ } \text{@method})
 \end{equation}
 
-This tree-sitter query selects the node with type \verb|method_declaration| and
-``captures'' it with the \verb|@method| name, for further processing by the program.
-Readers interested in the details of the query system are referred to the tree-sitter
-documentation~\cite{treesitter}.
-
-Implementing something similar for another parser/AST could be as simple as traversing
-the tree until a node of a specific type is found, using the visitor pattern.
-
-\Todo{visitor pattern cite}
+This Tree-sitter query selects the node with type \verb|method_declaration| and
+``captures'' it with the \verb|@method| name, so that it can be further processed by the
+program. Readers interested in the details of the query system are referred to the
+Tree-sitter documentation~\cite{treesitter}.
 
 Using a tree-sitter query, the algorithm parses the program into an AST, queries the tree
 for all the nodes which matches the query (taking care not to capture nodes which are
 children of already captured nodes) and extracts all the tokens which the node covers.
+
+\Todo{Algorithm?}
+
+Implementing something similar for another parser/AST could be as simple as traversing
+the tree until a node of a specific type is found, using the visitor pattern~\cite[366]{GangOfFour}.
+
 
 \section{Fingerprinting}
 
@@ -260,12 +263,12 @@ algorithm.
 Since the algorithm that is used for matching is based on a suffix array, the
 representation should be in a format similar to a string, which is the standard input to a
 suffix array construction algorithm. However, it is not strictly necessary to use strings.
-The essential property of the input array is that each element is comparable. Therefore,
-we can use an array of integers instead, which is preferable, since there are often a lot
-more unique integers available than unique characters in a programming language. The
-algorithm will need to have a lot of unique elements in the representation because each
-unique token value should be represented by one unique element, therefore integers are a
-good choice.
+The essential property of the input array is that we have an infinite alphabet where each
+element is comparable. Therefore, we can use an array of integers instead, which is
+preferable, since there are often a lot more unique integers available than unique
+characters in a programming language. The algorithm will need to have a lot of unique
+elements in the representation because each unique token value will be represented by
+a single unique element of the alphabet, therefore integers are a good choice.
 
 
 The algorithm utilizes fingerprinting in order to reduce the size of the representation.
@@ -279,27 +282,29 @@ a sample Java program could theoretically be fingerprinted. The fingerprint mapp
 its ``count'' at 2 to make space for some terminating characters. Each fragment is
 terminated by a $1$ and the fingerprint is ultimately terminated by a $0$. Having these
 values in the fingerprint will be useful for the matching algorithm where the suffix array
-is constructed and utilized for detection.
+is constructed and utilized for detection. The fingerprint of each fragment is stored in
+the relevant document object.
 
-The fingerprint of each fragment is stored in a list which the relevant document object
-contains.
 
 \section{Suffix array construction}
 
-\Todo{Recall that SA is ... with backref}
 
 The next step is to input the fingerprint into a suffix array construction algorithm
-(SACA), so that the suffix array can be used to find maximal repeats. All the fingerprints
-which are stored in each document object are concatenated to be stored in a single integer
-array (with terminators after each fragment), which the suffix array (SA), inverse suffix
-array (ISA) and longest-common prefix array (LCP) is computed from.
+(SACA), so that the suffix array can be used to find maximal repeats. Recall that we
+discussed the suffix array in \cref{prelimalgos} and that the suffix array of a string
+sorts all the suffixes of the string, making it simple to find similar regions of text,
+since similar suffixes will be next to each other in the suffix array. All the
+fingerprints which are stored in each document object will now be concatenated to be
+stored in a single integer array (with terminators after each fragment), which the suffix
+array (SA), inverse suffix array (ISA) and longest-common prefix array (LCP) is computed
+from.
 
 We have utilized a straight-forward implementation of the ``Induced sorting
 variable-length LMS-substrings'' algorithm~\cite{LinearTimeSuffixArraySAIS} which computes
 a suffix array in linear time. The following section will give high-level overview of how
 the algorithm works. 
 
-The algorithm will be explained with a string as its input, as this is most common for
+The algorithm will be assumed to have a string as its input, as this is most common for
 suffix arrays, and working with strings can be more clear to the reader when considering
 suffixes. The algorithm is still applicable to our fingerprint, since an array of integers
 will work similarly to a string when given as input.
@@ -506,7 +511,7 @@ with $n$ halving in each call. Therefore, the recurrence will have the complexit
 
 Computing the ISA after constructing the SA is simple. Since the ISA is simply the inverse
 of SA, it can be constructed in linear time with a single loop as seen in Algorithm
-\ref{alg:isa}
+\ref{alg:isa}.
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
@@ -527,8 +532,7 @@ of SA, it can be constructed in linear time with a single loop as seen in Algori
 \end{algorithm}
 
 
-% TODO rewrite this shit
-Computing the LCP in linear time is more complicated and requires some thought about which
+Computing the LCP in linear time is more complicated and requires some insight about which
 order to insert LCP values. We will also add one extra restriction to the LCP values,
 being that the LCP values cannot match past a $1$, which were the terminal value between
 fragments. This restriction will be useful when we want to extract clones using the LCP
@@ -575,13 +579,13 @@ the characters at that offset.
 
 \begin{table}
     \begin{center}
-        \begin{tabular}[c]{c|ccccccc}
-            Index & \multicolumn{6}{c}{Suffix} \\
+        \begin{tabular}[c]{c|cccccc|c}
+            Index & \multicolumn{6}{c}{Suffix} & Minimum LCP \\
             \hline
-            1 & A & N & A & N & A & \$ \\ 
-            3 & A & N & A & \$ \\ 
-            2 & N & A & N & A & \$ \\ 
-            4 & N & A & \$ \\ 
+            1 & A & N & A & N & A & \$ & 0 \\ 
+            3 & A & N & A & \$ &  &  & 0\\ 
+            2 & N & A & N & A & \$ & & 2 \\ 
+            4 & N & A & \$ & & &  & 2\\ 
 
         \end{tabular}
     \end{center}
@@ -814,7 +818,7 @@ shown in \cref{lspimplementation}.
   \SetAlgoLined\DontPrintSemicolon
     \algo{\GetCloneMap{index, cloneIndices}}{
         $\Var{n} \gets \Access{\Var{cloneIndices}}{\Var{len}}$ \;
-        $\Var{cloneMap} \gets \textrm{Map\textless int, CodeClone\textgreater}$ \;
+        $\Var{cloneMap} \gets \textrm{Empty map with type: } \Var{int} \rightarrow \Var{CodeClone}$ \;\;
 
         
         \For{$\Var{i} \From 0 \To \Var{n} - 1$}{
@@ -970,29 +974,32 @@ document after updating, and setting the appropriate \verb|start| and \verb|end|
 
 \Todo{Figure which displays three documents, with old and new fingerprint}
 
-\section{Extracting edit operations}
+\section{Computing edit operations}
 
 Now that the fingerprint has been updated, we could build the suffix array from scratch
-and already see a huge improvement in performance. The major bottleneck of the initial
+and already see a substantial improvement in performance. The major bottleneck of the initial
 detection is to parse and fingerprint the entire code base. However, the updating of the
-suffix array can and should also be updated incrementally.
+suffix array can and should also be updated incrementally to further improve efficiency.
 
-Before we can update the suffix array, we need to know what exactly has changed in the
-fingerprint. We need to determine what edit operations have happened. Edit operations are
-either deleting, inserting or substituting a section of the code.
+The input to the dynamic suffix array algorithm is a set of edit operations. Therefore, we
+need to know what exactly has changed in the fingerprint before we can update the suffix
+array. We need to determine what edit operations have happened. Edit operations are either
+deleting, inserting or substituting a section of the code.
 
 There are two approaches we could take to determine the edit operations. The first is to
 look at the ranges that the LSP client sends with each \verb|textDocument/didChange|
 message and determine which tokens in the fingerprint have been affected by this message.
-However, this approach tightly couples the algorithm to the scenario where we know the exact
-ranges of each change, which is not very flexible.
+However, this approach tightly couples the algorithm to LSP and the scenario where we know
+the exact ranges of each change. Also, we might do unnecessary amounts of operations if we
+do multiple edits, since some operations could cancel each other out, for example by
+inserting and then deleting some text.
 
-The other approach which is more flexible is to determine the changes of the fingerprint
-via an edit distance algorithm. An edit distance algorithm is an algorithm which
-calculates the distance between two strings $S_1$ and $S_2$. Distance meaning the minimum
-number of edit operations (insert, delete, substitute) which is required to transform $S_1$
-into $S_2$. Many of the algorithms which calculates the edit distance also allows
-computing what the operations are.
+The other approach is to determine the changes of the fingerprint via an edit distance
+algorithm. An edit distance algorithm is an algorithm which calculates the distance
+between two strings $S_1$ and $S_2$. Distance between two strings is the minimum number of
+edit operations (insert, delete, substitute) which is required to transform $S_1$ into
+$S_2$. Many of the algorithms which calculates the edit distance also allows computing
+what the operations are.
 
 The classic algorithm for calculating edit distance operations is attributed to Wagner and
 Fischer~\cite{WagnerFischer}. The input to the algorithm is two strings $S_1$ and $S_2$ of
@@ -1000,7 +1007,7 @@ length $n$ and $m$. The output will be the set of operations needed to turn $S_1
 $S_2$. This algorithm is based on dynamic programming where a matrix $M$ is filled from
 top to bottom and then the operations are inferred from $M$. Algorithm
 \ref{alg:wagnerfischerfill} shows how the edit distance matrix is filled and
-\ref{table:wagnerfischermatrix} shows an example matrix.
+\ref{tab:wagnerfischermatrix} shows an example matrix.
 
 \begin{figure}[t]
     \begin{center}
@@ -1029,8 +1036,8 @@ determining what is the cheapest operation to do at a certain location to make t
 substrings equal. This can be determined by looking at the three surrounding indices in
 $M$: $\MatrixAccess{M}{i - 1}{j - 1}$, $\MatrixAccess{M}{i - 1}{j}$ and
 $\MatrixAccess{M}{i}{j - 1}$. Each of these indices equate to deleting, inserting or
-substituting a character in $S_1$. The algorithm can be boiled down to the recurrence in
-figure \ref{eq:editdistancerecurrence}
+substituting a character in $S_1$. The recurrence in figure
+\ref{eq:editdistancerecurrence} describes the algorithm.
 
 
 \begin{algorithm}[htp]
@@ -1095,8 +1102,8 @@ figure \ref{eq:editdistancerecurrence}
 			\hline
 		\end{tabular}
 	\end{center}
-	\caption{Edit distance matrix}
-	\label{table:wagnerfischermatrix}
+	\caption{Edit distance matrix for REPUBLICAN $\rightarrow$ DEMOCRAT}
+	\label{tab:wagnerfischermatrix}
 \end{table}
 
 
@@ -1108,11 +1115,23 @@ the character $\ArrayAccess{S_2}{j - 1}$ at position $i - 1$. Choosing the top i
 1, j$) equates to deleting the character $\ArrayAccess{S_1}{i - 1}$. Choosing the top-left
 index ($i - 1, j - 1$) equates to substituting $\ArrayAccess{S_1}{i - 1}$ with
 $\ArrayAccess{S_2}{j - 1}$. If these characters are already equal, the operation can be
-ignored.
-
-\Todo{Example with DEMOCRAT -\> REPUBLICAN}
+ignored. For example in table \ref{tab:wagnerfischermatrix}, the first operation is to
+substitute \verb|R| with \verb|D| at position $0$. Afterwards \verb|P| and \verb|U| is
+deleted at position $2$. Then the \verb|B| which is now at position $2$ is substituted by
+\verb|M|. This continues with more substitutions until we finally have \verb|DEMOCRAT|.
 
 \Todo{Now collect operations together and explain memory issue + Hirschbergs}
+
+In the next phase we will feed the edit operations into an algorithm which dynamically
+updates our suffix array based on those operations. However, this algorithm will be more
+efficient if the operations are combined to singular inserts, deletes or substitutes of
+strings more than one character. The edit distance algorithm outputs only single character
+operations, meaning we insert, delete or substitute a single character at a time. We
+therefore want a way to combine these operations to ``larger'' operations.
+
+One way to do this is to simply combine operations which are sequenced in the matrix. For
+example in...
+
 
 
 \section{Dynamic suffix arrays}
