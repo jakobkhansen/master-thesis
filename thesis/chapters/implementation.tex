@@ -174,7 +174,7 @@ section of abstract syntax, meaning that a particular type of node in the AST an
 tokens it encompasses should be extracted. Since the algorithm is language agnostic, it is
 not feasible to have a single algorithm for fragment extraction or to define a separate
 fragment extraction algorithm for every possible language. Therefore, the tool allows the
-user to define a fragment query via tree-sitter queries\cite{treesitter}. Tree-sitter
+user to define a fragment query via tree-sitter queries~\cite{treesitter}. Tree-sitter
 queries are flexible queries to extract specific nodes or subtrees in an AST. For example,
 in Java it would be natural to consider only methods. The tree-sitter query for selecting
 only the method nodes in a Java programs AST would be:
@@ -186,16 +186,20 @@ only the method nodes in a Java programs AST would be:
 This tree-sitter query selects the node with type \verb|method_declaration| and
 ``captures'' it with the \verb|@method| name, for further processing by the program.
 Readers interested in the details of the query system are referred to the tree-sitter
-documentation\cite{treesitter}.
+documentation~\cite{treesitter}.
 
 Implementing something similar for another parser/AST could be as simple as traversing
 the tree until a node of a specific type is found, using the visitor pattern.
+
+\Todo{visitor pattern cite}
 
 Using a tree-sitter query, the algorithm parses the program into an AST, queries the tree
 for all the nodes which matches the query (taking care not to capture nodes which are
 children of already captured nodes) and extracts all the tokens which the node covers.
 
 \section{Fingerprinting}
+
+\Todo{Høyere abstraksjonsnivå med infinite alphabets}
 
 \newsavebox{\firstlisting}
 \begin{lrbox}{\firstlisting}
@@ -281,6 +285,8 @@ The fingerprint of each fragment is stored in a list which the relevant document
 contains.
 
 \section{Suffix array construction}
+
+\Todo{Recall that SA is ... with backref}
 
 The next step is to input the fingerprint into a suffix array construction algorithm
 (SACA), so that the suffix array can be used to find maximal repeats. All the fingerprints
@@ -459,9 +465,9 @@ types. $S_1$ is now built by mapping each LMS-substring to its unique value, and
 concatenating them in the original ordering. $S_1$ is now a smaller case which is used in
 the recursion. The string is at most $n / 2$ in size, meaning there will be at most
 $\log_2(n)$ recursive calls. The recursive call will return the suffix array of the $S_1$.
-~\cite{SuffixArrayConstruction} proves a theorem which shows that sorting $S_1$ is
+Nong et al. proves a theorem which shows that sorting $S_1$ is
 equivalent to sorting the LMS suffixes of $S$. Therefore, the suffix array of $S_1$ can be
-mapped to the LMS suffixes of $S$.
+mapped to the LMS suffixes of $S$~\cite{LinearTimeSuffixArraySAIS}.
 
 The base-case of the recursion is when the suffix array can be computed simply by
 bucketing each suffix, which happens when every suffix of the string starts with a unique
@@ -801,6 +807,8 @@ shown in \cref{lspimplementation}.
     \label{fig:cloneaggregation}
 \end{figure}
 
+\Todo{Squiggly arrow}
+
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
@@ -812,29 +820,17 @@ shown in \cref{lspimplementation}.
         \For{$\Var{i} \From 0 \To \Var{n} - 1$}{
             $\Var{firstIndex} \gets \ArrayAccess{\Var{cloneIndices}}{\Var{i}}$ \;
             $\Var{secondIndex} \gets \ArrayAccess{\Var{cloneIndices}}{\Var{i}}$ \;
-            $\Var{cloneSize} \gets \LCP{\ISA{\Var{firstIndex}}} - 1$ \;\;
+            $\Var{size} \gets \LCP{\ISA{\Var{firstIndex}}} - 1$ \;\;
 
 
-            \Comment{Get sources for the first and last token of both clones}
-            $\Var{firstSourceStart} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
-            \Var{firstIndex}$}$ \;
-            $\Var{firstSourceEnd} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
-            \Var{firstIndex + cloneSize}$}$ \;\;
+            \Comment{Use SourceMap function to get ranges and documents of clones}
+            $\Var{firstRange} \gets \textrm{Get source between firstIndex and
+            (firstIndex + size)}$ \;
+            $\Var{secondRange} \gets \textrm{Get source between secondIndex and
+            (secondIndex + size)}$ \;\;
 
-            $\Var{secondSourceStart} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
-            \Var{secondIndex}$}$ \;
-            $\Var{secondSourceEnd} \gets \SourceMap{$\Access{\Var{index}}{\Var{documents}},
-            \Var{secondIndex + cloneSize}$}$ \;\;
-
-            \Comment{Build range between both source-pairs for both clones}
-            $\Var{firstRange} \gets (\Access{\Var{firstSourceStart}}{\Var{start}},
-            \Access{\Var{firstSourceEnd}}{\Var{end}})$ \;
-            $\Var{secondRange} \gets (\Access{\Var{secondSourceStart}}{\Var{start}},
-            \Access{\Var{secondSourceEnd}}{\Var{end}})$ \;\;
-
-            \Comment{Get the document of each clone}
-            $\Var{firstDocument} \gets \Access{\Var{firstSourceStart}}{\Var{document}}$ \;
-            $\Var{secondDocument} \gets \Access{\Var{firstSourceStart}}{\Var{document}}$ \;\;
+            $\Var{firstDocument} \gets \Access{\Var{firstRange}}{\Var{document}}$ \;
+            $\Var{secondDocument} \gets \Access{\Var{secondRange}}{\Var{document}}$ \;\;
             
             \Comment{Build clone objects if they don't exist}
             \If{$\Var{firstIndex} \NotIn \Var{cloneMap}$}{
@@ -852,6 +848,7 @@ shown in \cref{lspimplementation}.
                 clone with secondIndex as key}
             } \;
 
+            \Comment{Union clone classes}
             \UnionCloneClass{\Get{$\Var{cloneMap}, \Var{firstIndex}$}, \Get{$\Var{cloneMap,
             \Var{secondIndex}}$}} \;
         }
@@ -1017,13 +1014,8 @@ top to bottom and then the operations are inferred from $M$. Algorithm
 	\begin{gather*}
 		M[i][j] =
 		\begin{cases}
-			M[i-1][j-1] & \mathrm{if\ } S_1[i] = S_2{j} \\
-			1 + \mathrm{min}
-			\begin{cases}
-				M[i-1][j-1] \\
-				M[i][j-1]   \\
-				M[i-1][j]
-			\end{cases}
+			M[i-1][j-1] & \mathrm{if\ } S_1[i] = S_2[j] \\
+            1 + \Min{$M[i-1][j-1], M[i][j-1], M[i-1][j-1]$}
 		\end{cases}
 	\end{gather*}
 	\caption{Edit distance recurrence}
@@ -1044,8 +1036,8 @@ figure \ref{eq:editdistancerecurrence}
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\WagnerFischerEditDistance{$S_1$, $S_2$}}{
-        $\Var{n} \gets \Access{\Var{S}_1}{len}$ \;
-        $\Var{m} \gets \Access{\Var{S}_2}{len}$ \;
+        $\Var{n} \gets \Len{$\Var{S}_1$}$ \;
+        $\Var{m} \gets \Len{$\Var{S}_2$}$ \;
         $\Var{matrix} \gets \mathrm{new\ array}[\Var{n} + 1][\Var{m} + 1]$ \;\;
 
 
