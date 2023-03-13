@@ -289,8 +289,8 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
 
-articles/**/*.pdf
-/TestCodebases/
+/notes/articles/**/*.pdf
+/notes/TestCodebases/
 .hypothesis/
 
 *.drawio.bkp
