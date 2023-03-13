@@ -597,10 +597,10 @@ the characters at that offset.
 
 \section{Clone extraction}
 
-With the extended suffix array data structure computed, we can now consider which
-substrings (prefixes of suffixes) we want to extract as potential code clones. In this
-phase the indices of the fingerprint which we consider to be code clones are extracted,
-which will be mapped back to the original source code in the next phase.
+With the extended suffix array computed, we can now consider which substrings (prefixes of
+suffixes) we want to extract as potential code clones. In this phase the indices of the
+fingerprint which we consider to be code clones are extracted, which will be mapped back
+to the original source code in the next phase.
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
@@ -660,16 +660,16 @@ which will be mapped back to the original source code in the next phase.
   \label{alg:cloneextraction}
 \end{algorithm}
 
-A solution is to extract every suffix which has an LCP value which is greater than the
-token threshold. The algorithm would be a single loop over $S$, using ISA to find the
+A straightforward solution is to extract every suffix which has an LCP value which is
+greater than the token threshold. The algorithm is a loop over $S$, using ISA to find the
 corresponding LCP value. This finds the clone indices, as shown in Algorithm
 \ref{alg:simplecloneextraction}.
 
 
 However, this algorithm will return a lot of contained clones. A contained clone is a
 clone where all the tokens of the clone is a part of another, larger clone. The algorithm
-will give a lot of contained clones because in a case where there is a suffix with an LCP
-value of $100$, the next suffix will have the LCP value of at least $99$ and likely
+will give a lot of contained clones, for example in the case where there is a suffix with
+an LCP value of $100$, the next suffix will have the LCP value of at least $99$ and likely
 matches with the same code clone as the previous suffix, but with an offset of 1 token.
 For any large code clone, there will therefore be many smaller clones which are completely
 contained within it, but these clones are also likely to match with another clone which is
@@ -689,24 +689,22 @@ extend our clone extraction algorithm to account for this, by using the followin
 
 
 Algorithm \ref{alg:cloneextraction} adds a while-loop to the clone extraction algorithm
-which skips over all clones with LCP values which should be skipped according to the
-theorem. Note that this algorithm doesn't disallow contained clones entirely, but any
-clone which is a shorter version of another clone pointing to the same match, will be
-skipped. Also note that overlapping clones, meaning two clones which share tokens, but
-where neither contains the other, will not be skipped.
+which skips over suffixes which are contained according to the theorem. Note that this
+algorithm doesn't disallow contained clones entirely, but any clone which is a shorter
+version of another clone pointing to the same match, will be skipped. Also note that
+overlapping clones, meaning two clones which share tokens, but where neither contains the
+other, will not be skipped.
 
-
-
-Finally, we have a list of positions in the fingerprint which is considered to be code
+Finally, we have a list of indices in the fingerprint which is considered to be code
 clones.
 
 \section{Source-mapping}
 
-With the clone indices in the fingerprint now computed, we are almost done computing the
-clones. The final step is to map the clone indices back to the original source code. In
-order to correctly identify where a clone is located, we need to know which file the clone
-is located in, the range of the source code in that file the code clone covers, and the
-other matching code clones.
+With the clone indices in the fingerprint computed, we are almost finished. The final step
+is to map the clone indices back to the original source code. In order to correctly
+identify where a clone is located, we need to know which file the clone is located in, the
+range of the source code in that file the code clone covers, and the other matching code
+clones.
 
 To accomplish this, each document in the index needs to store the range of each of its
 tokens and keep track of which portion of the fingerprint consists of the documents
@@ -811,9 +809,6 @@ shown in \cref{lspimplementation}.
     \label{fig:cloneaggregation}
 \end{figure}
 
-\Todo{Squiggly arrow}
-
-
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\GetCloneMap{index, cloneIndices}}{
@@ -839,14 +834,14 @@ shown in \cref{lspimplementation}.
             \Comment{Build clone objects if they don't exist}
             \If{$\Var{firstIndex} \NotIn \Var{cloneMap}$}{
                 $\Var{firstClone} \gets \New
-                \CodeClone{$\Access{\Var{firstDocument}}{\Var{URI}},
+                \CodeClone{$\Access{\Var{firstDocument}}{\Var{uri}},
                 \Var{firstRange}$}$ \;
                 $\Put{$\Var{cloneMap}, \Var{firstIndex}, \Var{firstClone}$}$ \Comment{Put
                 clone with firstIndex as key}
             }
             \If{$\Var{secondIndex} \NotIn \Var{cloneMap}$}{
                 $\Var{secondClone} \gets \New
-                \CodeClone{$\Access{\Var{secondDocument}}{\Var{URI}},
+                \CodeClone{$\Access{\Var{secondDocument}}{\Var{uri}},
                 \Var{secondRange}$}$ \;
                 $\Put{$\Var{cloneMap}, \Var{i}, \Var{secondClone}$}$ \Comment{Put
                 clone with secondIndex as key}
