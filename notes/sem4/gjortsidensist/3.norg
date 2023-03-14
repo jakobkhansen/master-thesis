@@ -1,6 +1,13 @@
-* TODO for this week
-  - Figures for trees and LCP array
-  - Move algorithms to implementation
-  - Go over Lars notes for background
-  - Write more in implementation
-  - Evaluation?
+* Evaluation
+  - Used BigCloneEval and BigCloneBench and wrote an evaluation script for CCDetect
+  - Initially got poor recall for type-1 clones (15% recall)
+  - Two bugs caused this
+  --- If two clones are directly next to each other, the second clone would be offset by
+      one token more than it should have (i++ error)
+  --- Aggregation of clones into clone classes wasn't done properly
+  - After fixing bugs, 99.97% recall of type-1 clones
+
+* Writing
+  - Polished chapter 4 (initial detection)
+  - Added figures and a lot of pseudocode
+  - Started working on chapter 5 as well (dynamic updates)
