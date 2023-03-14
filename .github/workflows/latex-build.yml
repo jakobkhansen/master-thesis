@@ -11,3 +11,8 @@ jobs:
         with:
           root_file: thesis.tex
           working_directory: ./thesis
+      - name: Upload thesis artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: thesis
+          path: ./thesis/thesis.pdf
