@@ -10,4 +10,4 @@ jobs:
         uses: dante-ev/latex-action@edge
         with:
           root_file: thesis.tex
-          working-directory: ./thesis
+          working_directory: ./thesis
