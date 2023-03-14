@@ -3,10 +3,13 @@ on: [push, workflow_dispatch]
 jobs:
   build_latex:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./thesis
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v2
-      - name: Compile document.tex
+      - name: Compile thesis.tex
         uses: dante-ev/latex-action@edge
         with:
           root_file: thesis/thesis.tex
