@@ -288,7 +288,8 @@ operation is of the same type, and the next operation has the same position as t
 operation. For example in table \ref{tab:wagnerfischermatrix}, we have two delete
 operations in a sequence at position $1$ where \verb|P| and \verb|U| is deleted. The first
 operation we encounter is the deletion of \verb|U|. At this point we create a new
-\verb|EditOperation| with position $1$ and \verb|U| in the \verb|chars| array.
+\verb|EditOperation| with position $1$ and \verb|U| in the \verb|chars| array. The next
+operation is also a delete operation at position $1$, so we add the \verb|dh 
 
 \subsubsection{Optimizing memory usage and operations}
 
