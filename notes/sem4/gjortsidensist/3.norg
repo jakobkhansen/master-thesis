@@ -8,6 +8,19 @@
   - After fixing bugs, 99.97% recall of type-1 clones
 
 * Writing
+
   - Polished chapter 4 (initial detection)
   - Added figures and a lot of pseudocode
   - Started working on chapter 5 as well (dynamic updates)
+
+* Notes
+  - [ ] Redo table of afford
+  --- [ ] Paragraph for each
+  - (x) Not infinite alphabet
+  - (x) Bitset array syntax
+  - (x) Change type-algo to curly thing
+  - ( ) Hyperlinks to git repo
+  - ( ) Appendix?
+  - ( ) interface -> record/struct
+
+  https://stackoverflow.com/questions/18220650/github-link-to-function-in-source/18220769#18220769

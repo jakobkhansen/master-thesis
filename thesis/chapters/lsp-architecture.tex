@@ -59,10 +59,10 @@ Upon starting, the LSP server requires indexing of the project for conducting an
 This involves creating an index and inserting all the relevant documents in the code base.
 A document contains the content of a file along with extra information such as the file's
 URI and some information which is useful for the later clone detection. We define the
-following interface for our documents:
+following record for our documents:
 
 \begin{lstlisting}
-    interface Document {
+    record Document {
         String uri,
         String content,
         AST ast,

@@ -48,9 +48,10 @@ This Tree-sitter query selects the node with type \verb|method_declaration| and
 program. Readers interested in the details of the query system are referred to the
 Tree-sitter documentation~\cite{treesitter}.
 
-Using a tree-sitter query, the algorithm parses the program into an AST, queries the tree
-for all the nodes which matches the query (taking care not to capture nodes which are
-children of already captured nodes) and extracts all the tokens which the node covers.
+Using a tree-sitter query, the algorithm parses the program into an AST and queries the
+tree for a list of all nodes which matches the query. For each node, all the tokens which
+it covers (the values in all the leaves in its subtree) are extracted and sent to the next
+phase.
 
 \Todo{Algorithm?}
 
@@ -113,31 +114,24 @@ public class Math() {
 	\label{fig:fingerprint}
 \end{figure}
 
-The next phase of the algorithm is to transform the extracted source code into a
+The next phase of the algorithm is to transform the extracted tokens into a
 representation which is less computationally heavy for the matching algorithm. The goal is
-to reduce the total size of the input which needs to be processed by the matching
-algorithm.
+to reduce the total size of the input which needs to be processed.
 
 Since the algorithm that is used for matching is based on a suffix array, the
 representation should be in a format similar to a string, which is the standard input to a
 suffix array construction algorithm. However, it is not strictly necessary to use strings.
-The essential property of the input array is that we have an infinite alphabet where each
-element is comparable. Therefore, we can use an array of integers instead, which is
-preferable, since there are often a lot more unique integers available than unique
-characters in a programming language. The algorithm will need to have a lot of unique
-elements in the representation because each unique token value will be represented by
-a single unique element of the alphabet, therefore integers are a good choice.
-
+The essential property of the input array is that we have a sizeable alphabet where each
+element is comparable. We will use an array of integers instead of a string as it has a
+large alphabet in most programming languages.
 
 The algorithm utilizes fingerprinting in order to reduce the size of the representation.
 Fingerprinting is a technique which involves taking some part of the input and mapping it
 to a smaller bit string, which uniquely identifiers that part. In this case, the algorithm
-takes each token of the source-code, and maps it to an integers bit string. Each unique
-token value (tokenized by tree-sitter) is mapped to unique integer values. Note that the
-algorithm maps token values, not types. This ensures that tokens of different
-variable-names and literals are not seen as equal. Figure \ref{fig:fingerprint} shows how
-a sample Java program could theoretically be fingerprinted. The fingerprint mapping starts
-its ``count'' at 2 to make space for some terminating characters. Each fragment is
+takes each token of the source-code, and maps it to the bit string of an integer. Each
+unique token value is mapped to unique integer values. Figure \ref{fig:fingerprint} shows
+how a sample Java program could theoretically be fingerprinted. The fingerprint mapping
+starts its ``count'' at 2 to make space for some terminating characters. Each fragment is
 terminated by a $1$ and the fingerprint is ultimately terminated by a $0$. Having these
 values in the fingerprint will be useful for the matching algorithm where the suffix array
 is constructed and utilized for detection. The fingerprint of each fragment is stored in
@@ -148,14 +142,13 @@ the relevant document object.
 
 
 The next step is to input the fingerprint into a suffix array construction algorithm
-(SACA), so that the suffix array can be used to find maximal repeats. Recall that we
-discussed the suffix array in \cref{prelimalgos} and that the suffix array of a string
-sorts all the suffixes of the string, making it simple to find similar regions of text,
-since similar suffixes will be next to each other in the suffix array. All the
-fingerprints which are stored in each document object will now be concatenated to be
-stored in a single integer array (with terminators after each fragment), which the suffix
-array (SA), inverse suffix array (ISA) and longest-common prefix array (LCP) is computed
-from.
+(SACA), so that the suffix array can be used to find repeating sequences. Recall that the
+suffix array of a string sorts all the suffixes of the string, as discussed in
+\cref{prelimalgos}. This makes it simple to find similar regions of text, since similar
+suffixes will be next to each other in the suffix array. All the fingerprints which are
+stored in each document object will now be concatenated to be stored in a single integer
+array (with terminators after each fragment), which the suffix array (SA), inverse suffix
+array (ISA) and longest-common prefix array (LCP) is computed from.
 
 We have utilized a straight-forward implementation of the ``Induced sorting
 variable-length LMS-substrings'' algorithm~\cite{LinearTimeSuffixArraySAIS} which computes
@@ -182,40 +175,6 @@ suffix in S starting at position i.
     \mathrm{suffix}(S, i+1)$. The sentinel suffix (\$) of $S$ is always S-type.
 \end{definition}
 
-\begin{algorithm}[htp]
-  \SetAlgoLined\DontPrintSemicolon
-    \algo{\SuffixTypes{S}}{
-        $\Var{n} \gets \Access{\Var{S}}{len}$ \;
-        $\Var{Stype} \gets \True$ \;
-        $\Var{Ltype} \gets \False$ \;\;
-
-        $\Var{types} \gets \mathrm{Bitset\ of\ size\ n}$ \;\;
-
-        $\Set{$\Var{types}, \Var{n}, \Var{Stype}$}$ \;
-        $\Set{$\Var{types}, \Var{n} - 1, \Var{Ltype}$}$ \;\;
-
-        \For{$i \From n - 2 \To 0$}{
-
-            \uIf{$\Access{\Var{S}}{\Var{i}} <  \Access{\Var{S}}{\Var{i} + 1}$}{
-                $\Set{$\Var{types}, \Var{i}, \Var{Stype}$}$
-            }
-            \uElseIf{$\Access{\Var{S}}{\Var{i}} >  \Access{\Var{S}}{\Var{i} + 1}$}{
-                $\Set{$\Var{types}, \Var{i}, \Var{Ltype}$}$
-            }
-            \Else{
-                $\Set{$\Var{types}, \Var{i}, \Get{$\Var{types}, \Var{i} + 1$}$}$
-
-            }
-        }
-
-        \Return $\Var{types}$
-    }
-
-  \vspace{0.5cm}
-  \caption{Compute suffix types of a string}
-  \label{alg:suffixtypes}
-\end{algorithm}
-
 
 \begin{table}
     \begin{center}
@@ -228,6 +187,25 @@ suffix in S starting at position i.
     \caption{Suffix types of S = BANANA\$, LMS characters underlined}
     \label{tab:suffixtypesbanana}
 \end{table}
+
+\begin{figure}[t]
+    \begin{center}
+	$$
+        \ArrayAccess{\Var{types}}{\Var{n}} = S
+	$$
+	$$
+        \sum^{n - 1}_{i = 0}\ArrayAccess{\Var{types}}{\Var{i}} =
+        \begin{cases}
+            S & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} < \ArrayAccess{\Var{S}}{\Var{i + 1}} \\
+            L & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} > \ArrayAccess{\Var{S}}{\Var{i + 1}} \\
+            \ArrayAccess{\Var{types}}{\Var{i + 1}} & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} = \ArrayAccess{\Var{S}}{\Var{i + 1}} 
+        \end{cases}
+	$$
+
+	\caption{Suffix type recurrence}
+	\label{eq:suffixtypesrecurrence}
+    \end{center}
+\end{figure}
 
 
 \begin{table}
@@ -264,16 +242,16 @@ suffix in S starting at position i.
 Note that two suffixes in the same string cannot be lexicographically equal, therefore all
 cases are handled by this definition. Determining the type of each suffix can be done in
 $O(n)$ time by scanning $S$ from right-to-left and observing the following properties:
-$\mathrm{suffix}(S, i)$ is L-type if $\Access{S}{i} > \Access{S}{i + 1}$. Similarly,
-$\mathrm{suffix}(S, i)$ is S-type if $\Access{S}{i} < \Access{S}{i + 1}$. If
-$\Access{S}{i} = \Access{S}{i + 1}$, then $\mathrm{suffix}(S, i)$ is the same value as
+$\mathrm{suffix}(S, i)$ is L-type if $\ArrayAccess{S}{i} > \ArrayAccess{S}{i + 1}$. Similarly,
+$\mathrm{suffix}(S, i)$ is S-type if $\ArrayAccess{S}{i} < \ArrayAccess{S}{i + 1}$. If
+$\ArrayAccess{S}{i} = \ArrayAccess{S}{i + 1}$, then $\mathrm{suffix}(S, i)$ is the same value as
 $\mathrm{suffix}(S, i + 1)$. This is true because if the first character of the current
 suffix is not equal to first character of the next suffix, we already know the type based
-on the first character. If the first character is equal however, we have effectively
+on the first character. If the first character is equal, we have effectively
 transformed the problem to finding the type of the next suffix, since we are now comparing
 the second character of the current suffix, with the second character of the second
 suffix. Since we have already computed the type of the next suffix, we can reuse the value.
-Figure \ref{alg:suffixtypes} shows an algorithm which determines the type of each suffix
+Figure \ref{eq:suffixtypesrecurrence} shows a recurrence which determines the type of each suffix
 in a string in $O(n)$ time and \ref{tab:suffixtypesbanana} shows an example.
 
 \begin{definition}[LMS character]

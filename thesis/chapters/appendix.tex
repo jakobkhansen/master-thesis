@@ -1,0 +1,64 @@
+\chapter{Appendix}
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+  \algo{\WagnerFischerOperations{$S_1$, $S_2$, $\Var{matrix}$}}{
+      $\Var{operations} \gets \textrm{Empty list}$\;
+      $\Var{currentOperation} \gets \textrm{None operation}$ \;
+      $\Var{lastOperationIndex} \gets -1$ \;
+      $\Var{x} \gets \Len(\Var{matrix}) - 1$ \;
+      $\Var{y} \gets \Len(\ArrayAccess{\Var{matrix}}{\Var{x}}) - 1$ \;\;
+
+    \While{$\Var{x} > 0 \And \Var{y} > 0$}{
+          $\Var{subValue} \gets \MatrixAccess{\Var{matrix}}{\Var{x} - 1}{\Var{y} - 1}$ \;
+          $\Var{delValue} \gets \MatrixAccess{\Var{matrix}}{\Var{x} - 1}{\Var{y}}$ \;
+          $\Var{insValue} \gets \MatrixAccess{\Var{matrix}}{\Var{x}}{\Var{y - 1}}$ \;
+
+          \If{$\Var{subValue} \leq \Var{delValue} \And \Var{subValue} \leq \Var{insValue} \And $}{
+              \If{$\Var{subValue} \neq \MatrixAccess{\Var{matrix}}{\Var{x}}{\Var{y}}$}{
+
+                \If{$\mathrm{currentOperation\ is\ not\ a\ substitute} \Or \Var{lastOperationIndex} \neq \Var{x}$}{
+                    $\Var{currentOperation} \gets \textrm{New\ substitute\ operation with
+                    position } \Var{x} - 1$ \;
+                    $\Insert{$\Var{operations}, 0, \Var{currentOperation}$}$ \Comment{Add operation at index 0}
+                }
+                \Else {
+                    $\Access{\Var{currentOperation}}{\Var{position}} \gets \Access{\Var{currentOperation}}{\Var{position}} - 1$ \;
+                }
+              }
+              Add $\ArrayAccess{\Var{S_2}}{\Var{y} - 1}$ to beginning of $\Access{\Var{currentOperation}}{\Var{chars}}$ \;
+              $\Var{lastOperationIndex} \gets \Var{x} - 1$ \;
+              $\Var{x} \gets \Var{x} - 1$ \;
+              $\Var{y} \gets \Var{y} - 1$ \;
+          }
+          \ElseIf{$\Var{insValue} \leq \Var{delValue}$}{
+
+                \If{$\mathrm{currentOperation\ is\ not\ an\ insert} \Or \Var{lastOperationIndex} \neq \Var{x}$}{
+                    $\Var{currentOperation} \gets \textrm{New\ delete\ operation with position } \Var{y} - 1$ \;
+                    $\Insert{$\Var{operations}, 0, \Var{currentOperation}$}$ \Comment{Add operation at index 0}
+                }
+                
+              Add $\ArrayAccess{\Var{S_1}}{\Var{x} - 1}$ to beginning of $\Access{\Var{currentOperation}}{\Var{chars}}$ \;
+              $\Var{lastOperationIndex} \gets \Var{x - 1}$ \;
+              $\Var{y} \gets \Var{y} - 1$ \;
+          }
+          \Else{
+
+                \If{$\mathrm{currentOperation\ is\ not\ a\ delete} \Or \Var{lastOperationIndex} \neq \Var{x}$}{
+                    $\Var{currentOperation} \gets \textrm{New\ insert\ operation with position } \Var{x} - 1$ \;
+                    $\Insert{$\Var{operations}, 0, \Var{currentOperation}$}$ \Comment{Add operation at index 0}
+                }
+                
+              Add $\ArrayAccess{\Var{S_1}}{\Var{x} - 1}$ to beginning of $\Access{\Var{currentOperation}}{\Var{chars}}$ \;
+                $\Var{lastOperationIndex} \gets \Var{x} - 1$ \;
+              $\Var{x} \gets \Var{x} - 1$ \;
+          }
+
+      }
+      \Return $\Var{operations}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Compute edit operations from Wagner-Fischer matrix}
+  \label{alg:wagnerfischeroperations}
+\end{algorithm}
