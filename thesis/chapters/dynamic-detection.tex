@@ -289,9 +289,101 @@ operation. For example in table \ref{tab:wagnerfischermatrix}, we have two delet
 operations in a sequence at position $1$ where \verb|P| and \verb|U| is deleted. The first
 operation we encounter is the deletion of \verb|U|. At this point we create a new
 \verb|EditOperation| with position $1$ and \verb|U| in the \verb|chars| array. The next
-operation is also a delete operation at position $1$, so we add the \verb|dh 
+operation is also a delete operation at position $1$, so we add the \verb|P| to the list
+of characters for the operation to delete. The next operation is a substitute at position
+$0$, so we cannot continue the delete operation, and a new substitute operation is created
+instead. Similarly, at position $2$ to $5$, we substitute \verb|BLIC| with \verb|MOCR|.
+This operation is computed in a backwards fashion similarly to how we did the deletion,
+except that the position of the operation is decremented for each character we add to it.
 
 \subsubsection{Optimizing memory usage and operations}
+
+A problem with the above solution is the memory usage of the matrix. It is not feasible to
+input the entire old and new fingerprint into an edit distance algorithm, as the full
+fingerprint can have many million symbols, and the old and new fingerprint is likely
+approximately the same size. This would require a matrix which is too big in memory. We
+will use a few techniques to reduce the memory usage of this algorithm without
+compromising on the time complexity.
+
+The first technique is to not input the whole fingerprint. We can drastically reduce the
+size of the input by only comparing the old and new fingerprint of the document $D$ which
+has been edited. $D$ stores its previous and current fingerprint, and whenever it is
+edited, we can compute the edit operations of $D$, with its previous and current
+fingerprint as input. However, the position of each edit operation of $D$ will not have
+the correct position relative to the entire fingerprint, so $\Access{D}{start}$ is
+added to the position of each edit operation to correct this.
+
+Another optimization we can do to reduce the size of the matrix is to remove the
+``trivial'' part at each end of our matrix. If we compare two strings which have many
+similar characters at the beginning or end of our string, we know that these will not
+equate to any edit operations in the matrix, as they will simply be diagonal moves
+(substitutes) where the characters are already equal. In table
+\ref{tab:minimizededitmatrix} we see the edit matrix for the input \verb|FASCINATING| and
+\verb|FINISHING|. The two words share the common prefix \verb|F| and the common suffix
+\verb|ING|. If we examine the edit distance values, we see that the highlighted green
+matrix starts at $0$ in the top left, and ends with $6$ in the top right, which is exactly
+the same values as in the full matrix. Also, we see that there are no edit operations
+being added outside the green matrix. Using this knowledge, we can see that we only need
+to compare the strings \verb|ASCINAT| and \verb|INISH|, which would give us the exact same
+edit distance. We can also get the exact same edit operations, as long as we account for
+the starting offset of the original string, so that the operations have the correct
+positions. Algorithm \ref{alg:minimizededitstrings} shows how two input strings can be
+minimized for usage in the edit distance algorithm. After getting the edit operations from
+the algorithm, the \verb|startOffset| is added to the position of each operation to
+account for the offset of the minimized matrix.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
+			  &                      & F                     & I                     & N                     & I                     & S                     & H                     & I                    & N                    & G                    \\\hline
+			  & \cellcolor{blue!25}0 & 1                     & 2                     & 3                     & 4                     & 5                     & 6                     & 7                    & 8                    & 9                    \\\hline
+			F & 1                    & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}5 & 6                    & 7                    & 8                    \\\hline
+			A & 2                    & \cellcolor{green!25}1 & \cellcolor{blue!25}1  & \cellcolor{green!25}2 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}5 & 6                    & 7                    & 8                    \\\hline
+			S & 3                    & \cellcolor{green!25}2 & \cellcolor{green!25}2 & \cellcolor{blue!25}2  & \cellcolor{green!25}3 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & 5                    & 6                    & 7                    \\\hline
+			C & 4                    & \cellcolor{green!25}3 & \cellcolor{green!25}3 & \cellcolor{blue!25}3  & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}4 & 5                    & 6                    & 7                    \\\hline
+			I & 5                    & \cellcolor{green!25}4 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{blue!25}3  & \cellcolor{green!25}4 & \cellcolor{green!25}5 & 4                    & 5                    & 6                    \\\hline
+			N & 6                    & \cellcolor{green!25}5 & \cellcolor{green!25}4 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{blue!25}4  & \cellcolor{green!25}5 & 5                    & 4                    & 5                    \\\hline
+			A & 7                    & \cellcolor{green!25}6 & \cellcolor{green!25}5 & \cellcolor{green!25}4 & \cellcolor{green!25}4 & \cellcolor{green!25}5 & \cellcolor{blue!25}5  & 6                    & 5                    & 5                    \\\hline
+			T & 8                    & \cellcolor{green!25}7 & \cellcolor{green!25}6 & \cellcolor{green!25}5 & \cellcolor{green!25}5 & \cellcolor{green!25}5 & \cellcolor{blue!25}6  & 6                    & 6                    & 6                    \\\hline
+			I & 9                    & 8                     & 7                     & 6                     & 5                     & 6                     & 6                     & \cellcolor{blue!25}6 & 7                    & 7                    \\\hline
+			N & 10                   & 9                     & 8                     & 7                     & 6                     & 6                     & 7                     & 7                    & \cellcolor{blue!25}6 & 7                    \\\hline
+			G & 11                   & 10                    & 9                     & 8                     & 7                     & 7                     & 7                     & 8                    & 7                    & \cellcolor{blue!25}6 \\\hline \end{tabular} \end{center} \caption{Edit distance matrix for FASCINATING $\rightarrow$ FINISHING. Blue
+		is optimal path, green is minimized matrix}
+	\label{tab:minimizededitmatrix}
+\end{table}
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\EditDistanceMinimizeStrings{$S_1$, $S_2$}}{
+
+        \For{$i \From 0 \To \Min{$\Len{$\Var{S}_1$}, \Len{$\Var{S}_1$}$}$}{
+            \If{$\ArrayAccess{\Var{S_1}}{\Var{i}} \neq \ArrayAccess{\Var{S_2}}{\Var{i}}$}{
+                \Break
+            }
+        }
+        $\Var{startOffset} \gets i$ \;\;
+
+
+        $\Var{s1End} \gets \Len{$\Var{S}_1$} - 1$ \;
+        $\Var{s2End} \gets \Len{$\Var{S}_2$} - 1$ \;
+
+        \While{$\Var{s1End} \geq \Var{startOffset} \And \Var{s2End} \geq
+        \Var{startOffset} \And \ArrayAccess{\Var{S_1}}{\Var{s1End}} =
+        \ArrayAccess{\Var{S_2}}{\Var{s2End}}$}{
+            $\Var{s1End} \gets \Var{s1End} - 1$ \;
+            $\Var{s2End} \gets \Var{s2End} - 1$ \;
+        } \;
+
+        $\Var{miniS1} \gets \ArrayAccess{\Var{S}_1}{\Var{startOffset}...\Var{s1End}}$ \;
+        $\Var{miniS2} \gets \ArrayAccess{\Var{S}_2}{\Var{startOffset}...\Var{s2End}}$ \;\;
+
+        \Return{$(\Var{miniS1}, \Var{miniS2}, \Var{startOffset})$}
+    }
+
+  \vspace{0.5cm}
+  \caption{Minimize strings for edit distance algorithm}
+  \label{alg:minimizededitstrings}
+\end{algorithm}
 
 
 \section{Dynamic suffix arrays}
