@@ -7,7 +7,7 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v2
       - name: Compile thesis.tex
-        uses: dante-ev/latex-action@edge
+        uses: dante-ev/latex-action@latest
         with:
           root_file: thesis.tex
           working_directory: ./thesis
