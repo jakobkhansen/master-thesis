@@ -11,6 +11,7 @@ jobs:
         with:
           root_file: thesis.tex
           working_directory: ./thesis
+          args: -pdf -g -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
       - name: Upload thesis artifact
         uses: actions/upload-artifact@v3
         with:
