@@ -385,6 +385,76 @@ account for the offset of the minimized matrix.
   \label{alg:minimizededitstrings}
 \end{algorithm}
 
+The two optimizations drastically reduce the memory usage of the edit distance algorithm,
+but in cases where a very large file is edited, and the beginning and end of the old and
+new fingerprint do not match, we can still encounter instances of the matrix being too
+large to fit in memory. The problem is that the matrix size has a polynomial growth in
+terms of the fingerprint size. This is because for the old fingerprint of size $n$ and the
+new fingerprint of size $m$, we have that $n \approx m$, which requires an $n * m$ size
+matrix to calculate the edit operations. For example if a Java file contains $3000$ lines,
+the number of tokens can exceed $10000$, which would require approximately a $10000 *
+10000$ size matrix, which is approaching a memory usage which too large.
+
+A solution to this problem is to reduce the required memory from the polinomial $O(n*m)$
+memory usage, to a linear $O(n)$ memory usage. A stepping stone towards such a solution is
+an observation attributed to Ukkonen, which reduces the required memory to linear growth
+in the size of either of the strings\cite{UkkonenEditDistance}. The observation shows that
+in order to compute the next row/column of the edit distance matrix, we only need the
+previous row/column. For example in table \ref{tab:minimalmemoryusageeditdistance}, the
+fifth row has been computed using only the fourth row. This is done by first computing the
+left-most index of the fifth row, which is always one more than the previous row.
+Afterwards, we can compute the other elements of the row from left to right, with the same
+recurrence, since we always know the above, left, and top-left elements of the current
+index. This can be implemented as two arrays, for the previous and current row. The
+optimization can even be implemented using only a single array, but this does not change
+the complexity of the memory usage.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|}
+			  &   & D & E & M & O & C & R & A & T \\\hline
+			  &   &   &   &   &   &   &   &   &   \\\hline
+			R &   &   &   &   &   &   &   &   &   \\\hline
+			E &   &   &   &   &   &   &   &   &   \\\hline
+			P & 3 & 3 & 2 & 2 & 3 & 4 & 5 & 6 & 7 \\\hline
+			U & 4 & 4 & 3 & 3 & 3 & 4 & 5 & 6 & 7 \\\hline
+			B &   &   &   &   &   &   &   &   &   \\\hline
+			L &   &   &   &   &   &   &   &   &   \\\hline
+			I &   &   &   &   &   &   &   &   &   \\\hline
+			C &   &   &   &   &   &   &   &   &   \\\hline
+			A &   &   &   &   &   &   &   &   &   \\\hline
+			N &   &   &   &   &   &   &   &   &   \\\hline
+		\end{tabular}
+	\end{center}
+	\caption{Edit distance matrix with minimal memory usage}
+	\label{tab:minimalmemoryusageeditdistance}
+\end{table}
+
+This change allows us to compute the edit distance in linear space, but now the problem is
+how to find the actual edit operation. This is not possible, because we don't have
+the entire matrix available to traverse anymore. However, this can be solved using Hirschberg's
+algorithm\cite{HirschbergsAlgorithm}. Hirschberg's algorithm is an algorithm which can
+compute the edit operations of two strings in the same time complexity as the
+Wagner-Fischer algorithm, but uses only linear space.
+
+The first observation we need to make for this algorithm is that there is at minimum one
+edit operation on each row/column of the edit distance matrix. This is intuitive, because
+in order to ``travel'' from the top-left to the bottom-right of the matrix, we need to
+travel from the top to the bottom, visiting all the rows, and from the left to the right,
+visiting all the columns. Hirschberg's algorithm uses this to compute one position of the
+optimal path at a time, which it finds in the middle row between two already known
+positions of the path.
+
+Initially, we know that the top-left index, and the bottom-right index of the matrix are
+guaranteed to be part of the optimal path, since those positions are the starting and
+ending point of the path. The next position to find is in the middle row of the matrix.
+Determining which position in the middle row should be selected is done by performing the
+edit distance recurrence twice, once from the beginning to the middle row like normal, and
+one in reverse, from the bottom-right to the middle row. Summing the two results for the
+middle row gives us an array which can intuitively be understood as how much a path which
+goes through the corresponding position in the row. Since we know that there is at least
+one of the positions in this row which has to be part of the optimal path, the minimum
+value in this array corresponds to one position which has to be part of the optimal path.
 
 \section{Dynamic suffix arrays}
 
