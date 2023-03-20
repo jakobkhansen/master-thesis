@@ -62,3 +62,46 @@
   \caption{Compute edit operations from Wagner-Fischer matrix}
   \label{alg:wagnerfischeroperations}
 \end{algorithm}
+
+\begin{algorithm}[htp]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\WagnerFischerEditDistance{$S_1$, $S_2$}}{
+        $\Var{n} \gets \Len{$\Var{S}_1$}$ \;
+        $\Var{m} \gets \Len{$\Var{S}_2$}$ \;
+        $\Var{matrix} \gets \mathrm{new\ array}[\Var{n} + 1][\Var{m} + 1]$ \;\;
+
+
+        \For{$i \From 0 \To n$}{
+            $\MatrixAccess{\Var{matrix}}{\Var{i}}{0} = \Var{i}$
+        } \;
+
+        \For{$i \From 0 \To m$}{
+            $\MatrixAccess{\Var{matrix}}{\Var{0}}{i} = \Var{i}$
+        } \;
+
+        \For{$i \From 1 \To n$}{
+            \For{$j \From 1 \To m$}{
+                \If{$\ArrayAccess{\Var{S}_1}{\Var{i} - 1} = \ArrayAccess{\Var{S}_2}{\Var{j} - 1}$}{
+                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}} $
+                }
+                \Else {
+                    $\Var{delete} \gets \MatrixAccess{\Var{matrix}}{\Var{i} - 1}{\Var{j}}$ \;
+
+                    $\Var{insert} \gets \MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j - 1}}$ \;
+
+                    $\Var{substitute} \gets \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}}$ \;\;
+
+                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \Min{$\Var{insert},
+                    \Var{delete}, \Var{substitute}$} + 1$
+
+                }
+            }
+        }
+
+        \Return $\Var{matrix}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Fill edit distance matrix using Wagner-Fischer algorithm}
+  \label{alg:wagnerfischerfill}
+\end{algorithm}

@@ -138,8 +138,8 @@ The classic algorithm for calculating edit distance operations is attributed to 
 Fischer~\cite{WagnerFischer}. The input to the algorithm is two strings $S_1$ and $S_2$ of
 length $n$ and $m$. The output will be the set of operations needed to turn $S_1$ into
 $S_2$. This algorithm is based on dynamic programming where a matrix $M$ is filled from
-top to bottom and then the operations are inferred from $M$. Algorithm
-\ref{alg:wagnerfischerfill} shows how the edit distance matrix is filled and
+top to bottom and then the operations are inferred from $M$. The recurrence in equation
+\ref{eq:editdistancerecurrence} shows how the edit distance matrix is filled and
 \ref{tab:wagnerfischermatrix} shows an example matrix.
 
 \begin{figure}[t]
@@ -169,52 +169,7 @@ determining what is the cheapest operation to do at a certain location to make t
 substrings equal. This can be determined by looking at the three surrounding indices in
 $M$: $\MatrixAccess{M}{i - 1}{j - 1}$, $\MatrixAccess{M}{i - 1}{j}$ and
 $\MatrixAccess{M}{i}{j - 1}$. Each of these indices equate to deleting, inserting or
-substituting a character in $S_1$. The recurrence in figure
-\ref{eq:editdistancerecurrence} describes the algorithm.
-
-
-\begin{algorithm}[htp]
-  \SetAlgoLined\DontPrintSemicolon
-    \algo{\WagnerFischerEditDistance{$S_1$, $S_2$}}{
-        $\Var{n} \gets \Len{$\Var{S}_1$}$ \;
-        $\Var{m} \gets \Len{$\Var{S}_2$}$ \;
-        $\Var{matrix} \gets \mathrm{new\ array}[\Var{n} + 1][\Var{m} + 1]$ \;\;
-
-
-        \For{$i \From 0 \To n$}{
-            $\MatrixAccess{\Var{matrix}}{\Var{i}}{0} = \Var{i}$
-        } \;
-
-        \For{$i \From 0 \To m$}{
-            $\MatrixAccess{\Var{matrix}}{\Var{0}}{i} = \Var{i}$
-        } \;
-
-        \For{$i \From 1 \To n$}{
-            \For{$j \From 1 \To m$}{
-                \If{$\ArrayAccess{\Var{S}_1}{\Var{i} - 1} = \ArrayAccess{\Var{S}_2}{\Var{j} - 1}$}{
-                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}} $
-                }
-                \Else {
-                    $\Var{delete} \gets \MatrixAccess{\Var{matrix}}{\Var{i} - 1}{\Var{j}}$ \;
-
-                    $\Var{insert} \gets \MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j - 1}}$ \;
-
-                    $\Var{substitute} \gets \MatrixAccess{\Var{matrix}}{\Var{i - 1}}{\Var{j - 1}}$ \;\;
-
-                    $\MatrixAccess{\Var{matrix}}{\Var{i}}{\Var{j}}  = \Min{$\Var{insert},
-                    \Var{delete}, \Var{substitute}$} + 1$
-
-                }
-            }
-        }
-
-        \Return $\Var{matrix}$
-    }
-
-  \vspace{0.5cm}
-  \caption{Fill edit distance matrix using Wagner-Fischer algorithm}
-  \label{alg:wagnerfischerfill}
-\end{algorithm}
+substituting a character in $S_1$. 
 
 \begin{table}
 	\begin{center}
@@ -253,8 +208,6 @@ substitute \verb|R| with \verb|D| at position $0$. Afterwards \verb|P| and \verb
 deleted at position $2$. Then the \verb|B| which is now at position $2$ is substituted by
 \verb|M|. This continues with more substitutions until we finally have \verb|DEMOCRAT|.
 
-\Todo{Now collect operations together and explain memory issue + Hirschbergs}
-
 \subsubsection{Aggregating edit operations}
 
 In the next phase we will feed the edit operations into an algorithm which dynamically
@@ -276,10 +229,10 @@ record EditOperation {
 
 where type is either an insert, delete or subsitute.
 
-One way to do this is to combine operations of the same type which are sequenced in the matrix.
-For example in table \ref{tab:wagnerfischermatrix}, we have two consecutive delete
-operations, where \verb|P| and \verb|U| is deleted at position $2$. These two operations
-could be combined to a single delete operation of two characters.
+One way to combine operations this is to find operations of the same type which are
+sequenced in the matrix. For example in table \ref{tab:wagnerfischermatrix}, we have two
+consecutive delete operations, where \verb|P| and \verb|U| is deleted at position $2$.
+These two operations could be combined to a single delete operation of two characters.
 
 The idea for the algorithm which computes the edit operations is to traverse the optimal
 matrix path backwards and for each operation we either append to the current operation if
@@ -296,13 +249,20 @@ instead. Similarly, at position $2$ to $5$, we substitute \verb|BLIC| with \verb
 This operation is computed in a backwards fashion similarly to how we did the deletion,
 except that the position of the operation is decremented for each character we add to it.
 
+Note that this algorithm is not an optimal algorithm, as this is a trade-off between
+processing many characters in few operations, versus processing many operations with few
+characters. One could for example always have only two operations, deleting the whole
+string, and inserting the new string. This is only two operations, but likely processes
+more characters in total compared to our algorithm. This trade-off will become apparent
+when discussing the dynamic suffix array updates.
+
 \subsubsection{Optimizing memory usage and operations}
 
 A problem with the above solution is the memory usage of the matrix. It is not feasible to
 input the entire old and new fingerprint into an edit distance algorithm, as the full
 fingerprint can have many million symbols, and the old and new fingerprint is likely
-approximately the same size. This would require a matrix which is too big in memory. We
-will use a few techniques to reduce the memory usage of this algorithm without
+approximately the same size. This would require a matrix which is too large to fit in
+memory. We will use a few techniques to reduce the memory usage of this algorithm without
 compromising on the time complexity.
 
 The first technique is to not input the whole fingerprint. We can drastically reduce the
@@ -389,25 +349,24 @@ The two optimizations drastically reduce the memory usage of the edit distance a
 but in cases where a very large file is edited, and the beginning and end of the old and
 new fingerprint do not match, we can still encounter instances of the matrix being too
 large to fit in memory. The problem is that the matrix size has a polynomial growth in
-terms of the fingerprint size. This is because for the old fingerprint of size $n$ and the
-new fingerprint of size $m$, we have that $n \approx m$, which requires an $n * m$ size
-matrix to calculate the edit operations. For example if a Java file contains $3000$ lines,
-the number of tokens can exceed $10000$, which would require approximately a $10000 *
-10000$ size matrix, which is approaching a memory usage which too large.
+terms of the fingerprint size. This is because the old fingerprint is of size $n$ and the
+new fingerprint is of size $m$, where $n \approx m$, which requires an $n * m$ size matrix
+to calculate the edit operations. For example if a Java file contains $3000$ lines, the
+number of tokens can exceed $10000$, which would require approximately a $10000 * 10000$
+size matrix, which is approaching a memory usage which too large.
 
 A solution to this problem is to reduce the required memory from the polinomial $O(n*m)$
 memory usage, to a linear $O(n)$ memory usage. A stepping stone towards such a solution is
 an observation attributed to Ukkonen, which reduces the required memory to linear growth
-in the size of either of the strings\cite{UkkonenEditDistance}. The observation shows that
-in order to compute the next row/column of the edit distance matrix, we only need the
+in the size of either of the strings~\cite{UkkonenEditDistance}. The observation shows
+that in order to compute the next row/column of the edit distance matrix, we only need the
 previous row/column. For example in table \ref{tab:minimalmemoryusageeditdistance}, the
 fifth row has been computed using only the fourth row. This is done by first computing the
 left-most index of the fifth row, which is always one more than the previous row.
 Afterwards, we can compute the other elements of the row from left to right, with the same
-recurrence, since we always know the above, left, and top-left elements of the current
-index. This can be implemented as two arrays, for the previous and current row. The
-optimization can even be implemented using only a single array, but this does not change
-the complexity of the memory usage.
+recurrence, shown in equation \ref{eq:editdistancerecurrence}. This is possible because we
+always know the above, left, and top-left elements of the current index. This can be
+implemented as two arrays, which holds the previous and current row. 
 
 \begin{table}
 	\begin{center}
@@ -431,19 +390,20 @@ the complexity of the memory usage.
 \end{table}
 
 This change allows us to compute the edit distance in linear space, but now the problem is
-how to find the actual edit operation. This is not possible, because we don't have
-the entire matrix available to traverse anymore. However, this can be solved using Hirschberg's
-algorithm\cite{HirschbergsAlgorithm}. Hirschberg's algorithm is an algorithm which can
-compute the edit operations of two strings in the same time complexity as the
+how to find the actual edit operation. This is not possible, because we don't have the
+entire matrix available to traverse anymore. However, this can be solved using
+Hirschberg's algorithm~\cite{HirschbergsAlgorithm}. Hirschberg's algorithm is an algorithm
+which can compute the edit operations of two strings in the same time complexity as the
 Wagner-Fischer algorithm, but uses only linear space.
 
 The first observation we need to make for this algorithm is that there is at minimum one
 edit operation on each row/column of the edit distance matrix. This is intuitive, because
 in order to ``travel'' from the top-left to the bottom-right of the matrix, we need to
 travel from the top to the bottom, visiting all the rows, and from the left to the right,
-visiting all the columns. Hirschberg's algorithm uses this to compute one position of the
-optimal path at a time, which it finds in the middle row between two already known
-positions of the path.
+visiting all the columns. Hirschberg's algorithm uses this observation to compute one
+position of the optimal path at a time, which it finds in the middle row between two
+already known positions of the path. Table \ref{tab:hirschbergs} shows an example of how
+the positions are found.
 
 Initially, we know that the top-left index, and the bottom-right index of the matrix are
 guaranteed to be part of the optimal path, since those positions are the starting and
@@ -453,15 +413,17 @@ edit distance recurrence twice, once from the beginning to the middle row in the
 fashion as the original algorithm, and once in reverse, from the bottom-right to the
 middle row. Both of the recurrences can run in linear space, because we only need to store
 two rows at a time. Summing the two results for the middle row gives us an array which can
-intuitively be understood as how much the minimal path which goes through the
-corresponding position in the row costs. Since we know that there is at least one of the
+intuitively be understood as how long the minimal path which goes through the
+corresponding position in the row is. Since we know that there is at least one of the
 positions in this row which has to be part of the optimal path, the minimum value in this
 array corresponds to one position which has to be part of the optimal path. Once we know
 the middle position which is part of the optimal path, we can recursively call the
 function twice, once with the top-left and middle as input, and once with the middle and
 bottom-right as input. The base-case of the recursion is when the size of the matrix is
-linear in the size of either of the strings, in which case we call the Wagner-Fischer
-edit distance recurrence with a linear space complexity.
+linear in the size of either of the strings, in which case we call the Wagner-Fischer edit
+distance recurrence with a linear space complexity. Note that there can be multiple
+minimum values in the row where a position is selected, which corresponds to the fact that
+there can be multiple optimal paths through the matrix.
 
 Each position which is a part of the optimal path is stored as they are found, and can
 then be traversed backwards to determine the edit operations similarly to traversing the
@@ -483,7 +445,7 @@ large files without memory usage issues.
 				A & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
 				S & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
 				C & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
-				I & \cellcolor{green!25}10 & \cellcolor{green!25}8 & \cellcolor{green!25}6 & \cellcolor{green!25}7 & \cellcolor{blue!25}6 & \cellcolor{green!25}7 & \cellcolor{green!25}8 & \cellcolor{green!25}8 & \cellcolor{green!25}10 & \cellcolor{green!25}12 \\\hline
+				I & \cellcolor{green!25}10 & \cellcolor{green!25}8 & \cellcolor{green!25}6 & \cellcolor{green!25}7 & \cellcolor{blue!75}6 & \cellcolor{green!25}7 & \cellcolor{green!25}8 & \cellcolor{green!25}8 & \cellcolor{green!25}10 & \cellcolor{green!25}12 \\\hline
 				N & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
 				A & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
 				T & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
@@ -498,13 +460,13 @@ large files without memory usage issues.
 				  &                       & F                     & I                    & N                     & I                     & S                     & H                    & I                     & N                     & G                     \\\hline
 				  & \cellcolor{blue!25}   & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
 				F & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
-				A & \cellcolor{green!25}5 & \cellcolor{green!25}3 & \cellcolor{blue!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}6 &                       &                      &                       &                       &                       \\\hline
+				A & \cellcolor{green!25}5 & \cellcolor{green!25}3 & \cellcolor{blue!75}3 & \cellcolor{green!25}4 & \cellcolor{green!25}6 &                       &                      &                       &                       &                       \\\hline
 				S & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
 				C & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
 				I & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{blue!25}   & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
 				N &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
 				A &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
-				T &                       &                       &                      &                       & \cellcolor{green!25}5 & \cellcolor{green!25}4 & \cellcolor{blue!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}6 & \cellcolor{green!25}8 \\\hline
+				T &                       &                       &                      &                       & \cellcolor{green!25}5 & \cellcolor{green!25}4 & \cellcolor{blue!75}3 & \cellcolor{green!25}4 & \cellcolor{green!25}6 & \cellcolor{green!25}8 \\\hline
 				I &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
 				N &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
 				G &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{blue!25}   \\\hline
@@ -515,18 +477,15 @@ large files without memory usage issues.
 			\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
 				                     &                       & F                     & I                     & N                    & I                     & S                     & H                    & I                    & N                    & G                    \\\hline
 				                     & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 &                      &                       &                       &                      &                      &                      &                      \\\hline
-				F                    & \cellcolor{green!25}1 & \cellcolor{blue!25}0  & \cellcolor{green!25}1 &                      &                       &                       &                      &                      &                      &                      \\\hline
+				F                    & \cellcolor{green!25}1 & \cellcolor{blue!75}0  & \cellcolor{green!25}1 &                      &                       &                       &                      &                      &                      &                      \\\hline
 				A                    & \cellcolor{green!25}2 & \cellcolor{green!25}1 & \cellcolor{blue!25}1  & \cellcolor{green!25} & \cellcolor{green!25}  &                       &                      &                      &                      &                      \\\hline
-				S                    &                       &                       & \cellcolor{green!25}2 &
-				\cellcolor{blue!25}2 & \cellcolor{green!25}4 &                       &                       &                      &                       &                                                                                                                   \\\hline
+				S                    &                       &                       & \cellcolor{green!25}2 & \cellcolor{blue!75}2 & \cellcolor{green!25}4 &                       &                       &                      &                       &                                                                                                                   \\\hline
 				C                    &                       &                       & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  &                       &                      &                      &                      &                      \\\hline
 				I                    &                       &                       & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{blue!25}   & \cellcolor{green!25}  & \cellcolor{green!25} &                      &                      &                      \\\hline
-				N                    &                       &                       &                       &
-				                     & \cellcolor{blue!25}3  & \cellcolor{green!25}3 & \cellcolor{green!25}4 &                      &                       &                                                                                                                   \\\hline
+				N                    &                       &                       &                       & & \cellcolor{blue!75}3  & \cellcolor{green!25}3 & \cellcolor{green!25}4 &                      &                       &                                                                                                                   \\\hline
 				A                    &                       &                       &                       &                      & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} &                      &                      &                      \\\hline
 				T                    &                       &                       &                       &                      & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{blue!25}  & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} \\\hline
-				I                    &                       &                       &                       &
-				                     &                       &                       & \cellcolor{green!25}2 & \cellcolor{blue!25}0 & \cellcolor{green!25}2 & \cellcolor{green!25}4                                                                                             \\\hline
+				I                    &                       &                       &                       & &                       &                       & \cellcolor{green!25}2 & \cellcolor{blue!75}0 & \cellcolor{green!25}2 & \cellcolor{green!25}4                                                                                             \\\hline
 				N                    &                       &                       &                       &                      &                       &                       & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} \\\hline
 				G                    &                       &                       &                       &                      &                       &                       & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{blue!25}  \\\hline
 			\end{tabular}
@@ -538,19 +497,20 @@ large files without memory usage issues.
 				F &                     & \cellcolor{blue!25} &                     &                       &                       &                       &                       &                       &                       &                       \\\hline
 				A &                     &                     & \cellcolor{blue!25} &                       &                       &                       &                       &                       &                       &                       \\\hline
 				S &                     &                     &                     & \cellcolor{blue!25}0  & \cellcolor{green!25}1 &                       &                       &                       &                       &                       \\\hline
-				C &                     &                     &                     & \cellcolor{blue!25}1  & \cellcolor{green!25}1 &                       &                       &                       &                       &                       \\\hline
+				C &                     &                     &                     & \cellcolor{blue!75}1  & \cellcolor{green!25}1 &                       &                       &                       &                       &                       \\\hline
 				I &                     &                     &                     & \cellcolor{green!25}2 & \cellcolor{blue!25}1  &                       &                       &                       &                       &                       \\\hline
 				N &                     &                     &                     &                       & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 &                       &                       &                       \\\hline
-				A &                     &                     &                     &                       & \cellcolor{green!25}1 & \cellcolor{blue!25}1  & \cellcolor{green!25}2 &                       &                       &                       \\\hline
+				A &                     &                     &                     &                       & \cellcolor{green!25}1 & \cellcolor{blue!75}1  & \cellcolor{green!25}2 &                       &                       &                       \\\hline
 				T &                     &                     &                     &                       & \cellcolor{green!25}2 & \cellcolor{green!25}2 & \cellcolor{blue!25}2  &                       &                       &                       \\\hline
 				I &                     &                     &                     &                       &                       &                       &                       & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 \\\hline
-				N &                     &                     &                     &                       &                       &                       &                       & \cellcolor{green!25}1 & \cellcolor{blue!25}0  & \cellcolor{green!25}1 \\\hline
+				N &                     &                     &                     &                       &                       &                       &                       & \cellcolor{green!25}1 & \cellcolor{blue!75}0  & \cellcolor{green!25}1 \\\hline
 				G &                     &                     &                     &                       &                       &                       &                       & \cellcolor{green!25}2 & \cellcolor{green!25}1 & \cellcolor{blue!25}0  \\\hline
 			\end{tabular}
 		}
         \end{tabular}
 	\end{center}
-	\caption{Hirschberg's algorithm}
+	\caption{Hirschberg's algorithm. Blue cells are part of the optimal path, dark-blue
+    cells are new positions.}
 	\label{tab:hirschbergs}
 \end{table}
 
