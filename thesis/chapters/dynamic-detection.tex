@@ -449,19 +449,28 @@ Initially, we know that the top-left index, and the bottom-right index of the ma
 guaranteed to be part of the optimal path, since those positions are the starting and
 ending point of the path. The next position to find is in the middle row of the matrix.
 Determining which position in the middle row should be selected is done by performing the
-edit distance recurrence twice, once from the beginning to the middle row like normal, and
-one in reverse, from the bottom-right to the middle row. Both of the recurrences can run
-in linear space, because the two rows only optimization can be used. Summing the two
-results for the middle row gives us an array which can intuitively be understood as how
-much the minimal path which goes through the corresponding position in the row costs.
-Since we know that there is at least one of the positions in this row which has to be part
-of the optimal path, the minimum value in this array corresponds to one position which has
-to be part of the optimal path. Once we know the middle position which is part of the
-optimal path, we can recursively call the function twice, once with the top-left and
-middle as input, and once with the middle and bottom-right as input. The base-case of the
-recursion is when the size of the matrix is less than the size of either of the strings,
-in which case we can call the regular edit distance recurrence with a linear space
-complexity.
+edit distance recurrence twice, once from the beginning to the middle row in the same
+fashion as the original algorithm, and once in reverse, from the bottom-right to the
+middle row. Both of the recurrences can run in linear space, because we only need to store
+two rows at a time. Summing the two results for the middle row gives us an array which can
+intuitively be understood as how much the minimal path which goes through the
+corresponding position in the row costs. Since we know that there is at least one of the
+positions in this row which has to be part of the optimal path, the minimum value in this
+array corresponds to one position which has to be part of the optimal path. Once we know
+the middle position which is part of the optimal path, we can recursively call the
+function twice, once with the top-left and middle as input, and once with the middle and
+bottom-right as input. The base-case of the recursion is when the size of the matrix is
+linear in the size of either of the strings, in which case we call the Wagner-Fischer
+edit distance recurrence with a linear space complexity.
+
+Each position which is a part of the optimal path is stored as they are found, and can
+then be traversed backwards to determine the edit operations similarly to traversing the
+matrix. For example if we iterate over the list of positions backwards, we will know that
+if the first position is at $x, y$ and the second position is at $x - 1, y$, that
+corresponds to a delete operation, just as in the matrix-based algorithm.
+
+Using Hirschberg's algorithm, we are now able to compute the edit operations for very
+large files without memory usage issues.
 
 \begin{table}
 	\begin{center}
@@ -500,7 +509,8 @@ complexity.
 				N &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
 				G &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{blue!25}   \\\hline
 			\end{tabular}
-        } & \\
+        } \\
+        \addlinespace[1cm]
 		\scalebox{0.8}{
 			\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
 				                     &                       & F                     & I                     & N                    & I                     & S                     & H                    & I                    & N                    & G                    \\\hline
