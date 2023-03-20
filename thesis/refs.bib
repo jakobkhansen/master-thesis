@@ -14,6 +14,22 @@
 	abstract = {The suffix tree data structure has been intensively described, studied and used in the eighties and nineties, its linear-time construction counterbalancing his space-consuming requirements. An equivalent data structure, the suffix array, has been described by Manber and Myers in 1990. This space-economical structure has been neglected during more than a decade, its construction being too slow. Since 2003, several linear-time suffix array construction algorithms have been proposed, and this structure has slowly replaced the suffix tree in many string processing problems. All these constructions are building the suffix array from the text, and any edit operation on the text leads to the construction of a brand new suffix array. In this article, we are presenting an algorithm that modifies the suffix array and the Longest Common Prefix (LCP) array when the text is edited (insertion, substitution or deletion of a letter or a factor). This algorithm is based on a recent four-stage algorithm developed for dynamic Burrows–Wheeler Transforms (BWT). For minimizing the space complexity, we are sampling the Suffix Array, a technique used in BWT-based compressed indexes. We furthermore explain how this technique can be adapted for maintaining a sample of the Extended Suffix Array, containing a sample of the Suffix Array, a sample of the Inverse Suffix Array and the whole LCP array. Our practical experiments show that it operates very well in practice, being quicker than the fastest suffix array construction algorithm.}
 }
 
+@article{DynamicBWT,
+	title = {A four-stage algorithm for updating a Burrows–Wheeler transform},
+	journal = {Theoretical Computer Science},
+	volume = {410},
+	number = {43},
+	pages = {4350-4359},
+	year = {2009},
+	note = {String Algorithmics: Dedicated to Professor Maxime Crochemore on the occasion of his 60th birthday},
+	issn = {0304-3975},
+	doi = {https://doi.org/10.1016/j.tcs.2009.07.016},
+	url = {https://www.sciencedirect.com/science/article/pii/S0304397509004770},
+	author = {M. Salson and T. Lecroq and M. Léonard and L. Mouchard},
+	keywords = {Burrows–Wheeler transform, Compression, Dynamic, Suffix array, Edit operations, Algorithm design, Self-index data structures},
+	abstract = {We present a four-stage algorithm that updates the Burrows–Wheeler Transform of a text T, when this text is modified. The Burrows–Wheeler Transform is used by many text compression applications and some self-index data structures. It operates by reordering the letters of a text T to obtain a new text bwt(T) which can be better compressed. Even though recent advances are offering this structure new applications, a major bottleneck still exists: bwt(T) has to be entirely reconstructed from scratch whenever T is modified. We study how standard edit operations (insertion, deletion, substitution of a letter or a factor) that transform a text T into T′ impact bwt(T). Then we present an algorithm that directly converts bwt(T) into bwt(T′). Based on this algorithm, we also sketch a method for converting the suffix array of T into the suffix array of T′. We finally show, based on the experiments we conducted, that this algorithm, whose worst-case time complexity is O(|T|log|T|(1+logσ/loglog|T|)), performs really well in practice and replaces advantageously the traditional approach.}
+}
+
 
 @book{fowlerrefactoring,
 	author    = {Martin Fowler},

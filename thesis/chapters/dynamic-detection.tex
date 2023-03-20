@@ -405,35 +405,6 @@ position of the optimal path at a time, which it finds in the middle row between
 already known positions of the path. Table \ref{tab:hirschbergs} shows an example of how
 the positions are found.
 
-Initially, we know that the top-left index, and the bottom-right index of the matrix are
-guaranteed to be part of the optimal path, since those positions are the starting and
-ending point of the path. The next position to find is in the middle row of the matrix.
-Determining which position in the middle row should be selected is done by performing the
-edit distance recurrence twice, once from the beginning to the middle row in the same
-fashion as the original algorithm, and once in reverse, from the bottom-right to the
-middle row. Both of the recurrences can run in linear space, because we only need to store
-two rows at a time. Summing the two results for the middle row gives us an array which can
-intuitively be understood as how long the minimal path which goes through the
-corresponding position in the row is. Since we know that there is at least one of the
-positions in this row which has to be part of the optimal path, the minimum value in this
-array corresponds to one position which has to be part of the optimal path. Once we know
-the middle position which is part of the optimal path, we can recursively call the
-function twice, once with the top-left and middle as input, and once with the middle and
-bottom-right as input. The base-case of the recursion is when the size of the matrix is
-linear in the size of either of the strings, in which case we call the Wagner-Fischer edit
-distance recurrence with a linear space complexity. Note that there can be multiple
-minimum values in the row where a position is selected, which corresponds to the fact that
-there can be multiple optimal paths through the matrix.
-
-Each position which is a part of the optimal path is stored as they are found, and can
-then be traversed backwards to determine the edit operations similarly to traversing the
-matrix. For example if we iterate over the list of positions backwards, we will know that
-if the first position is at $x, y$ and the second position is at $x - 1, y$, that
-corresponds to a delete operation, just as in the matrix-based algorithm.
-
-Using Hirschberg's algorithm, we are now able to compute the edit operations for very
-large files without memory usage issues.
-
 \begin{table}
 	\begin{center}
         \begin{tabular}[c]{cc}
@@ -514,6 +485,159 @@ large files without memory usage issues.
 	\label{tab:hirschbergs}
 \end{table}
 
+Initially, we know that the top-left index, and the bottom-right index of the matrix are
+guaranteed to be part of the optimal path, since those positions are the starting and
+ending point of the path. The next position to find is in the middle row of the matrix.
+Determining which position in the middle row should be selected is done by performing the
+edit distance recurrence twice, once from the beginning to the middle row in the same
+fashion as the original algorithm, and once in reverse, from the bottom-right to the
+middle row. Both of the recurrences can run in linear space, because we only need to store
+two rows at a time. Summing the two results for the middle row gives us an array which can
+intuitively be understood as how long the minimal path which goes through the
+corresponding position in the row is. Since we know that there is at least one of the
+positions in this row which has to be part of the optimal path, the minimum value in this
+array corresponds to one position which has to be part of the optimal path. Once we know
+the middle position which is part of the optimal path, we can recursively call the
+function twice, once with the top-left and middle as input, and once with the middle and
+bottom-right as input. The base-case of the recursion is when the size of the matrix is
+linear in the size of either of the strings, in which case we call the Wagner-Fischer edit
+distance recurrence with a linear space complexity. Note that there can be multiple
+minimum values in the row where a position is selected, which corresponds to the fact that
+there can be multiple optimal paths through the matrix.
+
+Each position which is a part of the optimal path is stored as they are found, and can
+then be traversed backwards to determine the edit operations similarly to traversing the
+matrix. For example if we iterate over the list of positions backwards, we will know that
+if the first position is at $x, y$ and the second position is at $x - 1, y$, that
+corresponds to a delete operation, just as in the matrix-based algorithm.
+
+Using Hirschberg's algorithm, we are now able to compute the edit operations for very
+large files without memory usage issues.
+
+
 \section{Dynamic suffix arrays}
+
+Now that we know how the fingerprint has changed after an edit, the next phase is to input
+the edit operations into an algorithm which dynamically updates the suffix array. The goal
+of this algorithm is to take the previous suffix array, and an edit operation, and compute
+the new suffix array faster than it would take to build the suffix array from scratch.
+
+The algorithm used is the algorithm by Salson et al. ~\cite{DynamicExtendedSuffixArrays}.
+This algorithm is based on the 4-stage algorithm for updating a Burrows-Wheeler transform
+(BWT), also by Salson et al.~\cite{DynamicBWT}. Recall that the Burrows-Wheeler transform
+is a transform on an input string which is often used for compression and text-search
+purposes. The BWT is also reversible by using the LF function to compute the original
+string in reverse. Also, recall that the suffix array and the BWT of a string is tightly
+related to the point where one can compute the BWT from the suffix array. The algorithm
+which dynamically updates the BWT can therefore be used to dynamically update the suffix
+array as well.
+
+\subsubsection{Updating BWT}
+
+First we will observe which parts of a BWT changes when we insert a single character. Note
+that we will only consider what changes for the BWT string, meaning the final character in
+each shift, not the whole cyclic-shift. For the String \verb|BANANA$|, we insert a
+\verb|B| at position $2$, giving us the string \verb|BABNANA$|. In table
+\ref{table:bwtupdate} we can see that some parts of the BWT is preserved, such as
+\verb|$AA| and \verb|AN|, but some changes have naturally occurred. We know that we will
+have exactly one more cyclic-shift for the string, which starts with the inserted
+character \verb|B| and ends with the character at position $2 - 1 = 1$ which is \verb|A|.
+We also know that exactly one cyclic-shift will change its last character, which is the
+cyclic-shift previously starting at position $2$, but is now at position $3$ after the
+insert. This cyclic-shift will now end with the new inserted character, \verb|B|. These
+are the only changes to the cyclic-shifts which happen (which matter for the BWT), but it
+is also possible that the cyclic-shifts change their ordering because of the new
+character. For example \verb|ANANA$B| $<$ \verb|ANA$BAN|, but \verb|ABNANA$B| $>$
+\verb|ANA$BABN|. A useful observation is that only cyclic-shifts of order $j \leq 2$ will
+have its lexicographical ordering changed. This is because only these cyclic-shifts are
+the ones where the inserted \verb|B| comes before the \verb|$|. Since the \verb|$| is the
+smallest lexicographical character, and no cyclic-shift will have \verb|$| in the same
+location, we know that the lexicographical comparison of two cyclic-shifts will never go
+past the \verb|$|. Therefore, only the cyclic-shifts where the inserted character comes
+before the \verb|$|, has the possibility of being moved.
+
+\begin{table}[!htb]
+	\begin{center}
+		\subfloat[S = BANANA\$]{
+			\begin{tabular}{c | l}
+				Index & Cyclic-shift \\
+				\hline
+				6     & \$BANAN\textbf{A}   \\
+				5     & A\$BANA\textbf{N}   \\
+				3     & ANA\$BA\textbf{N}   \\
+				1     & ANANA\$\textbf{B}   \\
+				0     & BANANA\textbf{\$}   \\
+				4     & NA\$BAN\textbf{A}   \\
+				2     & NANA\$B\textbf{A}   \\
+			\end{tabular}
+		}
+        \hspace{1cm}
+		\subfloat[S = BABNANA\$]{
+			\begin{tabular}{c | l}
+				Index & Cyclic-shift \\
+				\hline
+				7     & \$BABNAN\textbf{A}   \\
+				6     & A\$BABNA\textbf{N}   \\
+				1     & ABNANA\$\textbf{B}   \\
+				4     & ANA\$BAB\textbf{N}   \\
+				0     & BABNANA\textbf{\$}   \\
+				2     & BNANA\$B\textbf{A}   \\
+				5     & NA\$BABN\textbf{A}   \\
+				3     & NANA\$BA\textbf{B}   \\
+			\end{tabular}
+		}
+		\caption{BWT for string before and after insert}
+		\label{table:bwtupdate}
+	\end{center}
+\end{table}
+
+In the example in \ref{table:bwtupdate}, we see that the new cyclic-shift is
+\verb|BNANA$BA|, and the changed cyclic-shift is \verb|NANA$BAB|. We can find where these
+cyclic-shifts are located by first looking up the insert position in the ISA. $\ISA{2} =
+6$. This is the cyclic-shift (\verb|NANA$BA|) where the final character is updated to the
+inserted character \verb|B|. To find the position where the new cyclic-shift should be
+inserted, we can use the LF-function to move from the current cyclic-shift
+to the previous. Computing $LF(6)$ after the substitute gives us $5$, which is where the
+new cyclic-shift should be inserted.
+
+\begin{table}[!htb]
+	\begin{center}
+		\subfloat[Original BWT]{
+			\begin{tabular}{c | l | l}
+                Index & L & F \\
+				\hline
+                6     & \$ & \textbf{A}   \\
+                5     & A &\textbf{N}   \\
+                3     & A & \textbf{N}   \\
+                1     & A & \textbf{B}   \\
+                0     & B & \textbf{\$}   \\
+                4     & N & \textbf{A}   \\
+                2     & N & \textbf{A}   \\
+			\end{tabular}
+		}
+        \hspace{1cm}
+		\subfloat[After change and insert]{
+			\begin{tabular}{c | l | l}
+                Index & L & F \\
+				\hline
+                7     & \$ & \textbf{A}   \\
+                6     & A & \textbf{N}   \\
+                4     & A & \textbf{N}   \\
+                2     & A & \textbf{B}   \\
+                0     & B & \textbf{\$}   \\
+                1     & B & \textbf{A}   \\
+                5     & B & \textbf{A}   \\
+                3     & N & \textbf{B}   \\
+			\end{tabular}
+		}
+		\caption{BWT for string before and after insert}
+		\label{table:bwtupdate}
+	\end{center}
+\end{table}
+
+
+The final stage of the algorithm now that all the elements are present, is to rearrange
+the cyclic-shifts which have changed their lexicographical ordering. We know that 
+
 
 \section{Storing old clones}
