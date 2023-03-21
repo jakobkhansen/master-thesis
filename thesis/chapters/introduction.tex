@@ -1,16 +1,16 @@
 \chapter{Introduction}
 
-Refactoring is the process of restructuring source code in order to improve the internal behavior
-of the code, without changing the external behavior~\cite[9]{fowlerrefactoring}.
-Refactoring source code is often performed in order to eliminate instances of bad
-design quality in code, otherwise known as code smells.
+Refactoring is the process of restructuring source code in order to improve the internal
+behavior of the code, without changing the external behavior~\cite[9]{fowlerrefactoring}.
+Refactoring source code is often performed in order to eliminate instances of bad code
+quality, otherwise known as code smells.
 
 A study conducted by Diego Cedrim et al. has shown that while programmers tend to refactor
 smelly code, they are rarely successful at eliminating the smells they are
 targeting~\cite{Rohit_Gheyi_Impact}. Most refactorings performed were either
 ``smell-neutral'', meaning that the code smell is not eliminated, or ``stinky'',
 meaning that they introduced more code smells than they eliminated. Automated tools that
-help programmers make better refactorings and perform code analysis, could be a solution to
+help programmers make better refactorings and perform code analysis could be a solution to
 this problem.
 
 Duplicated code is a code smell which occurs in practically every large software project.
@@ -29,35 +29,23 @@ algorithm has not been thoroughly explored for code clone analysis.
 The current landscape of clone detection algorithms and tools is therefore lacking in
 terms of integration and support for fast incremental updates within an IDE. This limits
 the ability for programmers to easily detect duplicated code as they work, as these tools
-are also often limited to specific programming languages or IDEs.
+are also often limited to specific programming languages  IDEs.
 
-Our proposed solution addresses this issue by introducing a new algorithm that is capable
-of detecting and updating all existing code clones in real-time as source code changes,
-faster than redoing the analysis from scratch. The tool which implements this algorithm is
-also programming language and IDE agnostic, which allows programmers to seamlessly
-incorporate the detection of duplicated code into their existing development environment.
-
-\section{Structure}
-
-The current chapter describes the motivation and contribution of the thesis. Chapter 2
-continues by giving some background on code clone analysis, some existing tools and some
-preliminary algorithms and data structures used in the implementation. Chapter 3-5
-describes the implementation of the tool and the algorithms used for initial and
-incremental clone detection. In chapter 6, the tool is evaluated based on different
-criteria, and compared to other existing solutions. Chapter 7 discusses the results of the
-evaluation and discusses some choices made in the implementation. Chapter 8 concludes the
-thesis and lists future work.
-
-
+Our proposed solution and tool addresses this issue by introducing a new algorithm that is
+capable of detecting and updating existing code clones as source code changes, which is
+faster than redoing the analysis from scratch. CCDetect-LSP, the tool which implements
+this algorithm is also programming language and IDE agnostic, which allows programmers to
+seamlessly incorporate the detection of duplicated code into their existing development
+environment.
 
 \section{Our contribution}
 
-This thesis will present and evaluate a tool which provides clone detection capabilities
-in a real-time IDE environment. The main goal is to create a tool which fits well into the
-development cycle and can efficiently update its analysis while writing code. 
+CCDetect-LSP provides clone detection capabilities in a real-time IDE environment. The
+goal of this tool is to create a tool which fits well into the development cycle and can
+efficiently update its analysis while writing code. 
 
 The tool will allow the user to list and interact with all the code clones in the
-codebase, jump between matching clones, and get quick feedback while editing code in order
+code base, jump between matching clones, and get quick feedback while editing code in order
 to determine which clones are introduced/eliminated.
 
 Existing incremental clone detection tools either do not fit into an IDE scenario
@@ -65,13 +53,13 @@ Existing incremental clone detection tools either do not fit into an IDE scenari
 display, or have not been shown to scale well in terms of processing time or memory usage
 for larger codebases. Therefore, this thesis will focus on the following areas.
 
-\textbf{Incremental clone detection:} The main focus of this thesis is making the
-tool efficient in terms of incrementally updating whenever edits are performed in the IDE.
-Most clone detection tools calculates clones from scratch and have no functionality to
+\textbf{Incremental clone detection:} The main focus of this thesis is making the tool
+efficient in terms of incrementally updating whenever edits are performed in the IDE. Most
+clone detection algorithms calculates clones from scratch and have no functionality to
 more efficiently calculate the clones after a small edit has been applied to the source
-code. Our tool implements a novel application of dynamic suffix arrays to quickly update and
-add/remove clones, often faster than calculating the clones from scratch using a linear
-time suffix array construction algorithm.
+code. Our tool implements a novel application of dynamic suffix arrays to quickly update
+and add/remove clones, often faster than calculating the clones from scratch using a
+linear time suffix array construction algorithm.
 
 \textbf{IDE and language agnostic clone detection:} The tool gives programmers the ability
 to view clones in their IDE. Utilizing features of the language server protocol (LSP) such
@@ -79,3 +67,13 @@ as diagnostics and code-actions, the tool provides clone analysis to any editor 
 implements the LSP protocol. As far as we are aware there are no other clone detection
 tools which utilizes the LSP protocol to provide clone analysis. The tool is also language
 agnostic in the sense that it only needs a grammar for a language to analyze it.
+
+\section{Structure}
+
+Chapter 2 provides some background on code clone analysis, some existing tools and some
+preliminary algorithms and data structures used in the implementation. Chapter 3-5
+describes the implementation of the tool and the algorithms used for initial and
+incremental clone detection. In chapter 6, the tool is evaluated based on multiple
+criteria, and compared to other existing solutions. Chapter 7 discusses the results of the
+evaluation and discusses some choices made in the implementation. Chapter 8 concludes the
+thesis and lists future work and research opportunities.
