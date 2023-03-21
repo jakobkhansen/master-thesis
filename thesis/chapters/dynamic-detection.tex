@@ -519,10 +519,10 @@ large files without memory usage issues.
 
 Now that we know how the fingerprint has changed after an edit, the next phase is to input
 the edit operations into an algorithm which dynamically updates the suffix array. The goal
-of this algorithm is to take the previous suffix array, and an edit operation, and compute
+of this algorithm is to take the previous suffix array and an edit operation, and compute
 the new suffix array faster than it would take to build the suffix array from scratch.
 
-The algorithm used is the algorithm by Salson et al. ~\cite{DynamicExtendedSuffixArrays}.
+The algorithm used is the algorithm by Salson et al.~\cite{DynamicExtendedSuffixArrays}.
 This algorithm is based on the 4-stage algorithm for updating a Burrows-Wheeler transform
 (BWT), also by Salson et al.~\cite{DynamicBWT}. Recall that the Burrows-Wheeler transform
 is a transform on an input string which is often used for compression and text-search
@@ -535,32 +535,32 @@ array as well.
 \subsubsection{Updating BWT}
 
 First we will observe which parts of a BWT changes when we insert a single character. Note
-that we will only consider what changes for the BWT string, meaning the final character in
-each shift, not the whole cyclic-shift. For the String \verb|BANANA$|, we insert a
-\verb|B| at position $2$, giving us the string \verb|BABNANA$|. In table
-\ref{table:bwtupdate} we can see that some parts of the BWT is preserved, such as
-\verb|$AA| and \verb|AN|, but some changes have naturally occurred. We know that we will
-have exactly one more cyclic-shift for the string, which starts with the inserted
-character \verb|B| and ends with the character at position $2 - 1 = 1$ which is \verb|A|.
-We also know that exactly one cyclic-shift will change its last character, which is the
-cyclic-shift previously starting at position $2$, but is now at position $3$ after the
-insert. This cyclic-shift will now end with the new inserted character, \verb|B|. These
-are the only changes to the cyclic-shifts which happen (which matter for the BWT), but it
-is also possible that the cyclic-shifts change their ordering because of the new
-character. For example \verb|ANANA$B| $<$ \verb|ANA$BAN|, but \verb|ABNANA$B| $>$
-\verb|ANA$BABN|. A useful observation is that only cyclic-shifts of order $j \leq 2$ will
-have its lexicographical ordering changed. This is because only these cyclic-shifts are
-the ones where the inserted \verb|B| comes before the \verb|$|. Since the \verb|$| is the
-smallest lexicographical character, and no cyclic-shift will have \verb|$| in the same
-location, we know that the lexicographical comparison of two cyclic-shifts will never go
-past the \verb|$|. Therefore, only the cyclic-shifts where the inserted character comes
-before the \verb|$|, has the possibility of being moved.
+that we will only consider what changes for the BWT, meaning the final character in each
+shift, not the whole cyclic-shift. For the string \verb|BANANA$|, we insert a \verb|B| at
+position $2$, giving us the string \verb|BABNANA$|. In table \ref{table:bwtupdate} we can
+see that some parts of the BWT is preserved, such as \verb|$AA| and \verb|AN|, but some
+changes have naturally occurred. We know that we will have exactly one more cyclic-shift
+for the string, which starts with the inserted character \verb|B| and ends with the
+character at position $2 - 1 = 1$ which is \verb|A|. We also know that exactly one
+cyclic-shift will change its last character, which is the cyclic-shift previously starting
+at position $2$, but is now at position $3$ after the insert. This cyclic-shift will now
+end with the new inserted character, \verb|B|. These are the only changes to the
+cyclic-shifts which happen (which matter for the BWT), but it is also possible that the
+cyclic-shifts change their ordering because of the new character. For example
+\verb|ANANA$B| $<$ \verb|ANA$BAN|, but \verb|ABNANA$B| $>$ \verb|ANA$BABN|. A useful
+observation is that only cyclic-shifts of order $j \leq 2$ will have its lexicographical
+ordering changed. This is because only in these cyclic-shifts the inserted \verb|B| comes
+before the \verb|$|. Since the \verb|$| is the smallest lexicographical character, and no
+cyclic-shift will have \verb|$| in the same location, we know that the lexicographical
+comparison of two cyclic-shifts will never go past the \verb|$|. Therefore, only the
+cyclic-shifts where the inserted character comes before the \verb|$|, has the possibility
+of being moved.
 
 \begin{table}[!htb]
 	\begin{center}
 		\subfloat[S = BANANA\$]{
 			\begin{tabular}{c | l}
-				Index & Cyclic-shift \\
+				Order & Cyclic-shift \\
 				\hline
 				6     & \$BANAN\textbf{A}   \\
 				5     & A\$BANA\textbf{N}   \\
@@ -574,7 +574,7 @@ before the \verb|$|, has the possibility of being moved.
         \hspace{1cm}
 		\subfloat[S = BABNANA\$]{
 			\begin{tabular}{c | l}
-				Index & Cyclic-shift \\
+				Order & Cyclic-shift \\
 				\hline
 				7     & \$BABNAN\textbf{A}   \\
 				6     & A\$BABNA\textbf{N}   \\
@@ -591,9 +591,9 @@ before the \verb|$|, has the possibility of being moved.
 	\end{center}
 \end{table}
 
-In the example in \ref{table:bwtupdate}, we see that the new cyclic-shift is
+In table \ref{table:bwtupdate}, we see that the new cyclic-shift is
 \verb|BNANA$BA|, and the changed cyclic-shift is \verb|NANA$BAB|. We can find where these
-cyclic-shifts are located by first looking up the insert position in the ISA. $\ISA{2} =
+cyclic-shifts are located by first looking up the insert position in the ISA, $\ISA{2} =
 6$. This is the cyclic-shift (\verb|NANA$BA|) where the final character is updated to the
 inserted character \verb|B|. To find the position where the new cyclic-shift should be
 inserted, we can use the LF-function to move from the current cyclic-shift
@@ -604,30 +604,45 @@ new cyclic-shift should be inserted.
 	\begin{center}
 		\subfloat[Original BWT]{
 			\begin{tabular}{c | l | l}
-                Index & L & F \\
+				Order & F  & L           \\
 				\hline
-                6     & \$ & \textbf{A}   \\
-                5     & A &\textbf{N}   \\
-                3     & A & \textbf{N}   \\
-                1     & A & \textbf{B}   \\
-                0     & B & \textbf{\$}   \\
-                4     & N & \textbf{A}   \\
-                2     & N & \textbf{A}   \\
+				6     & \$ & A  \\
+				5     & A  & N  \\
+				3     & A  & N  \\
+				1     & A  & B  \\
+				0     & B  & \$ \\
+				4     & N  & A  \\
+				2     & N  & A  \\
 			\end{tabular}
 		}
-        \hspace{1cm}
+		\hspace{1cm}
 		\subfloat[After change and insert]{
 			\begin{tabular}{c | l | l}
-                Index & L & F \\
+				Order & F  & L  \\
 				\hline
-                7     & \$ & \textbf{A}   \\
-                6     & A & \textbf{N}   \\
-                4     & A & \textbf{N}   \\
-                2     & A & \textbf{B}   \\
-                0     & B & \textbf{\$}   \\
-                1     & B & \textbf{A}   \\
-                5     & B & \textbf{A}   \\
-                3     & N & \textbf{B}   \\
+				7     & \$ & A  \\
+				6     & A  & N  \\
+				4     & A  & N  \\
+				1     & A  & B  \\
+				0     & B  & \$ \\
+                2     & \textbf{B}  & \textbf{A}  \\
+				5     & B  & A  \\
+                3     & \textbf{N}  & \textbf{B}  \\
+			\end{tabular}
+		}
+		\hspace{1cm}
+		\subfloat[After reordering]{
+			\begin{tabular}{c | l | l}
+				Order & F  & L  \\
+				\hline
+				7     & \$ & A  \\
+				6     & A  & N  \\
+                1     & \textbf{A}  & \textbf{B}  \\
+                4     & A  & N  \\
+				0     & B  & \$ \\
+                2     & B  & A  \\
+				5     & B  & A  \\
+                3     & N  & B  \\
 			\end{tabular}
 		}
 		\caption{BWT for string before and after insert}
@@ -637,7 +652,84 @@ new cyclic-shift should be inserted.
 
 
 The final stage of the algorithm now that all the elements are present, is to rearrange
-the cyclic-shifts which have changed their lexicographical ordering. We know that 
+the cyclic-shifts which have changed their lexicographical ordering. We know that only
+cyclic-shifts of order $j \leq 2$ can have its ordering changed, and we have already
+inserted the cyclic shift of order $2$ at the correct position (the new cyclic-shift).
+Therefore, we can again use the LF-function which will allow us to move from the
+cyclic-shift of order $2$ to the position where the cyclic-shift of order $1$ should be
+located. Initially, before any changes were done to the BWT, we also stored the position
+of the cyclic-shift of order $1$, which we found by using the LF-function. With the
+knowledge of where the cyclic-shift of order $1$ is, and where it should be, we can move
+the cyclic-shift to that position. In this example, we have that the position of the
+cyclic-shift of order $1$ was located at position $3$ originally, and doing $LF(5)$ after
+the insertion gives us the expected location of the cyclic-shift of order $1$, which is at
+position $2$. Therefore, we remove the cyclic-shift at position $3$, and insert it again
+at position $2$.
 
+Before performing the row-move, we also compute $LF(3) = 4$ which will give us the
+position of the cyclic-shift of order $0$. From there we can continue to compare the
+actual position and expected position of the order $0$ cyclic-shift by computing $LF(2) =
+4$ after the row-move, which is the expected position of the cyclic-shift of order
+$0$. Since the expected position and actual position is the same, we are done, and we know
+that every position of the BWT is now in the correct location.
+
+The suffix array is updated similarly. When we insert the new cyclic-shift at position $5$
+in the BWT, we similarly insert the value $2$ at position $5$ in SA. We insert the value
+$2$ because the new suffix which corresponds to the new cyclic-shift starts at the
+position where the new character was inserted, which was $2$. When the new cyclic-shift is
+inserted, we are now in an invalid state for the suffix array, because we have two
+elements with the value $2$. Note that a suffix array is always a permutation of the
+values $(0..n)$ where $n$ is the number of characters in the input. Since we have inserted
+a new suffix in the suffix array which is the 2nd smallest suffix, all the previous
+suffixes which had a value $j \geq 2$ is now incremented. After incrementing all these
+suffixes, we are now in a valid suffix array state, but similarly to our BWT, some
+suffixes may have had its ordering changed. For every move-row operation in the BWT, the
+elements in SA are reordered in the same fashion.
+
+\begin{algorithm}[t]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\UpdateSuffixArrayInsert{SA, ISA, BWT, pos, ch}}{
+        $\Var{posFirstModified} \gets \ISA{\Var{pos}}$ \;
+        $\Var{previousCS} \gets \LF{$\Var{BWT}, \Var{pos}$}$ \;\;
+
+        $\Var{storedLetter} \gets \ArrayAccess{\Var{BWT}}{\Var{posFirstModified}}$ \;
+        $\ArrayAccess{\Var{BWT}}{\Var{posFirstModified}} \gets \Var{ch}$ \;\;
+
+        $\Var{pointOfInsertion} \gets \LF{$\Var{BWT}, \Var{pos}$}$ \;
+        \If{$\Var{storedLetter} < \Var{ch}$} {
+            $\Var{pointOfInsertion} \gets \Var{pointOfInsertion} + 1$
+        } \;
+
+        \Comment{Insert storedLetter in BWT at pointOfInsertion}
+        \Insert{$\Var{BWT}, \Var{pointOfInsertion}, \Var{storedLetter}$}\;\;
+        \Comment{Insert position in SA at pointOfInsertion}
+        \Insert{$\Var{SA}, \Var{pointOfInsertion}, \Var{position}$}\;\;
+
+
+        \If{$\Var{pointOfInsertion} \leq \Var{previousCS}$} {
+            $\Var{previousCS} \gets \Var{previousCS} + 1$
+        } \;
+
+
+        $\Var{pos} \gets \Var{previousCS}$ \;
+        $\Var{expectedPos} \gets \LF{$\Var{pointOfInsertion}$}$ 
+
+        \While{$\Var{pos} \neq \Var{expectedPos}$}{ \;
+
+            $\Var{newPos} \gets \LF{$\Var{pos}$}$ \;\;
+
+            \Comment{Delete value at pos and reinsert at expectedPos in BWT and SA}
+            \MoveRow{$\Var{pos}, \Var{expectedPos}$} \;\;
+
+            $\Var{pos} \gets \Var{newPos}$ \;
+            $\Var{expectedPos} \gets \LF{$\Var{expectedPos}$}$ \;
+
+        }
+    }
+
+  \vspace{0.5cm}
+  \caption{Update BWT and suffix array when inserting a single character}
+  \label{alg:updatesuffixarrayinsert}
+\end{algorithm}
 
 \section{Storing old clones}

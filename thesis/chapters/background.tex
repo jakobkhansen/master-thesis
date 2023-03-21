@@ -8,29 +8,29 @@ of software quality, multidimensional. Quality in itself has been defined as ``c
 to requirements''~\cite[8]{crosby1980quality}. In software, a simple measure of
 ``conformance to requirements'' is correctness, and a lack of bugs. However, software
 quality is often measured in other metrics, including metrics which are not directly
-related to functionality~\cite[29]{MetricsAndModelsInSoftwareQuality}. These metrics
-often include maintainability, analyzability and changeability.
+related to functionality~\cite[29]{MetricsAndModelsInSoftwareQuality}. Whenever duplicated
+code needs to changed, it will require changes in multiple locations, meaning that metrics
+such as maintainability, analyzability and changeability are negatively affected.
 
-These metrics are affected negatively by duplicated code, code which is more or less
-copied to different locations in the source code. Multiple studies have shown that
+These metrics are affected negatively by duplicated code. Multiple studies have shown that
 software projects typically contains $10-15\%$ duplicated code~\cite{CloningByAccident}.
 Therefore, research into tools and techniques which can assist in reducing duplicated code
 will be of benefit to almost all software.
 
-Duplicated code can lead to a plethora of antipatterns, and will often lead to an increase
-in technical debt. Technical debt occurs when developers make technical compromises that
-are expedient in the short term, but increases complexity in the
-long-term~\cite[111]{TechnicalDebt}. An example of this, in the context of duplicated
-code, is the ``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} antipattern. This
-antipattern occurs when a developer wants to implement a change, but needs to change code
-at multiple locations for the change to take effect. This is a typical situation which
-slows down development and reduces maintainability when the amount of duplicated code
-increases in a software project.
+Duplicated code can lead to a plethora of anti-patterns. Anti-patterns are bad design
+decisions for software which can lead to technical debt. Technical debt occurs when
+developers make technical compromises that are expedient in the short term, but increases
+complexity in the long-term~\cite[111]{TechnicalDebt}. An example of this, in the context
+of duplicated code, is the ``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} anti-pattern.
+This anti-pattern occurs when a developer wants to implement a change, but needs to change
+code at multiple locations for the change to take effect. This is a typical situation
+which slows down development and reduces maintainability when the amount of duplicated
+code increases in a software project.
 
 \section{Code clones}
 
-Duplicated code is often described as ``code clones'', as a pair of code snippets which
-are duplicated are considered clones of each other.
+Duplicated code is often described as ``code clones'', a pair of code snippets which are
+duplicated are considered clones of each other.
 
 \begin{definition}[Code snippet]
 	A code snippet is a piece of contiguous source code in a larger software system.
@@ -55,11 +55,11 @@ property depends on the threshold for similarity when identifying code clones. G
 $$a \xleftrightarrow{clone} b \xleftrightarrow{clone} c$$
 
 
-where $a,b,c$ are code snippets and $\xleftrightarrow{clone}$ gives the clone relation,
-$a$ is a clone of $b$, but not necessarily similar enough to be a clone of $c$, depending
-on the threshold for similarity. If the threshold for similarity is defined such that only
-equal clones are considered clones, the relation becomes transitive, and equivalence
-classes form clone classes.
+where $a,b,c$ are code snippets and $\xleftrightarrow{clone}$ gives the clone relation.
+$a$ and $c$ are both clones of $b$, but not necessarily similar enough to be clones of
+each other, depending on the threshold for similarity. If the threshold for similarity is
+defined such that only equal clones are considered clones, the relation becomes
+transitive, and equivalence classes form clone classes.
 
 Code clones are generally classified into four types~\cite{Inoue_introduction_to_cc}. The
 types classify code snippets as code clones with an increasing amount of leniency.
