@@ -281,8 +281,8 @@ equate to any edit operations in the matrix, as they will simply be diagonal mov
 \ref{tab:minimizededitmatrix} we see the edit matrix for the input \verb|FASCINATING| and
 \verb|FINISHING|. The two words share the common prefix \verb|F| and the common suffix
 \verb|ING|. If we examine the edit distance values, we see that the highlighted green
-matrix starts at $0$ in the top left, and ends with $6$ in the top right, which is exactly
-the same values as in the full matrix. Also, we see that there are no edit operations
+matrix starts at $0$ in the top left, and ends with $6$ in the top right, which is the
+same final values as in the full matrix. Also, we see that there are no edit operations
 being added outside the green matrix. Using this knowledge, we can see that we only need
 to compare the strings \verb|ASCINAT| and \verb|INISH|, which would give us the exact same
 edit distance. We can also get the exact same edit operations, as long as we account for
@@ -345,15 +345,16 @@ account for the offset of the minimized matrix.
   \label{alg:minimizededitstrings}
 \end{algorithm}
 
-The two optimizations drastically reduce the memory usage of the edit distance algorithm,
-but in cases where a very large file is edited, and the beginning and end of the old and
-new fingerprint do not match, we can still encounter instances of the matrix being too
-large to fit in memory. The problem is that the matrix size has a polynomial growth in
-terms of the fingerprint size. This is because the old fingerprint is of size $n$ and the
-new fingerprint is of size $m$, where $n \approx m$, which requires an $n * m$ size matrix
-to calculate the edit operations. For example if a Java file contains $3000$ lines, the
-number of tokens can exceed $10000$, which would require approximately a $10000 * 10000$
-size matrix, which is approaching a memory usage which too large.
+The two optimizations drastically reduce the memory and time usage of the edit distance
+algorithm, but in cases where a very large file is edited, and the beginning and end of
+the old and new fingerprint do not match, we can still encounter instances of the matrix
+being too large to fit in memory. The problem is that the matrix size has a polynomial
+growth in terms of the fingerprint size. This is because the old fingerprint is of size
+$n$ and the new fingerprint is of size $m$, where $n \approx m$, which requires an $n
+\times m$ size matrix to calculate the edit operations. For example if a Java file
+contains $3000$ lines, the number of tokens can exceed $10000$, which would require
+approximately a $10000 \times 10000$ size matrix, which is approaching a memory usage
+which too large.
 
 A solution to this problem is to reduce the required memory from the polinomial $O(n*m)$
 memory usage, to a linear $O(n)$ memory usage. A stepping stone towards such a solution is
@@ -394,16 +395,16 @@ how to find the actual edit operation. This is not possible, because we don't ha
 entire matrix available to traverse anymore. However, this can be solved using
 Hirschberg's algorithm~\cite{HirschbergsAlgorithm}. Hirschberg's algorithm is an algorithm
 which can compute the edit operations of two strings in the same time complexity as the
-Wagner-Fischer algorithm, but uses only linear space.
+Wagner-Fischer algorithm, but uses only linear space in either of the input strings.
 
-The first observation we need to make for this algorithm is that there is at minimum one
-edit operation on each row/column of the edit distance matrix. This is intuitive, because
-in order to ``travel'' from the top-left to the bottom-right of the matrix, we need to
-travel from the top to the bottom, visiting all the rows, and from the left to the right,
-visiting all the columns. Hirschberg's algorithm uses this observation to compute one
-position of the optimal path at a time, which it finds in the middle row between two
-already known positions of the path. Table \ref{tab:hirschbergs} shows an example of how
-the positions are found.
+The first insight we need for this algorithm is that there is at minimum one edit
+operation on each row/column of the edit distance matrix. This is intuitive, because in
+order to ``travel'' from the top-left to the bottom-right of the matrix, the path needs to
+visit all the cells from the top to the bottom, visiting all the rows, and from the left
+to the right, visiting all the columns. Hirschberg's algorithm uses this insight to
+compute one position of the optimal path at a time, which it finds in the middle row
+between two already known positions of the path. Table \ref{tab:hirschbergs} shows an
+example of how the positions are found.
 
 \begin{table}
 	\begin{center}
@@ -538,25 +539,16 @@ First we will observe which parts of a BWT changes when we insert a single chara
 that we will only consider what changes for the BWT, meaning the final character in each
 shift, not the whole cyclic-shift. For the string \verb|BANANA$|, we insert a \verb|B| at
 position $2$, giving us the string \verb|BABNANA$|. In table \ref{table:bwtupdate} we can
-see that some parts of the BWT is preserved, such as \verb|$AA| and \verb|AN|, but some
-changes have naturally occurred. We know that we will have exactly one more cyclic-shift
-for the string, which starts with the inserted character \verb|B| and ends with the
-character at position $2 - 1 = 1$ which is \verb|A|. We also know that exactly one
-cyclic-shift will change its last character, which is the cyclic-shift previously starting
-at position $2$, but is now at position $3$ after the insert. This cyclic-shift will now
-end with the new inserted character, \verb|B|. These are the only changes to the
-cyclic-shifts which happen (which matter for the BWT), but it is also possible that the
-cyclic-shifts change their ordering because of the new character. For example
-\verb|ANANA$B| $<$ \verb|ANA$BAN|, but \verb|ABNANA$B| $>$ \verb|ANA$BABN|. A useful
-observation is that only cyclic-shifts of order $j \leq 2$ will have its lexicographical
-ordering changed. This is because only in these cyclic-shifts the inserted \verb|B| comes
-before the \verb|$|. Since the \verb|$| is the smallest lexicographical character, and no
-cyclic-shift will have \verb|$| in the same location, we know that the lexicographical
-comparison of two cyclic-shifts will never go past the \verb|$|. Therefore, only the
-cyclic-shifts where the inserted character comes before the \verb|$|, has the possibility
-of being moved.
+see that some substrings of the BWT is preserved, such as \verb|$AA| and \verb|AN|, but
+some changes have naturally occurred. We know that we will have exactly one more $CS$ for
+the string, which starts with the inserted character at position $2$, which is \verb|B|.
+This $CS$ ends with the character before the inserted character, which is the \verb|A| at
+position $1$. We also know that exactly one $CS$ will change its last character, which is
+the cyclic-shift previously starting at position $2$, but is now at position $3$ after the
+insert. This cyclic-shift will now end with the new inserted character, \verb|B|. These
+are the only changes that happen to the BWT characters.
 
-\begin{table}[!htb]
+\begin{table}[t]
 	\begin{center}
 		\subfloat[S = BANANA\$]{
 			\begin{tabular}{c | l}
@@ -591,16 +583,16 @@ of being moved.
 	\end{center}
 \end{table}
 
-In table \ref{table:bwtupdate}, we see that the new cyclic-shift is
-\verb|BNANA$BA|, and the changed cyclic-shift is \verb|NANA$BAB|. We can find where these
-cyclic-shifts are located by first looking up the insert position in the ISA, $\ISA{2} =
-6$. This is the cyclic-shift (\verb|NANA$BA|) where the final character is updated to the
-inserted character \verb|B|. To find the position where the new cyclic-shift should be
-inserted, we can use the LF-function to move from the current cyclic-shift
-to the previous. Computing $LF(6)$ after the substitute gives us $5$, which is where the
-new cyclic-shift should be inserted.
+In table \ref{table:bwtupdate}, we see that the new $CS$ is \verb|BNANA$BA|, and the
+changed $CS$ is \verb|NANA$BAB|. We can find where these cyclic-shifts are located
+by first looking up the insert position in the ISA, $\ISA{2} = 6$. This is the
+cyclic-shift (\verb|NANA$BA|) where the final character is updated to the inserted
+character \verb|B|. To find the position where the new cyclic-shift should be inserted, we
+can use the LF-function to move from the current cyclic-shift to the previous. Computing
+$LF(6)$ after the substitute gives us $5$, which is where the new cyclic-shift should be
+inserted.
 
-\begin{table}[!htb]
+\begin{table}[t]
 	\begin{center}
 		\subfloat[Original BWT]{
 			\begin{tabular}{c | l | l}
@@ -617,32 +609,32 @@ new cyclic-shift should be inserted.
 		}
 		\hspace{1cm}
 		\subfloat[After change and insert]{
-			\begin{tabular}{c | l | l}
+			\begin{tabular}{c | l | l l}
 				Order & F  & L  \\
 				\hline
-				7     & \$ & A  \\
-				6     & A  & N  \\
-				4     & A  & N  \\
-				1     & A  & B  \\
-				0     & B  & \$ \\
-                2     & \textbf{B}  & \textbf{A}  \\
-				5     & B  & A  \\
-                3     & \textbf{N}  & \textbf{B}  \\
+                7     & \$ & A & \\
+				6     & A  & N & \\
+				4     & A  & N & \\
+				1     & A  & B & \\
+                0     & B  & \$& \\
+                2     & \textbf{B}  & \textbf{A} & Inserted \\
+                5     & B  & A & \\
+                3     & \textbf{N}  & \textbf{B} & $A \rightarrow B$ \\
 			\end{tabular}
 		}
 		\hspace{1cm}
 		\subfloat[After reordering]{
-			\begin{tabular}{c | l | l}
-				Order & F  & L  \\
+			\begin{tabular}{c | l | l l}
+                Order & F  & L & \\
 				\hline
-				7     & \$ & A  \\
-				6     & A  & N  \\
-                1     & \textbf{A}  & \textbf{B}  \\
-                4     & A  & N  \\
-				0     & B  & \$ \\
-                2     & B  & A  \\
-				5     & B  & A  \\
-                3     & N  & B  \\
+                7     & \$ & A & \\
+                6     & A  & N & \\
+                1     & \textbf{A}  & \textbf{B} &  \multirow{2}{*}{$\updownarrow$} \\
+                4     & \textbf{A}  & \textbf{N} & \\
+                0     & B  & \$& \\
+                2     & B  & A & \\
+                5     & B  & A & \\
+                3     & N  & B & \\
 			\end{tabular}
 		}
 		\caption{BWT for string before and after insert}
@@ -652,19 +644,28 @@ new cyclic-shift should be inserted.
 
 
 The final stage of the algorithm now that all the elements are present, is to rearrange
-the cyclic-shifts which have changed their lexicographical ordering. We know that only
-cyclic-shifts of order $j \leq 2$ can have its ordering changed, and we have already
-inserted the cyclic shift of order $2$ at the correct position (the new cyclic-shift).
-Therefore, we can again use the LF-function which will allow us to move from the
-cyclic-shift of order $2$ to the position where the cyclic-shift of order $1$ should be
-located. Initially, before any changes were done to the BWT, we also stored the position
-of the cyclic-shift of order $1$, which we found by using the LF-function. With the
-knowledge of where the cyclic-shift of order $1$ is, and where it should be, we can move
-the cyclic-shift to that position. In this example, we have that the position of the
-cyclic-shift of order $1$ was located at position $3$ originally, and doing $LF(5)$ after
-the insertion gives us the expected location of the cyclic-shift of order $1$, which is at
-position $2$. Therefore, we remove the cyclic-shift at position $3$, and insert it again
-at position $2$.
+the cyclic-shifts which have changed their lexicographical ordering. It is possible that
+the cyclic-shifts change their ordering because of the new character. For example
+\verb|ANANA$B| $<$ \verb|ANA$BAN|, but \verb|ABNANA$B| $>$ \verb|ANA$BABN|. A useful
+observation is that only $CS_j$ where $j \leq 2$ will have their lexicographical ordering
+changed. This is because only in these cyclic-shifts the inserted \verb|B| comes before
+the \verb|$|. Since the \verb|$| is the smallest lexicographical character, and no two
+cyclic-shifts will have \verb|$| in the same location, we know that the lexicographical
+comparison of two cyclic-shifts will never go past the \verb|$|. Therefore, only the
+cyclic-shifts where the inserted character comes before the \verb|$|, have the possibility
+of being moved.
+
+We know that only $CS_j$ where $j \leq 2$ can have their ordering changed, and we have
+already inserted $CS_2$ at the correct position (the new cyclic-shift). Therefore, we can
+again use the LF-function which will allow us to move from the cyclic-shift of order $2$
+to the position where the cyclic-shift of order $1$ should be located. Initially, before
+any changes were done to the BWT, we also stored the position of the cyclic-shift of order
+$1$, which we found by using the LF-function. With the knowledge of where the cyclic-shift
+of order $1$ is, and where it should be, we can move the cyclic-shift to that position. In
+this example, we have that the position of the cyclic-shift of order $1$ was located at
+position $3$ originally, and doing $LF(5)$ after the insertion gives us the expected
+location of the cyclic-shift of order $1$, which is at position $2$. Therefore, we remove
+the cyclic-shift at position $3$, and insert it again at position $2$.
 
 Before performing the row-move, we also compute $LF(3) = 4$ which will give us the
 position of the cyclic-shift of order $0$. From there we can continue to compare the
@@ -673,6 +674,7 @@ actual position and expected position of the order $0$ cyclic-shift by computing
 $0$. Since the expected position and actual position is the same, we are done, and we know
 that every position of the BWT is now in the correct location.
 
+\subsubsection{Updating SA}
 The suffix array is updated similarly. When we insert the new cyclic-shift at position $5$
 in the BWT, we similarly insert the value $2$ at position $5$ in SA. We insert the value
 $2$ because the new suffix which corresponds to the new cyclic-shift starts at the
@@ -705,6 +707,9 @@ elements in SA are reordered in the same fashion.
         \Comment{Insert position in SA at pointOfInsertion}
         \Insert{$\Var{SA}, \Var{pointOfInsertion}, \Var{position}$}\;\;
 
+        \Comment{Increment all values in SA greater than position}
+        \IncrementGreaterThan{$\Var{SA}, \Var{position}$}\;\;
+
 
         \If{$\Var{pointOfInsertion} \leq \Var{previousCS}$} {
             $\Var{previousCS} \gets \Var{previousCS} + 1$
@@ -731,5 +736,14 @@ elements in SA are reordered in the same fashion.
   \caption{Update BWT and suffix array when inserting a single character}
   \label{alg:updatesuffixarrayinsert}
 \end{algorithm}
+
+Algorithm \ref{alg:updatesuffixarrayinsert} dynamically updates a suffix array and BWT
+when a single character is inserted. This algorithm can easily be extended to insert a
+string instead of a single character by adding a loop which changes the
+\verb|pointOfInsertion| to the previous $CS$ with the LF-function, and inserts all the
+characters into the BWT and SA backwards. This is more efficient than calling the single
+character algorithm multiple times, because the reordering stage is only performed once. 
+
+\subsubsection{Deletion}
 
 \section{Storing old clones}

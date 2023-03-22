@@ -784,6 +784,21 @@ terminating character, this makes some of the algorithms on the BWT simpler. \$ 
 the smallest character lexicographically. Table \ref{table:bwt} shows the BWT for the
 string S = BANANA\$.
 
+\begin{definition}{Cyclic-shift}
+
+    The cyclic-shift of order $i$ for a string $S$ is the cyclic-shift of $S$ such that
+    all characters in $S$ are rotated $i$ characters to the left. The cyclic-shift of
+    order $i$ is denoted $CS_i$
+
+\end{definition}
+
+\begin{definition}{Burrows-Wheeler transform}
+
+    The Burrows-Wheeler transform of a string $S$ is a transformation on $S$ where the
+    cyclic-shifts of $S$ are sorted, and the final character in each shift is concatenated.
+
+\end{definition}
+
 There is a direct correlation between the suffix array of S and the BWT of S. Table
 \ref{table:bwt} also shows that the indices of the sorted cyclic-shifts correspond to
 exactly the SA of S. This coincides because when sorting cyclic-shifts, everything that
