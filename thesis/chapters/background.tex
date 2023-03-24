@@ -748,7 +748,7 @@ We can extend the notion of rank and select queries to strings as well.
 
 \begin{definition}[Rank query on string]
 
-    A rank query $rank_a(i)$ on a string $S$ computes the number of occurrences of $a$
+    A rank query $rank_c(i)$ on a string $S$ computes the number of occurrences of $c$
     in $S$ up to, but not including position $i$.
 
 \end{definition}
@@ -774,7 +774,7 @@ be implemented as a dynamic bitset to allow indel operations on a wavelet tree.
             [.\node[draw,
                 align=center]{\tabbedCenterstack{a b b b e f c a g d d\\0 0 0 0 1 1 0 0 1 0 0}};
                 \edge node[midway, above, sloped] {};
-                [.\node[draw, align=center]{\tabbedCenterstack{a b b b c a d d\\0 1 1 1 1 0 1 1}};
+                [.\node[draw, align=center]{\tabbedCenterstack{a b b b c a d d\\0 0 0 0 1 0 1 1}};
                     \edge node[midway, above, sloped] {};
                     [.\node[draw, align=center]{\tabbedCenterstack{a b b b a\\0 1 1 1 0}};
                         \edge node[midway, above, sloped] {};
@@ -809,7 +809,7 @@ be implemented as a dynamic bitset to allow indel operations on a wavelet tree.
                 ]
             ]
 		\end{tikzpicture}
-		\caption{Wavelet tree for S = abbbcadd}
+		\caption{Wavelet tree for S = abbbefcagdd}
         \label{fig:wavelettree}
 	\end{center}
 \end{figure}
@@ -840,7 +840,7 @@ be implemented as a dynamic bitset to allow indel operations on a wavelet tree.
 
 
 
-Figure \ref{fig:wavelettree} shows the wavelet tree for the string \verb|abbbcadd|. The
+Figure \ref{fig:wavelettree} shows the wavelet tree for the string \verb|abbbefcagdd|. The
 wavelet tree can perform $access$, $rank$ and $select$ queries by traversing the tree from
 root to leaf. 
 
@@ -849,11 +849,11 @@ position $i$ in the root bitset, if the bit is a $0$, we traverse to the left, i
 $1$ we traverse to the right. Before traversing to a child, we compute $rank_0(i)$ or
 $rank_1(i)$, depending on what bit is at position $i$, the resulting rank is the next
 position to consider in the subtree. This is done recursively until a leaf-node is found,
-and the bits which were examined at each leaf is the bitstring of the character at
+and the bits which were examined at each node is the bitstring of the character at
 position $i$.
 
-$rank_a(i)$ traverses the tree in a similar fashion to $access(i)$, but we use the bits of
-$a$ to guide us to the correct sub-tree. When a leaf-node is reached, the value of $i$ is
+$rank_c(i)$ traverses the tree similarly to $access(i)$, but we use the bits of $c$ to
+guide us to the correct subtree. When a leaf-node is reached, the value of $i$ is
 returned, since when a leaf is reached, $i$ will be pointing to the correct rank in the
 fictitious bitset of only $a$ characters
 
@@ -866,21 +866,33 @@ operations, the time complexity drops to $O(\log n \log \sigma)$ because a bitse
 operation which takes $O(\log n)$ time is required in each level of the tree.
 
 The wavelet tree can also be implemented without pointers, known as a levelwise or
-pointerless wavelet tree\cite{LevelwiseWaveletTree}. \ref{table:levelwisewavelettree}
+pointerless wavelet tree\cite{LevelwiseWaveletTree}. Table \ref{table:levelwisewavelettree}
 shows the levelwise wavelet tree, which can be traversed level by level, but determining
 which interval of the bitset the node you are in occupies requires two calls to $rank$.
 The details of the levelwise wavelet trees are out of scope for this thesis, but leads us
 into the next wavelet data structure.
 
-\textbf{The wavelet matrix} is a relatively recent improvement on the wavelet tree, which
+The \textbf{wavelet matrix} is a relatively recent improvement on the wavelet tree, which
 has been shown to be more efficient for $access$, $rank$ and $select$ queries, as well as
-less memory intensive for larger alphabets. As the name suggests, the wavelet matrix is a
-matrix of bitsets, instead of a tree of bitsets. Similarly to the levelwise wavelet tree,
-for a string $S$ of size $n$, each level of the matrix consists of a bitset of size $n$.
-The difference between a levelwise wavelet tree and a wavelet matrix is that the
-assumption that the "children" of an interval $[x, y]$ needs to occupy exactly $[x, y]$ is
-no longer true. We can instead simply put all $1$ bits to the left in the next level, and
-all $1$ bits to the right.
+less memory intensive for larger alphabets~\cite{WaveletMatrix}. As the name suggests, the
+wavelet matrix is a matrix of bitsets, instead of a tree of bitsets. Similarly to the
+levelwise wavelet tree, for a string $S$ of size $n$, each level of the matrix consists of
+a bitset of size $n$. The difference between a levelwise wavelet tree and a wavelet matrix
+is that the assumption that the "children" of an interval $[x, y]$ needs to occupy exactly
+$[x, y]$ is no longer true. We can instead simply put all $0$ bits to the left in the next
+level, and all $1$ bits to the right. For each level we store an integer $z_l$, which
+holds the number of zero bits in level $l$. 
+
+For $access$ operations, we traverse each level similarly to a levelwise wavelet tree, but
+instead of traversing a smaller and smaller interval in each level, we simply look at the
+current bit at position $i$, if it is a zero, the bit to examine in the next level is
+$rank_0(i)$, if the bit is a $1$, the bit to examine in the next level is $z_l +
+rank_1(i)$. $rank_c(i)$ operation is carried out similarly, but we also keep track of a
+preceding position to the final $i$, which we subtract from $i$, to count only the number
+of proceeding number of $a$ characters. Table \ref{table:waveletmatrix} shows an example
+wavelet matrix, and algorithm \ref{alg:waveletmatrixaccess} and
+\ref{alg:waveletmatrixrank} shows how $access$ and $rank$ operations can be carried out
+for a wavelet matrix.
 
 \begin{table}[t!]
 	\begin{center}
@@ -893,10 +905,58 @@ all $1$ bits to the right.
                 0 & 1 & 1 & 1 & 0 & 0 & 1 & 0 & 1 & 1 & 0
             \end{tabular} \\
 		\end{tabular}
-		\caption{Wavelet matrix}
+		\caption{Wavelet matrix for S = abbbefcagdd}
 		\label{table:waveletmatrix}
 	\end{center}
 \end{table}
+
+
+\begin{minipage}{0.46\textwidth}
+    \begin{algorithm}[H]
+        \SetAlgoLined\DontPrintSemicolon
+        \algo{\access{WM, i}}{
+            $\Var{bits} \gets \textrm{empty\ list}$ \;
+            $\Var{l} \gets 0$ \;
+            \While{$\Var{l} < \Len{$\Var{WM}$}$}{
+                \Add{$\Var{bits}, \access{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{i}$}$} \;
+                \uIf{$\access{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{i}$} = 1$}{
+                    $\Var{i} \gets z_l + \RankOne{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{i}$}$ \;
+                }
+                \Else{
+                    $\Var{i} \gets \RankZero{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{i}$}$ \;
+                }
+                $\Var{l} \gets \Var{l} + 1$
+            }
+            \Return $\Var{bits}$ \;
+        }
+        \caption{Wavelet matrix access}
+        \label{alg:waveletmatrixaccess}
+    \end{algorithm}
+\end{minipage}
+\begin{minipage}{0.46\textwidth}
+    \begin{algorithm}[H]
+        \SetAlgoLined\DontPrintSemicolon
+        \algo{\RankC{WM, i}}{
+            $\Var{l} \gets 0$ \;
+            $\Var{p} \gets 0$ \;
+            \While{$\Var{l} < \Len{$\Var{WM}$}$}{
+                \uIf{$\access{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{i}$} = 1$}{
+                    $\Var{i} \gets z_l + \RankOne{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{i}$}$ \;
+                    $\Var{p} \gets z_l + \RankOne{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{p}$}$ \;
+                }
+                \Else{
+                    $\Var{i} \gets \RankZero{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{i}$}$ \;
+                    $\Var{p} \gets \RankZero{$\ArrayAccess{\Var{WM}}{\Var{l}}, \Var{p}$}$ \;
+                }
+                $\Var{l} \gets \Var{l} + 1$
+            }
+            \Return $\Var{i} - \Var{p}$ \;
+        }
+        \caption{Wavelet matrix rank}
+        \label{alg:waveletmatrixrank}
+    \end{algorithm}
+\end{minipage}
+
 
 \subsubsection{Burrows-Wheeler transform}
 
@@ -989,7 +1049,7 @@ the following implementation chapter for the dynamic code clone detection algori
 
             $\Var{pos} \gets (\SA{\Var{i}} - 1)\ \%\ n$
 
-            $\BWT{i} = \S{pos}$
+            $\BWT{i} = \ArrayAccess{\Var{S}}{pos}$
         }
 
         \Return BWT
