@@ -516,37 +516,42 @@ Using Hirschberg's algorithm, we are now able to compute the edit operations for
 large files without memory usage issues.
 
 
-\section{Dynamic suffix arrays}
+\section{Dynamic suffix array updates}
 
 Now that we know how the fingerprint has changed after an edit, the next phase is to input
-the edit operations into an algorithm which dynamically updates the suffix array. The goal
-of this algorithm is to take the previous suffix array and an edit operation, and compute
-the new suffix array faster than it would take to build the suffix array from scratch.
+the edit operations into an algorithm which dynamically updates the suffix array.
+Constructing/updating the suffix array is the most time-consuming phase of the algorithm,
+so the goal for the dynamic update is to take the previous suffix array and an edit
+operation, and compute the new suffix array faster than it would take to build the suffix
+array from scratch. We will also in the following section convert the suffix array into a
+dynamic structure, which allows insertions, deletions and increments without requiring
+linear time.
 
 The algorithm used is the algorithm by Salson et al.~\cite{DynamicExtendedSuffixArrays}.
 This algorithm is based on the 4-stage algorithm for updating a Burrows-Wheeler transform
-(BWT), also by Salson et al.~\cite{DynamicBWT}. Recall that the Burrows-Wheeler transform
-is a transform on an input string which is often used for compression and text-search
-purposes. The BWT is also reversible by using the LF function to compute the original
-string in reverse. Also, recall that the suffix array and the BWT of a string is tightly
-related to the point where one can compute the BWT from the suffix array. The algorithm
-which dynamically updates the BWT can therefore be used to dynamically update the suffix
-array as well.
+(BWT), also by Salson et al.~\cite{DynamicBWT}. Recall that the BWT is a transform on an
+input string which is often used for compression and text-search purposes. The BWT is also
+reversible by using the LF function to compute the original string in reverse. The
+LF-function is computed for a position $i$ such that $LF(i) = rank(i, BTW[i]) + C[BWT[i]]$
+where the array $C$ contains for any character $c$, how many characters are
+lexicographically smaller than $c$. This function can intuitively be used in the context
+of the BWT to allow us to move from $CS_i$ to $CS_{i-1}$. Also recall that the suffix
+array and the BWT of a string is tightly related to the point where one can compute the
+BWT from the suffix array. The algorithm which dynamically updates the BWT can therefore
+be used to dynamically update the suffix array as well.
 
-\subsubsection{Updating BWT}
+\subsubsection{Updating BWT on insertion}
 
 First we will observe which parts of a BWT changes when we insert a single character. Note
 that we will only consider what changes for the BWT, meaning the final character in each
-shift, not the whole cyclic-shift. For the string \verb|BANANA$|, we insert a \verb|B| at
-position $2$, giving us the string \verb|BABNANA$|. In table \ref{table:bwtupdate} we can
-see that some substrings of the BWT is preserved, such as \verb|$AA| and \verb|AN|, but
-some changes have naturally occurred. We know that we will have exactly one more $CS$ for
-the string, which starts with the inserted character at position $2$, which is \verb|B|.
-This $CS$ ends with the character before the inserted character, which is the \verb|A| at
-position $1$. We also know that exactly one $CS$ will change its last character, which is
-the cyclic-shift previously starting at position $2$, but is now at position $3$ after the
-insert. This cyclic-shift will now end with the new inserted character, \verb|B|. These
-are the only changes that happen to the BWT characters.
+shift, not the whole cyclic-shift. We will consider an insertion of a character $c$,
+inserted at position $i$. We know that we will have exactly one more $CS$ for the string,
+which starts with the inserted character $c$, at position $i$. This $CS$ ends with the
+character at position $i - 1$. We also know that exactly one $CS$ will change its last
+character, which is the cyclic-shift previously starting at position $i$, but is now at
+position $i + 1$ after the insertion. This new cyclic-shift will now end with the new
+inserted character, $c$. These are the only changes that happen to the characters in the
+BWT, but the ordering might not be correct anymore.
 
 \begin{table}[t]
 	\begin{center}
@@ -583,14 +588,19 @@ are the only changes that happen to the BWT characters.
 	\end{center}
 \end{table}
 
-In table \ref{table:bwtupdate}, we see that the new $CS$ is \verb|BNANA$BA|, and the
-changed $CS$ is \verb|NANA$BAB|. We can find where these cyclic-shifts are located
-by first looking up the insert position in the ISA, $\ISA{2} = 6$. This is the
-cyclic-shift (\verb|NANA$BA|) where the final character is updated to the inserted
-character \verb|B|. To find the position where the new cyclic-shift should be inserted, we
-can use the LF-function to move from the current cyclic-shift to the previous. Computing
-$LF(6)$ after the substitute gives us $5$, which is where the new cyclic-shift should be
-inserted.
+For the string \verb|BANANA$|, let $c = \verb|B|$, and $i = 2$, which results in the
+string \verb|BABNANA$|. In table \ref{table:bwtupdate} we can see that some substrings of
+the BWT is preserved, such as \verb|$AA| and \verb|AN|, but some other changes have
+occured. In table \ref{table:bwtupdatestages} We see that the new $CS_2$ is
+\verb|BNANA$BA|, and the changed $CS_3$ is \verb|NANA$BAB|. We can find where these
+cyclic-shifts are located by first looking up $i$ in the ISA, $\ISA{2} = 6$. This is the
+location of $CS_3$ (after the insertion), where the final character is updated to the
+inserted character \verb|B|. To find the position where the new cyclic-shift should be
+inserted, we can use the LF-function to move from the $CS_3$ to $CS_2$. Computing
+$LF(6)$ after the substitute gives us $5$, which is where the new $CS_2$ should be
+inserted in the BWT. When we insert in the BWT, we only need to consider the final
+character of $CS_2$, which in this case is \verb|A|, the character which was previously
+substituted.
 
 \begin{table}[t]
 	\begin{center}
@@ -647,7 +657,7 @@ The final stage of the algorithm now that all the elements are present, is to re
 the cyclic-shifts which have changed their lexicographical ordering. It is possible that
 the cyclic-shifts change their ordering because of the new character. For example
 \verb|ANANA$B| $<$ \verb|ANA$BAN|, but \verb|ABNANA$B| $>$ \verb|ANA$BABN|. A useful
-observation is that only $CS_j$ where $j \leq 2$ will have their lexicographical ordering
+observation is that only $CS_j$ where $j \leq i$ will have their lexicographical ordering
 changed. This is because only in these cyclic-shifts the inserted \verb|B| comes before
 the \verb|$|. Since the \verb|$| is the smallest lexicographical character, and no two
 cyclic-shifts will have \verb|$| in the same location, we know that the lexicographical
@@ -655,36 +665,39 @@ comparison of two cyclic-shifts will never go past the \verb|$|. Therefore, only
 cyclic-shifts where the inserted character comes before the \verb|$|, have the possibility
 of being moved.
 
-We know that only $CS_j$ where $j \leq 2$ can have their ordering changed, and we have
-already inserted $CS_2$ at the correct position (the new cyclic-shift). Therefore, we can
-again use the LF-function which will allow us to move from the cyclic-shift of order $2$
-to the position where the cyclic-shift of order $1$ should be located. Initially, before
-any changes were done to the BWT, we also stored the position of the cyclic-shift of order
-$1$, which we found by using the LF-function. With the knowledge of where the cyclic-shift
-of order $1$ is, and where it should be, we can move the cyclic-shift to that position. In
-this example, we have that the position of the cyclic-shift of order $1$ was located at
-position $3$ originally, and doing $LF(5)$ after the insertion gives us the expected
-location of the cyclic-shift of order $1$, which is at position $2$. Therefore, we remove
-the cyclic-shift at position $3$, and insert it again at position $2$.
+We know that only $CS_j$ where $j \leq i$ can have their ordering changed, and we have
+already inserted $CS_i$ at the correct position (the new cyclic-shift). We will store two
+positions, $pos$ and $expected$, where $pos$ is initially the position of $CS_{i - 1}$,
+which was found before any changes were made to the BWT. $pos$ is therefore the actual
+position of $CS_{i - 1}$, $expected$ is the expected position of $CS_{i - 1}$, which is
+computed by computing $LF(insertionPoint)$ where $insertionPoint$ is the position where
+the new $CS_i$ was inserted. With the knowledge of where the cyclic-shift of order $i - 1$
+is, and where it should be, we can move the cyclic-shift to that position. In the example,
+we have that the $expected = 3$, and $pos = LF(5) = 2$ after the insertion gives us the
+expected location of the cyclic-shift of order $1$. Therefore, we remove the cyclic-shift
+at position $3$, and insert it again at position $2$.
 
-Before performing the row-move, we also compute $LF(3) = 4$ which will give us the
-position of the cyclic-shift of order $0$. From there we can continue to compare the
-actual position and expected position of the order $0$ cyclic-shift by computing $LF(2) =
-4$ after the row-move, which is the expected position of the cyclic-shift of order
-$0$. Since the expected position and actual position is the same, we are done, and we know
-that every position of the BWT is now in the correct location.
+Before performing the row-move, we also compute $newPos = LF(pos)$ which will give us the
+position of the cyclic-shift of order $i - 2$. After the row-move, we can continue
+comparing the position and expected position by updating $pos = newPos$, and $expected =
+LF(expected)$. In the example this would update both $pos$ and $expected$ to $4$. Since
+the expected position and actual position is the same, the algorithm is done, and we know
+that every position of the BWT is now in the correct location. We know that there will be
+no more row-moves for any other $CS$ down to order $0$ because $LF(pos) = LF(expected)$,
+which would be true for all future iterations as soon as $pos = expected$
 
-\subsubsection{Updating SA}
-The suffix array is updated similarly. When we insert the new cyclic-shift at position $5$
-in the BWT, we similarly insert the value $2$ at position $5$ in SA. We insert the value
-$2$ because the new suffix which corresponds to the new cyclic-shift starts at the
-position where the new character was inserted, which was $2$. When the new cyclic-shift is
-inserted, we are now in an invalid state for the suffix array, because we have two
-elements with the value $2$. Note that a suffix array is always a permutation of the
-values $(0..n)$ where $n$ is the number of characters in the input. Since we have inserted
-a new suffix in the suffix array which is the 2nd smallest suffix, all the previous
-suffixes which had a value $j \geq 2$ is now incremented. After incrementing all these
-suffixes, we are now in a valid suffix array state, but similarly to our BWT, some
+\subsubsection{Updating SA on insertion}
+
+The suffix array is updated similarly to the BWT. When we insert the new cyclic-shift at
+position $5$ in the BWT, we similarly insert the value $2$ at position $5$ in SA. We
+insert the value $2$ because the new suffix which corresponds to the new cyclic-shift
+starts at the position where the new character was inserted, which was $2$. When the new
+cyclic-shift is inserted, we are now in an invalid state for the suffix array, because we
+have two elements with the value $2$. Note that a suffix array is always a permutation of
+the values $(0..n)$ where $n$ is the number of characters in the input. Since we have
+inserted a new suffix in the suffix array which is the 2nd smallest suffix, all the
+previous suffixes which had a value $j \geq 2$ is now incremented. After incrementing all
+these suffixes, we are now in a valid suffix array state, but similarly to our BWT, some
 suffixes may have had its ordering changed. For every move-row operation in the BWT, the
 elements in SA are reordered in the same fashion.
 
@@ -697,37 +710,37 @@ elements in SA are reordered in the same fashion.
         $\Var{storedLetter} \gets \ArrayAccess{\Var{BWT}}{\Var{posFirstModified}}$ \;
         $\ArrayAccess{\Var{BWT}}{\Var{posFirstModified}} \gets \Var{ch}$ \;\;
 
-        $\Var{pointOfInsertion} \gets \LF{$\Var{BWT}, \Var{pos}$}$ \;
+        $\Var{insertionPoint} \gets \LF{$\Var{BWT}, \Var{pos}$}$ \;
         \If{$\Var{storedLetter} < \Var{ch}$} {
-            $\Var{pointOfInsertion} \gets \Var{pointOfInsertion} + 1$
+            $\Var{insertionPoint} \gets \Var{insertionPoint} + 1$
         } \;
 
         \Comment{Insert storedLetter in BWT at pointOfInsertion}
-        \Insert{$\Var{BWT}, \Var{pointOfInsertion}, \Var{storedLetter}$}\;\;
+        \Insert{$\Var{BWT}, \Var{insertionPoint}, \Var{storedLetter}$}\;\;
         \Comment{Insert position in SA at pointOfInsertion}
-        \Insert{$\Var{SA}, \Var{pointOfInsertion}, \Var{position}$}\;\;
+        \Insert{$\Var{SA}, \Var{insertionPoint}, \Var{position}$}\;\;
 
         \Comment{Increment all values in SA greater than position}
         \IncrementGreaterThan{$\Var{SA}, \Var{position}$}\;\;
 
 
-        \If{$\Var{pointOfInsertion} \leq \Var{previousCS}$} {
+        \If{$\Var{insertionPoint} \leq \Var{previousCS}$} {
             $\Var{previousCS} \gets \Var{previousCS} + 1$
         } \;
 
 
         $\Var{pos} \gets \Var{previousCS}$ \;
-        $\Var{expectedPos} \gets \LF{$\Var{pointOfInsertion}$}$ 
+        $\Var{expected} \gets \LF{$\Var{insertionPoint}$}$ 
 
-        \While{$\Var{pos} \neq \Var{expectedPos}$}{ \;
+        \While{$\Var{pos} \neq \Var{expected}$}{ \;
 
             $\Var{newPos} \gets \LF{$\Var{pos}$}$ \;\;
 
-            \Comment{Delete value at pos and reinsert at expectedPos in BWT and SA}
-            \MoveRow{$\Var{pos}, \Var{expectedPos}$} \;\;
+            \Comment{Delete value at pos and reinsert at expected in BWT and SA}
+            \MoveRow{$\Var{pos}, \Var{expected}$} \;\;
 
             $\Var{pos} \gets \Var{newPos}$ \;
-            $\Var{expectedPos} \gets \LF{$\Var{expectedPos}$}$ \;
+            $\Var{expected} \gets \LF{$\Var{expected}$}$ \;
 
         }
     }
@@ -739,11 +752,53 @@ elements in SA are reordered in the same fashion.
 
 Algorithm \ref{alg:updatesuffixarrayinsert} dynamically updates a suffix array and BWT
 when a single character is inserted. This algorithm can easily be extended to insert a
-string instead of a single character by adding a loop which changes the
+string instead of a single character by adding a loop which continuously updates the
 \verb|pointOfInsertion| to the previous $CS$ with the LF-function, and inserts all the
-characters into the BWT and SA backwards. This is more efficient than calling the single
-character algorithm multiple times, because the reordering stage is only performed once. 
+characters at that position into the BWT and SA backwards. This is more efficient than
+calling the single character algorithm multiple times, because the reordering stage is
+only performed once. The details for insertions/deletions of multiple characters is
+covered in the original paper~\cite{DynamicExtendedSuffixArrays}.
 
 \subsubsection{Deletion}
+
+A deletion of a single character is a similar procedure as an insertion, as it is simply
+reversing the substitution and insertion, and then performing the reordering stage again.
+If we have the string \verb|BABNANA$|, and delete the \verb|B| at position $2$, We know
+that there will be exactly one $CS$ removed. This is $CS_2$ which starts with the deleted
+character \verb|B|, and ends with the character before it, \verb|A|. There is also a
+single $CS$ which will have its final character changed, $CS_3$, because the final
+character \verb|B| will be deleted. The final step is to again perform the reordering
+stage for $CS_j$ where $j \leq 2$, as these are the only cyclic-shifts which can have
+their lexicographical ordering changed.
+
+The algorithm which performs the deletion at position $i$ will do the deletion and
+substitution in the opposite order. First we find both the $CS$ which will have its
+character substituted in the BWT, and the $CS$ which will have its character deleted in
+the BWT. The character to be substituted will be found with $substituted = ISA[i + 1]$,
+and the character to delete will be found with $deleted = LF(substituted)$. $BWT[deleted]$
+is then deleted, and $BWT[substituted]$ is substituted with the character that was
+deleted. Finally, the reordering phase is performed in the same fashion, where $pos$ is
+set to the position of the original $CS_{i - 1}$ and $expected$ is set to $LF(substituted)$
+
+In our example $substituted = ISA[3] = 7$, $deleted = LF(7) = 5$ and $pos = LF(5) = 2$.
+Then $BWT[deleted]$ is deleted, and $BWT[substituted]$ is set to the deleted character.
+Then $expected = LF(6) = 3$. Note that $substituted$ was decremented after the deletion
+because the deletion moved that $CS$ one position up. When the reordering stage happens,
+we have $pos = 2$ and $expected = 3$, so we perform the row-move in the BWT and SA in the
+same fashion as previously, and the algorithm will again terminate after one iteration of
+the reordering phase.
+
+\subsubsection{Substitution}
+
+Substitution operations are also possible and covered in the original paper, but due to
+time constraints, these were implemented as a deletion followed by an insertion, which is
+less efficient than a single operation, since the reordering stage is done twice.
+
+\subsubsection{LF-function}
+
+The LF function is called multiple times for any operation which is done to update the
+suffix array. Recall that $LF(i) = rank(i, BWT[i]) + C[BWT[i]]$ where $rank(i, BWT[i])$ is the
+rank for the character $BWT[i]$ at position $i$ in the BWT, and $C[BWT[i]]$ counts the number
+of lexicographically smaller characters than $BWT[i]$ in the BWT.
 
 \section{Storing old clones}

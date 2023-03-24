@@ -635,21 +635,26 @@ itself, where $\sigma$ is the size of the string's alphabet.
 
 The most well known query to do on bitsets is the rank/select queries.
 
-\begin{definition}[Rank query]
-    A rank query $rank_1(i)$ on a bitset B, returns the number of set bits
+\begin{definition}[Rank query on bitset]
+
+    A rank query $rank_1(i)$ on a bitset B, computes the number of set bits
     up to, but not including position $i$. Conversely, $rank_0(B)$ returns the number of
     unset bits up to $i$.
+
 \end{definition}
-\begin{definition}[Select query]
-    A select query $select_1(i)$ on a bitset B, returns the position of the ith
+\begin{definition}[Select query on bitset]
+    
+    A select query $select_1(i)$ on a bitset B, computes the position of the ith
     set bit in B. Conversely, $select_0(i)$ returns the position of the ith unset bit in
     B.
+
 \end{definition}
 
 Jacobson's rank can calculate rank and select on static bitsets in $O(1)$ time by
 pre-calculating all answers in a space efficient table~\cite{JacobsonsRank}.
 
 \begin{definition}[Dynamic bitset]
+
     A dynamic bitset is a bitset which in addition to other operations allow inserting and
     deleting bits (indel operations).
 
@@ -658,6 +663,7 @@ pre-calculating all answers in a space efficient table~\cite{JacobsonsRank}.
 
     A delete operation $delete(i)$ on a bitset B removes the value at position i in B, pushing all
     values at position $> i$ one position down.
+
 \end{definition}
 
 The standard implementation of a dynamic bitset would implement the whole bitset as a
@@ -667,15 +673,20 @@ and deleting takes $O(n)$ time, where $n$ is the number of bits in $B$.
 One way to speed up the indel operations would be to represent the bitset as a balanced
 tree containing multiple smaller bitsets. To represent a bitset of $n$ bits, we can divide
 the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each contains
-$O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, inserting and
-deleting takes only $O(log(n))$ time. The bitsets reside at the leaves of our balanced
-tree, and internal nodes contain only two integers, storing the number of bits in the left
-subtree ($N$), and the number of set bits in the left subtree ($S$). To access, insert or
-delete on index $i$, the tree is traversed to find the correct bitset where the ith bit is
+$O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, inserting and deleting
+takes only $O(log(n))$ time. The bitsets reside at the leaves of our balanced tree, and
+internal nodes contain only two integers, storing the number of bits in the left subtree
+($N$), and the number of set bits in the left subtree ($S$). To access, insert or delete
+on index $i$, the tree is traversed to find the correct bitset where the ith bit is
 located, where the operation is done at that position. Finding the correct bitset and
 position is done by utilizing $N$ and $S$ in each node which is traversed. All operations
 now run in $O(\log(n))$ time, since traversing the tree to the correct bitset takes
-$O(\log(\frac{n}{\log(n)}))$ and performing the operation takes $O(\log(n))$ time.
+$O(\log(\frac{n}{\log(n)}))$ and performing the operation takes $O(\log(n))$ time. Keeping
+the bitset balanced is done by splitting a leaf-node bitset to two nodes when the
+leaf-node bitset has reached a certain size (such as $2 \times \log(n)$) and rebalancing
+the tree after the split. Similarly, when considering deletions, two leaf-node bitsets can
+be merged to their parent node when their combined number of bits has decreased to
+$\log(n)$.
 
 
 Figure \ref{fig:DynamicBitset} shows how a dynamic bitset tree is structured, and Algorithm
@@ -684,7 +695,7 @@ tree to calculate rank and select queries can be done similarly by summing set
 bits in left-subtrees (rank) or selecting which subtree to descend based on the number of
 set bits (select).
 
-\begin{figure}
+\begin{figure}[t]
 	\begin{center}
 		\begin{tikzpicture}[every tree node,
 				level distance=2cm,sibling distance=2cm,
@@ -731,6 +742,162 @@ set bits (select).
   \label{alg:dynbitaccess}
 \end{algorithm}
 
+\subsubsection{Wavelet tree and wavelet matrix}
+
+We can extend the notion of rank and select queries to strings as well. 
+
+\begin{definition}[Rank query on string]
+
+    A rank query $rank_a(i)$ on a string $S$ computes the number of occurrences of $a$
+    in $S$ up to, but not including position $i$.
+
+\end{definition}
+\begin{definition}[Select query on string]
+
+    A select query $select_a(i)$ on a string $S$, computes the position of the ith
+    occurrence of $a$ in $S$. 
+
+\end{definition}
+
+The classic data structure to efficiently compute $rank$ and $select$ queries on strings
+is the \textbf{wavelet tree}~\cite{WaveletTree}. The data structure is a binary tree where every
+node consists of a bitset, and each level of the tree consists of the bits of a single
+position in each character of the string. Each bitset in the wavelet tree can for example
+be implemented as a dynamic bitset to allow indel operations on a wavelet tree.
+
+\begin{figure}[t]
+	\begin{center}
+		\begin{tikzpicture}[every tree node,
+				level distance=2cm,sibling distance=1.25cm,
+				edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+			\Tree
+            [.\node[draw,
+                align=center]{\tabbedCenterstack{a b b b e f c a g d d\\0 0 0 0 1 1 0 0 1 0 0}};
+                \edge node[midway, above, sloped] {};
+                [.\node[draw, align=center]{\tabbedCenterstack{a b b b c a d d\\0 1 1 1 1 0 1 1}};
+                    \edge node[midway, above, sloped] {};
+                    [.\node[draw, align=center]{\tabbedCenterstack{a b b b a\\0 1 1 1 0}};
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{a} ]
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{b} ]
+                    ]
+                    \edge node[midway, above, sloped] {};
+                    [.\node[draw, align=center]{\tabbedCenterstack{c d d\\0 1 1}};
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{c} ]
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{d} ]
+                    ]
+                ]
+                \edge node[midway, above, sloped] {};
+                [.\node[draw, align=center]{\tabbedCenterstack{e f g\\0 0 1}};
+                    \edge node[midway, above, sloped] {};
+                    [.\node[draw, align=center]{\tabbedCenterstack{e f\\0 1}};
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{e} ]
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{f} ]
+                    ]
+                    \edge node[midway, above, sloped] {};
+                    [.\node[draw, align=center]{\tabbedCenterstack{g\\0}};
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{g} ]
+                        \edge node[midway, above, sloped] {};
+                        [.\addsquare{h} ]
+                    ]
+                ]
+            ]
+		\end{tikzpicture}
+		\caption{Wavelet tree for S = abbbcadd}
+        \label{fig:wavelettree}
+	\end{center}
+\end{figure}
+
+
+\begin{table}[t!]
+	\begin{center}
+		\begin{tabular}{c}
+            \begin{tabular}{c c c c c c c c c c c c}
+                a & b & b & b & e & f & c & a & g & d & d \\
+                \hline
+            \end{tabular} \\
+            \begin{tabular}{c c c c c c c c c c c c}
+                0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 0 & 0
+            \end{tabular} \\
+            \begin{tabular}{c c c c c c c c|c c c}
+                0 & 1 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 1
+            \end{tabular} \\
+            \begin{tabular}{c c c c c|c c c|c c|c}
+                0 & 1 & 1 & 1 & 0 & 0 & 1 & 1 & 0 & 1 & 0
+            \end{tabular} \\
+		\end{tabular}
+		\caption{Levelwise wavelet tree}
+		\label{table:levelwisewavelettree}
+	\end{center}
+\end{table}
+
+
+
+
+Figure \ref{fig:wavelettree} shows the wavelet tree for the string \verb|abbbcadd|. The
+wavelet tree can perform $access$, $rank$ and $select$ queries by traversing the tree from
+root to leaf. 
+
+$access(i)$ gives the bitstring of the character at a position $i$ by first accessing
+position $i$ in the root bitset, if the bit is a $0$, we traverse to the left, if it is a
+$1$ we traverse to the right. Before traversing to a child, we compute $rank_0(i)$ or
+$rank_1(i)$, depending on what bit is at position $i$, the resulting rank is the next
+position to consider in the subtree. This is done recursively until a leaf-node is found,
+and the bits which were examined at each leaf is the bitstring of the character at
+position $i$.
+
+$rank_a(i)$ traverses the tree in a similar fashion to $access(i)$, but we use the bits of
+$a$ to guide us to the correct sub-tree. When a leaf-node is reached, the value of $i$ is
+returned, since when a leaf is reached, $i$ will be pointing to the correct rank in the
+fictitious bitset of only $a$ characters
+
+The wavelet tree can be traversed in $O(\log \sigma)$ time where $\sigma$ is the size of
+the alphabet. However, the $access$, $rank$ and $select$ operations also depend on how
+fast the bitsets can perform $access$, $rank$ and $select$ operations. If the bitsets are
+implemented using for example Jacobson's rank~\cite{JacobsonsRank}, the bitsets have a
+$O(1)$ $access$, $rank$ and $select$ time, but if we require dynamic bitsets for indel
+operations, the time complexity drops to $O(\log n \log \sigma)$ because a bitset
+operation which takes $O(\log n)$ time is required in each level of the tree.
+
+The wavelet tree can also be implemented without pointers, known as a levelwise or
+pointerless wavelet tree\cite{LevelwiseWaveletTree}. \ref{table:levelwisewavelettree}
+shows the levelwise wavelet tree, which can be traversed level by level, but determining
+which interval of the bitset the node you are in occupies requires two calls to $rank$.
+The details of the levelwise wavelet trees are out of scope for this thesis, but leads us
+into the next wavelet data structure.
+
+\textbf{The wavelet matrix} is a relatively recent improvement on the wavelet tree, which
+has been shown to be more efficient for $access$, $rank$ and $select$ queries, as well as
+less memory intensive for larger alphabets. As the name suggests, the wavelet matrix is a
+matrix of bitsets, instead of a tree of bitsets. Similarly to the levelwise wavelet tree,
+for a string $S$ of size $n$, each level of the matrix consists of a bitset of size $n$.
+The difference between a levelwise wavelet tree and a wavelet matrix is that the
+assumption that the "children" of an interval $[x, y]$ needs to occupy exactly $[x, y]$ is
+no longer true. We can instead simply put all $1$ bits to the left in the next level, and
+all $1$ bits to the right.
+
+\begin{table}[t!]
+	\begin{center}
+		\begin{tabular}{c}
+            \begin{tabular}{c c c c c c c c c c c c}
+                a & b & b & b & e & f & c & a & g & d & d \\
+                \hline
+                0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 0 & 0 \\
+                0 & 0 & 0 & 0 & 1 & 0 & 1 & 1 & 0 & 0 & 1 \\
+                0 & 1 & 1 & 1 & 0 & 0 & 1 & 0 & 1 & 1 & 0
+            \end{tabular} \\
+		\end{tabular}
+		\caption{Wavelet matrix}
+		\label{table:waveletmatrix}
+	\end{center}
+\end{table}
+
 \subsubsection{Burrows-Wheeler transform}
 
 \begin{table}[!htb]
@@ -760,7 +927,7 @@ set bits (select).
 			2     & NANA\$B\textbf{A} \\
     \end{tabular}}
 		\hspace{0.5cm}
-        \subfloat[LF-mapping]{\begin{tabular}{c | l}
+        \subfloat[LF function]{\begin{tabular}{c | l}
 			L & F   \\
 			\hline
             0     & $Rank_A(0) + C[A] = 0 + 1 = 1$\\
@@ -855,10 +1022,11 @@ determine the previous cyclic-shift with only the last column. We can calculate 
 previous cyclic-shift from only the last column by determining how many characters are
 lexicographically smaller than the current character, and also the rank of the current
 character at this position. The sum of these two values is the location of the previous
-cyclic-shift. This function is called the Last-to-first mapping (LF-mapping). Calculating
-the LF-mapping can be done efficiently by using a rank/select data structure to calculate
-the rank of all the characters in the BWT, and an array $C$ which contains the number of
-occurrences of each letter in the BWT.
+cyclic-shift. This function is called the Last-to-first function (LF function).
+Calculating the LF function can be done efficiently by using a rank/select data structure
+such as a wavelet tree~\cite{WaveletTree} or wavelet matrix~\cite{WaveletMatrix} to
+calculate the rank of all the characters in the BWT, and an array $C$ which contains the
+number of occurrences of each letter in the BWT.
 
-The LF-mapping will also be useful in the detection algorithm when dynamically updating
+The LF function will also be useful in the detection algorithm when dynamically updating
 the suffix array.

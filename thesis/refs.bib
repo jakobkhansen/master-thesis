@@ -583,3 +583,52 @@ url="https://doi.org/10.1007/978-1-4939-2864-4_412"
 	numpages = {3},
 	keywords = {string correction, editing, subsequence, longest common sequence}
 }
+
+@inproceedings{WaveletTree,
+  author    = {Roberto Grossi and
+               Ankur Gupta and
+               Jeffrey Scott Vitter},
+  title     = {High-order entropy-compressed text indexes},
+  booktitle = {Proceedings of the Fourteenth Annual {ACM-SIAM} Symposium on Discrete
+               Algorithms, January 12-14, 2003, Baltimore, Maryland, {USA}},
+  pages     = {841--850},
+  publisher = {{ACM/SIAM}},
+  year      = {2003},
+  url       = {http://dl.acm.org/citation.cfm?id=644108.644250},
+  timestamp = {Fri, 02 Dec 2016 10:11:18 +0100},
+  biburl    = {https://dblp.org/rec/conf/soda/GrossiGV03.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{WaveletMatrix,
+  author    = {Francisco Claude and
+               Gonzalo Navarro and
+               Alberto Ord{\'{o}}{\~{n}}ez Pereira},
+  title     = {The wavelet matrix: An efficient wavelet tree for large alphabets},
+  journal   = {Inf. Syst.},
+  volume    = {47},
+  pages     = {15--32},
+  year      = {2015},
+  url       = {https://doi.org/10.1016/j.is.2014.06.002},
+  doi       = {10.1016/j.is.2014.06.002},
+  timestamp = {Thu, 28 Dec 2017 16:11:05 +0100},
+  biburl    = {https://dblp.org/rec/journals/is/ClaudeNP15.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{LevelwiseWaveletTree,
+title = {Rank and select revisited and extended},
+journal = {Theoretical Computer Science},
+volume = {387},
+number = {3},
+pages = {332-347},
+year = {2007},
+note = {The Burrows-Wheeler Transform},
+issn = {0304-3975},
+doi = {https://doi.org/10.1016/j.tcs.2007.07.013},
+url = {https://www.sciencedirect.com/science/article/pii/S0304397507005300},
+author = {Veli Mäkinen and Gonzalo Navarro},
+keywords = {Succinct data structures, Compressed data structures, Gap encoding, Range searching, Position-restricted substring searching, Wavelet trees, Substring rank and select},
+abstract = {The deep connection between the Burrows–Wheeler transform (BWT) and the so-called rank and select data structures for symbol sequences is the basis of most successful approaches to compressed text indexing. Rank of a symbol at a given position equals the number of times the symbol appears in the corresponding prefix of the sequence. Select is the inverse, retrieving the positions of the symbol occurrences. It has been shown that improvements to rank/select algorithms, in combination with the BWT, turn into improved compressed text indexes. This paper is devoted to alternative implementations and extensions of rank and select data structures. First, we show that one can use gap encoding techniques to obtain constant time rank and select queries in essentially the same space as what is achieved by the best current direct solution (and sometimes less). Second, we extend symbol rank and select to substring rank and select, giving several space/time trade-offs for the problem. An application of these queries is in position-restricted substring searching, where one can specify the range in the text where the search is restricted to, and only occurrences residing in that range are to be reported. In addition, arbitrary occurrences are reported in text position order. Several byproducts of our results display connections with searchable partial sums, Chazelle’s two-dimensional data structures, and Grossi et al.’s wavelet trees.}
+}
+
