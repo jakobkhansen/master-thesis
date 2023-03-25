@@ -894,7 +894,7 @@ wavelet matrix, and algorithm \ref{alg:waveletmatrixaccess} and
 \ref{alg:waveletmatrixrank} shows how $access$ and $rank$ operations can be carried out
 for a wavelet matrix.
 
-\begin{table}[t!]
+\begin{table}[t]
 	\begin{center}
 		\begin{tabular}{c}
             \begin{tabular}{c c c c c c c c c c c c}
@@ -911,6 +911,7 @@ for a wavelet matrix.
 \end{table}
 
 
+\begin{figure}
 \begin{minipage}{0.46\textwidth}
     \begin{algorithm}[H]
         \SetAlgoLined\DontPrintSemicolon
@@ -956,11 +957,16 @@ for a wavelet matrix.
         \label{alg:waveletmatrixrank}
     \end{algorithm}
 \end{minipage}
+\end{figure}
 
+The wavelet matrix is constructed level by level. In level $i$, the bit at position $i$ in
+each character is inserted. Before constructing the next level, each character is sorted
+by the current bit, so that all the characters with $0$ bits at position $i$ occupies the
+left side of level $i + 1$, and vice versa for $1$ bits.
 
 \subsubsection{Burrows-Wheeler transform}
 
-\begin{table}[!htb]
+\begin{table}[t]
 	\begin{center}
         \subfloat[Cyclic shifts]{
 		\begin{tabular}{c | l }

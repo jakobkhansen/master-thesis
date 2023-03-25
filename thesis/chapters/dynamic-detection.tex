@@ -797,8 +797,45 @@ less efficient than a single operation, since the reordering stage is done twice
 \subsubsection{LF-function}
 
 The LF function is called multiple times for any operation which is done to update the
-suffix array. Recall that $LF(i) = rank(i, BWT[i]) + C[BWT[i]]$ where $rank(i, BWT[i])$ is the
-rank for the character $BWT[i]$ at position $i$ in the BWT, and $C[BWT[i]]$ counts the number
-of lexicographically smaller characters than $BWT[i]$ in the BWT.
+suffix array. Therefore, it is important to be able to efficient compute $LF$ at any point
+in time. The naive approach of linearly iterating through the BWT to compute the $rank$
+and number of smaller characters is too slow. Recall that $LF(i) = rank_{BWT[i]}(i) +
+C[BWT[i]]$ where $rank_{BWT[i]}(i)$ is the rank for the character $BWT[i]$ at position $i$
+in the BWT, and $C[BWT[i]]$ counts the number of lexicographically smaller characters than
+$BWT[i]$ in the BWT. We therefore need a data structure for $rank$ queries on the BWT, and
+a data structure which stores the number of smaller characters of each character in the
+BWT. 
+
+For the $rank$ queries, recall that the wavelet matrix was a data structure which could
+efficiently compute $rank/select$ queries for strings. We will use the wavelet matrix to
+store the BWT and perform efficient $access$ and $rank$ queries on it as needed. With the
+wavelet matrix, we do not need to store the BWT itself, as we can simply query the wavelet
+matrix to access characters of the BWT. We decided to use the wavelet matrix instead of a
+wavelet tree as it has been shown to have faster $rank$ queries, and is more memory
+efficient for larger alphabets. Our alphabet can be quite large compared the standard
+applications of $rank/select$ data structures (such as DNA analysis). The wavelet matrix
+is also generally simpler to implement, and can be dynamically updated in a simple manner.
+Each bitset in the wavelet matrix is a dynamic bitset where we can efficiently insert and
+delete characters as needed when the size of the BWT grows/shrinks.
+
+When inserting a character $c$ into the wavelet matrix at position $i$, we insert the
+first bit of $c$ in level $0$ in the matrix at position $i$. The next bit of $c$ is then
+inserted in level $1$ in the matrix at position $rank_x(WM[0], i)$ where $x$ is the value
+of the previous bit.
+
+A complication with the wavelet data structures is to update the data structure as the
+alphabet increases in size. In our case the alphabet size will at some point increase to a
+size where elements need an additional bit. For the wavelet matrix, this can be solved by
+simply inserting a new row at the beginning of the matrix (level $0$), where the bitset
+consists of all zeroes. Afterwards, the new element which should be the only element with
+a $1$ bit in the first position can be inserted as normal.
+
+\Todo{Algorithm to insert/delete in wavelet matrix}
+
+\Todo{CharacterCount array}
+
+\section{Dynamic permutations for extended suffix arrays}
+
+\section{Dynamic LCP array updates}
 
 \section{Storing old clones}
