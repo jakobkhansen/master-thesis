@@ -836,6 +836,73 @@ a $1$ bit in the first position can be inserted as normal.
 
 \section{Dynamic permutations for extended suffix arrays}
 
+A major bottleneck when inserting/deleting elements in the suffix array is that when an
+element is removed, all elements after it needs to be moved by one index so that the gap
+is closed. This is also the case in the reordering stage, where all the elements between
+the old position and new position of an element needs to be moved by one position. In
+addition, since a suffix array is always a permutation from $0$ to $n$ where $n$ is the
+number of elements in the input, we need increment/decrement all elements greater than or
+equal to the element which was inserted/deleted. For example, if we insert a new element
+into the suffix array which indicates that a new suffix is the ith smallest, then
+naturally the previous suffix with value $i$ in SA should now have the value $i + 1$,
+which applies to all other suffixes lexicographically greater than the new suffix as well.
+In a standard representation for a suffix array (an array), this would require either a
+linear scan through the entire SA, or a linear scan through ISA from position $i$, which
+is also linear in the worst case. Multiple linear scans through the SA would make the
+algorithm slower than the linear time SACA when the amount of inserted/deleted character
+increases. 
+
+In this section we will introduce a data structure called the dynamic permutation, which
+facilitates insertion/deletion of elements in a permutation from $0$ to $n$, without
+linear scans to close gaps or incrementing/decrementing elements. The data structure
+stores SA, ISA and LCP and is inspired by the data structure introduced for the same
+purpose by Salson et al.~\cite{DynamicExtendedSuffixArrays}, but this data structure will
+not be compressed and is extended to also include the LCP array.
+
+The data structure consists of two balanced binary trees, with pointers between elements
+in one tree, to the other tree. Figure \ref{fig:dynamicpermutation} shows the two trees
+which are labeled the $A$ tree and the $B$ tree. Note that the trees do not actually hold
+the values displayed in the figure, the values in each node of the figure only represents
+the inorder position of each node, which we call the inorder rank of the node.
+
+To build a permutation such as $[6,5,3,1,0,4,2]$, for each element, insert a node in each
+tree, and add pointers between them. For example when inserting $1$ at position $3$, we
+will insert a node in $A$ so that it has an inorder rank of $1$, and then insert a node in
+$B$ so that it has an inorder rank of $3$. Then we add a pointer from the new node in $A$
+to the new node in $B$ and vice versa. For example if we wanted to insert a new value $4$ at
+position $1$ in the permutation, we would insert a new node in $A$ which is the right
+child of the node labeled $0$, and then insert a new node in $B$ which is the left child
+of the node labeled $4$. The trees can intuitively be understood such that the inorder
+values in $A$ represent the indices of the permutation, and the inorder values in $B$
+represent the values in the permutation. Therefore, if we look at a node in $A$ with
+inorder rank $i$, and follow the link to a node in $B$ with inorder rank $j$, this means
+that the permutation has the value $j$ at position $i$.
+
+An essential property of this tree is that when a new value $j$ is inserted into the
+permutation at position $i$, all indices $\geq i$ and values $\geq j$ is incremented by
+$1$. This is because all the nodes which had an inorder rank greater than or equal to the
+new nodes in each respective tree has now been incremented by $1$ simply because the
+structure of the tree has changed. No additional work is required to increment the
+elements. 
+
+The part we are still missing is how to find a node with inorder value $i$, and how to
+determine the inorder value of a given node. We cannot afford to traverse all the nodes in
+an inorder fashion to find a node with a specific inorder rank. Therefore, the trees are
+implemented as order-statistic trees~\cite[340]{CLRS}. An order-statistic tree is a tree
+where each node $x$ stores an additional integer $size$, which contains the number of
+nodes in the subtree rooted at $x$. This allows us to easily determine how many nodes is
+in the left subtree of a given node, and use this to determine where the node with a
+certain inorder rank is located.
+
+\begin{figure}
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{figures/dynamicpermutation.drawio.pdf}
+    \end{center}
+    \caption{Dynamic permutation for the permutation $[6,5,3,1,0,4,2]$. Colors have no meaning except to make lines clearer}
+    \label{fig:dynamicpermutation}
+\end{figure}
+
+
 \section{Dynamic LCP array updates}
 
 \section{Storing old clones}
