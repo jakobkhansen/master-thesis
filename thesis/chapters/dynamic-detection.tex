@@ -863,20 +863,30 @@ The data structure consists of two balanced binary trees, with pointers between 
 in one tree, to the other tree. Figure \ref{fig:dynamicpermutation} shows the two trees
 which are labeled the $A$ tree and the $B$ tree. Note that the trees do not actually hold
 the values displayed in the figure, the values in each node of the figure only represents
-the inorder position of each node, which we call the inorder rank of the node.
+the inorder position of each node, which is called the inorder rank of the node.
 
-To build a permutation such as $[6,5,3,1,0,4,2]$, for each element, insert a node in each
-tree, and add pointers between them. For example when inserting $1$ at position $3$, we
-will insert a node in $A$ so that it has an inorder rank of $1$, and then insert a node in
-$B$ so that it has an inorder rank of $3$. Then we add a pointer from the new node in $A$
-to the new node in $B$ and vice versa. For example if we wanted to insert a new value $4$ at
-position $1$ in the permutation, we would insert a new node in $A$ which is the right
-child of the node labeled $0$, and then insert a new node in $B$ which is the left child
-of the node labeled $4$. The trees can intuitively be understood such that the inorder
-values in $A$ represent the indices of the permutation, and the inorder values in $B$
-represent the values in the permutation. Therefore, if we look at a node in $A$ with
-inorder rank $i$, and follow the link to a node in $B$ with inorder rank $j$, this means
-that the permutation has the value $j$ at position $i$.
+To construct a permutation such as $[6,5,3,1,0,4,2]$, for each element, insert a node in
+each tree. After the trees have all the nodes in them, pointers are added from a node in
+$A$ to a node in $B$ and vice versa (doubly linked). If an element in SA has a value $i$
+at position $j$, pointers will be added between the node in $A$ with inorder rank $i$, and
+the node in $B$ with inorder rank $j$. 
+
+Now the tree is complete, but we can also insert new nodes into the data structure as the
+suffix array grows. When a new value $j$ is added at position $i$, a node is inserted into
+$A$ such that it has the inorder rank of $i$, and a node is inserted into $B$ such that it
+has the inorder rank of $j$. For example if we wanted to insert a new value $4$ at
+position $1$ in the permutation in figure \ref{fig:dynamicpermutation}, we would insert a
+new node in $A$ so that it is the right child of the node labeled $0$, and then insert a
+new node in $B$ which is the left child of the node labeled $4$. The trees can intuitively
+be understood such that the inorder values in $A$ represent the indices of the
+permutation, and the inorder values in $B$ represent the values in the permutation.
+Therefore, if we look at a node in $A$ with inorder rank $i$, and follow the pointer to a
+node in $B$ with inorder rank $j$, this means that the permutation has the value $j$ at
+position $i$. 
+
+Deleting a node at position $i$ is similar, but we will instead find the node with a rank
+of $i$ in $A$, then delete that node and the node it points to in $B$. As the trees are
+implemented as balanced trees, traversing, inserting and deleting nodes takes $O(\log n)$
 
 An essential property of this tree is that when a new value $j$ is inserted into the
 permutation at position $i$, all indices $\geq i$ and values $\geq j$ is incremented by
@@ -892,17 +902,103 @@ implemented as order-statistic trees~\cite[340]{CLRS}. An order-statistic tree i
 where each node $x$ stores an additional integer $size$, which contains the number of
 nodes in the subtree rooted at $x$. This allows us to easily determine how many nodes is
 in the left subtree of a given node, and use this to determine where the node with a
-certain inorder rank is located.
+certain inorder rank is located. If we wanted to find the node in the $A$ tree of figure
+\ref{fig:dynamicpermutation} with inorder rank $4$, we would start at the root, see that
+the left subtree of the root contains $3$ nodes. Therefore, the roots inorder rank is $3$.
+With this information we know that we need to traverse to the right child, and look for
+the node with inorder rank $4 - 4 = 0$ in that subtree (since we have already seen 4
+nodes). Since the node labelled $5$ has a rank of $1$ (in its own subtree), we know to
+traverse left, and at that point we have reached the correct node.
 
-\begin{figure}
-    \begin{center}
-        \includegraphics[width=0.95\textwidth]{figures/dynamicpermutation.drawio.pdf}
-    \end{center}
-    \caption{Dynamic permutation for the permutation $[6,5,3,1,0,4,2]$. Colors have no meaning except to make lines clearer}
-    \label{fig:dynamicpermutation}
+\begin{figure}[t]
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{figures/dynamicpermutation.drawio.pdf}
+	\end{center}
+	\caption{Dynamic permutation for the permutation $[6,5,3,1,0,4,2]$. Colors have no meaning except to make lines clearer}
+	\label{fig:dynamicpermutation}
 \end{figure}
 
+\begin{algorithm}[t]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\GetNodeByRank{root, rank}}{
+        $\Var{current} \gets \Var{root}$ \;
+
+        \While{$\Var{current} \neq \Null$}{
+            $\Var{currentRank} \gets \Access{\Access{\Var{current}}{\Var{left}}}{\Var{size}}$
+
+            \uIf{$\Var{currentRank} = \Var{rank}$}{
+                \Break \;
+            }
+            \uElseIf{$\Var{currentRank} > \Var{rank}$}{
+                $\Var{current} \gets \Access{\Var{current}}{\Var{left}}$
+            }
+            \Else{
+                $\Var{current} \gets \Access{\Var{current}}{\Var{right}}$ \;
+                $\Var{rank} \gets \Var{rank} - \Var{currentRank} + 1$
+            }
+        }
+        \Return $\Var{current}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Find the node in a tree with a given inorder rank}
+  \label{alg:getnodebyrank}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\GetRankOfNode{node}}{
+        $\Var{rank} \gets \Access{\Access{\Var{node}}{\Var{left}}}{\Var{size}}$ \;
+        \While{$\Access{\Var{node}}{\Var{parent}} \neq \Null$}{
+            \If{$\Access{\Access{\Var{node}}{\Var{parent}}}{\Var{right}} = \Var{node}$}{
+                $\Var{rank} \gets \Var{rank} + \Access{\Access{\Var{node}}{\Var{parent}}}{\Var{right}} + 1$
+            }
+            $\Var{node} \gets \Access{\Var{node}}{\Var{parent}}$
+        }
+
+        \Return $\Var{rank}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Find the inorder rank of a given node}
+  \label{alg:getrankofnode}
+\end{algorithm}
+
+Algorithm \ref{alg:getnodebyrank} shows how to find a node in a tree by its inorder rank,
+and algorithm \ref{alg:getrankofnode} shows how to determine the rank of a given node. The
+algorithm to find the value at a certain position is simple with these algorithms. To find
+the value in the permutation at position $i$, find the node with inorder rank $i$ in $A$,
+follow its pointer to a node in $B$, and then find the inorder rank of that node, which is
+the value at position $i$ in the permutation. We can also find the position of any value
+$j$ in the permutation by performing this algorithm in reverse, by instead starting at the
+$B$ tree, finding a node with rank $j$, then following its pointer to a node in $A$ and
+returning that nodes inorder rank.
+
+\begin{algorithm}[t]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\DynamicPermutationAccess{permutation, i}}{
+        $\Var{aNode} =
+        \GetNodeByRank{$\Access{\Access{\Var{permutation}}{\Var{A}}}{\Var{root}}, \Var{i}$}$ \;
+        $\Var{bNode} = \Access{\Var{aNode}}{\Var{pointer}}$
+
+        \Return \GetRankOfNode{$\Var{bNode}$}
+    }
+
+  \vspace{0.5cm}
+  \caption{Get value at position $i$ in a permutation}
+  \label{alg:dynamicpermutationaccess}
+\end{algorithm}
+
+With the ability to both find a value at a given position in the permutation, and also
+finding the position of a given value, we can use this data structure to represent the
+suffix array and inverse suffix array, instead of a simple array. Inserting, deleting and
+accessing a node in this data structure takes $O(\log n)$ time, and we no longer need a
+linear scan through the data structure to increment/decrement values, as values are
+automatically incremented/decremented when a new element is inserted/deleted.
 
 \section{Dynamic LCP array updates}
+
+Now that we have a dynamic structure to represent SA and ISA, we can extend the data
+structure to also contain the LCP array, and efficiently update the LCP values as well.
 
 \section{Storing old clones}
