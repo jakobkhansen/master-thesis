@@ -317,7 +317,7 @@ account for the offset of the minimized matrix.
     \algo{\EditDistanceMinimizeStrings{$S_1$, $S_2$}}{
 
         \For{$i \From 0 \To \Min{$\Len{$\Var{S}_1$}, \Len{$\Var{S}_1$}$}$}{
-            \If{$\ArrayAccess{\Var{S_1}}{\Var{i}} \neq \ArrayAccess{\Var{S_2}}{\Var{i}}$}{
+            \lIf{$\ArrayAccess{\Var{S_1}}{\Var{i}} \neq \ArrayAccess{\Var{S_2}}{\Var{i}}$}{
                 \Break
             }
         }
@@ -703,28 +703,26 @@ elements in SA are reordered in the same fashion.
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
-    \algo{\UpdateSuffixArrayInsert{SA, ISA, BWT, pos, ch}}{
-        $\Var{posFirstModified} \gets \ISA{\Var{pos}}$ \;
-        $\Var{previousCS} \gets \LF{$\Var{BWT}, \Var{pos}$}$ \;\;
+    \algo{\UpdateSuffixArrayInsert{SA, ISA, BWT, i, ch}}{
+        $\Var{posFirstModified} \gets \ISA{\Var{i}}$ \;
+        $\Var{previousCS} \gets \LF{$\Var{BWT}, \Var{i}$}$ \;\;
 
         $\Var{storedLetter} \gets \ArrayAccess{\Var{BWT}}{\Var{posFirstModified}}$ \;
         $\ArrayAccess{\Var{BWT}}{\Var{posFirstModified}} \gets \Var{ch}$ \;\;
 
-        $\Var{insertionPoint} \gets \LF{$\Var{BWT}, \Var{pos}$}$ \;
-        \If{$\Var{storedLetter} < \Var{ch}$} {
+        $\Var{insertionPoint} \gets \LF{$\Var{BWT}, \Var{i}$}$ \;
+        \lIf{$\Var{storedLetter} < \Var{ch}$} {
             $\Var{insertionPoint} \gets \Var{insertionPoint} + 1$
         } \;
 
         \Comment{Insert storedLetter in BWT at pointOfInsertion}
         \Insert{$\Var{BWT}, \Var{insertionPoint}, \Var{storedLetter}$}\;\;
-        \Comment{Insert position in SA at pointOfInsertion}
-        \Insert{$\Var{SA}, \Var{insertionPoint}, \Var{position}$}\;\;
-
-        \Comment{Increment all values in SA greater than position}
-        \IncrementGreaterThan{$\Var{SA}, \Var{position}$}\;\;
+        \Comment{Insert i in SA at pointOfInsertion, increment all values $\geq$ position}
+        \Insert{$\Var{SA}, \Var{insertionPoint}, \Var{pos}$}\;
+        \IncrementGreaterThan{$\Var{SA}, \Var{pos}$}\;\;
 
 
-        \If{$\Var{insertionPoint} \leq \Var{previousCS}$} {
+        \lIf{$\Var{insertionPoint} \leq \Var{previousCS}$} {
             $\Var{previousCS} \gets \Var{previousCS} + 1$
         } \;
 
@@ -732,7 +730,7 @@ elements in SA are reordered in the same fashion.
         $\Var{pos} \gets \Var{previousCS}$ \;
         $\Var{expected} \gets \LF{$\Var{insertionPoint}$}$ 
 
-        \While{$\Var{pos} \neq \Var{expected}$}{ \;
+        \While{$\Var{pos} \neq \Var{expected}$}{
 
             $\Var{newPos} \gets \LF{$\Var{pos}$}$ \;\;
 
@@ -834,7 +832,7 @@ a $1$ bit in the first position can be inserted as normal.
 
 \Todo{CharacterCount array}
 
-\section{Dynamic permutations for extended suffix arrays}
+\section{Dynamic extended suffix arrays}
 
 A major bottleneck when inserting/deleting elements in the suffix array is that when an
 element is removed, all elements after it needs to be moved by one index so that the gap
@@ -852,15 +850,20 @@ is also linear in the worst case. Multiple linear scans through the SA would mak
 algorithm slower than the linear time SACA when the amount of inserted/deleted character
 increases. 
 
-In this section we will introduce a data structure called the dynamic permutation, which
-facilitates insertion/deletion of elements in a permutation from $0$ to $n$, without
-linear scans to close gaps or incrementing/decrementing elements. The data structure
-stores SA, ISA and LCP and is inspired by the data structure introduced for the same
-purpose by Salson et al.~\cite{DynamicExtendedSuffixArrays}, but this data structure will
-not be compressed and is extended to also include the LCP array.
+In this section we will introduce a data structure called the dynamic extended suffix
+array. This data structure consists of a dynamic permutation, which facilitates
+insertion/deletion of elements in a permutation from $0$ to $n$, without linear scans to
+close gaps or incrementing/decrementing elements. The data structure stores SA, ISA and
+LCP and is inspired by the data structure introduced for the same purpose by Salson et
+al.~\cite{DynamicExtendedSuffixArrays}. The data structure used by Salson et al. uses the
+same dynamic permutation tree, but reduces the amount of values which is stored to reduce
+memory consumption, but also slows down the access time of elements in the permutation.
+Our data structure will not be compressed, which allows faster access to arbitrary
+elements, and will be extended to also include the LCP values as well. Therefore, this
+data structure encompasses the entire extended suffix array.
 
 The data structure consists of two balanced binary trees, with pointers between elements
-in one tree, to the other tree. Figure \ref{fig:dynamicpermutation} shows the two trees
+in one tree to the other. Figure \ref{fig:dynamicpermutation} shows the two trees
 which are labeled the $A$ tree and the $B$ tree. Note that the trees do not actually hold
 the values displayed in the figure, the values in each node of the figure only represents
 the inorder position of each node, which is called the inorder rank of the node.
@@ -1001,4 +1004,95 @@ automatically incremented/decremented when a new element is inserted/deleted.
 Now that we have a dynamic structure to represent SA and ISA, we can extend the data
 structure to also contain the LCP array, and efficiently update the LCP values as well.
 
-\section{Storing old clones}
+Since every node in the $A$ tree of our data structure correlates to an index, we can
+easily extend the data structure to contain LCP values by setting a value in each node of
+the $A$ tree. This would make the $A$ tree work as a balanced binary tree for the LCP
+values, and if an SA value at position $i$ is deleted, the LCP value stored in
+the respective node is also deleted.
+
+In the initial construction of the dynamic permutation, LCP values would be inserted
+together with the nodes. When dynamically updating the LCP values as suffixes are
+inserted/removed, it is more complicated. Salson et al.\cite{DynamicExtendedSuffixArrays}
+also describe a procedure for updating the LCP values after an insert/delete operation.
+
+When inserting a character into the input string, the suffix array changes by inserting a
+new value, and afterwards moving values from one position to another (move-row stage).
+Similarly, a deletion in the suffix array consists of deleting a value, and performing the
+same move-row operations. The moving of a value from position $i$ to $j$ can be decomposed
+into a deletion at position $i$ followed by an insertion at position $j$. When updating
+the LCP array we therefore need to consider how insertion of a value and deletion of a
+value affects the LCP values.
+
+The idea for this algorithm is to keep track of all positions which could possibly have
+its LCP value changed, and update the LCP values after the SA is fully updated. There are
+four different cases where an LCP value at a position $i$ could be changed:
+
+\begin{enumerate}
+    \item A suffix was inserted at position $i - 1$ in SA, which is the new suffix that
+        the suffix at position $i$ should compute its LCP value for.
+
+    \item The suffix at position $i - 1$ was deleted in SA, making the suffix at position
+        $i - 2$ the new suffix that the suffix at position $i$ should compute its LCP
+        value for.
+
+    \item A character was inserted/deleted in the middle of the LCP for the suffix at
+        position $i$ in SA, which shortens the LCP value between it and the suffix at
+        position $i - 1$.
+
+    \item A character was inserted/deleted at the end of the LCP for the suffix at
+        position $i$ in SA, which could potentially extend the LCP value between it and
+        the suffix at position $i - 1$.
+\end{enumerate}
+
+For each position in the LCP array, we will store a dynamic bitset where a set bit at
+position $i$ indicates that at some point, the LCP value at position $i$ needs to be
+updated.
+
+For an insertion at position $i - 1$ in SA (case 1), we will set the bit at position $i$,
+as the suffix it compares its LCP to has changed. We will also insert a set bit at
+position $i - 1$, as the newly inserted suffix also needs to compute its LCP value with
+the suffix at position $i - 2$.
+
+Similarly, for a deletion at position $i - 1$ in SA (case 2), we will set the bit at
+position $i$, as the suffix it used to compare its LCP to has been deleted. We will also
+delete the bit at position $i - 1$, as the suffix at that position has been deleted.
+
+After setting these bits while performing an insert/delete operation in the SA, the bitset
+now contains all the positions of LCP values which need to be updated for the first two
+cases. The other two cases are more complex to find the positions of. Instead of inserting
+the positions of these suffix into the bitset, we will iterate over the suffixes which
+could possibly have their LCP value changed.
+
+Iteration over every suffix and recomputing the LCP value takes linear time in the size of
+the fingerprint and is therefore too slow for this algorithm. However, we can reduce the
+number of suffixes we need to update by using a series of observations.
+
+The first observation is that we only need to consider suffixes where the
+insertion/deletion of a character at position $i$ has changed the suffix. Those are the
+suffixes which start at a position $j$ where $j \leq i$. Other suffixes cannot change, as
+the insertion/deletion happened before the starting position of the suffix. For a suffix
+at position $j$ which has changed, two LCP values can change, the values at position $k$
+and $k + 1$ where $SA[k] = j$. These two LCP values can change, because at position $k$,
+the suffix at position $SA[k]$ is compared with $SA[k - 1]$, and at position $k + 1$, the
+suffix at position $SA[k + 1]$ is compared with $SA[k]$. Since both of these LCP values
+depend on the suffix at position $SA[k] = j$, they can potentially change when the suffix
+is changed. The positions in SA which possibly can be changed can be found using the
+LF-function. In the final phase of the suffix array update algorithm when we have
+inserted/deleted an element at position $i$, we are reordering suffixes at position $j
+\leq i$. These are the suffixes we are looking for, but we can skip all suffixes which are
+reordered, as they are already marked to be computed in the bitset. Therefore, the
+variable $pos$ will point to the next suffix which could potentially change its
+LCP value at the end of algorithm \ref{alg:updatesuffixarrayinsert}.
+
+Another useful observation when iterating over suffixes is that after an
+insertion/deletion, no two suffixes will have the insertion/deletion occur at the same
+position. This is true because no two suffixes start on the same position in the input,
+and an insertion/deletion at a position $i$ in the input can therefore never correspond to
+an insert/deletion at the same position for two different suffixes. With that in mind,
+another useful observation is that given two suffixes with an LCP value of $p$, any change
+inside the range of the LCP in either of the suffixes, will change the LCP value.
+Combining this observation with the previous knowledge that the LCP value for a suffix at
+position $i$ is at minimum one less than the LCP value for the previous suffix at position
+$i - 1$, 
+
+\section{Dynamic clone extraction}
