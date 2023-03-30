@@ -519,7 +519,9 @@ large files without memory usage issues.
 \section{Dynamic suffix array updates}
 
 Now that we know how the fingerprint has changed after an edit, the next phase is to input
-the edit operations into an algorithm which dynamically updates the suffix array.
+the edit operations into an algorithm which dynamically updates the suffix array. The
+algorithm discussed in this section will be run once for each edit operation.
+
 Constructing/updating the suffix array is the most time-consuming phase of the algorithm,
 so the goal for the dynamic update is to take the previous suffix array and an edit
 operation, and compute the new suffix array faster than it would take to build the suffix
@@ -809,13 +811,15 @@ For the $rank$ queries, recall that the wavelet matrix was a data structure whic
 efficiently compute $rank/select$ queries for strings. We will use the wavelet matrix to
 store the BWT and perform efficient $access$ and $rank$ queries on it as needed. With the
 wavelet matrix, we do not need to store the BWT itself, as we can simply query the wavelet
-matrix to access characters of the BWT. We decided to use the wavelet matrix instead of a
-wavelet tree as it has been shown to have faster $rank$ queries, and is more memory
-efficient for larger alphabets. Our alphabet can be quite large compared the standard
-applications of $rank/select$ data structures (such as DNA analysis). The wavelet matrix
-is also generally simpler to implement, and can be dynamically updated in a simple manner.
-Each bitset in the wavelet matrix is a dynamic bitset where we can efficiently insert and
-delete characters as needed when the size of the BWT grows/shrinks.
+matrix to access characters of the BWT. We also do not need to store the full fingerprint,
+since we can access characters in the wavelet matrix and if we need to access the
+characters in a sorted order, we can use the LF function. We decided to use the wavelet
+matrix instead of a wavelet tree as it has been shown to have faster $rank$ queries, and
+is more memory efficient for larger alphabets. Our alphabet can be quite large compared
+the standard applications of $rank/select$ data structures (such as DNA analysis). The
+wavelet matrix is also generally simpler to implement, and can be dynamically updated in a
+simple manner. Each bitset in the wavelet matrix is a dynamic bitset where we can
+efficiently insert and delete characters as needed when the size of the BWT grows/shrinks.
 
 When inserting a character $c$ into the wavelet matrix at position $i$, we insert the
 first bit of $c$ in level $0$ in the matrix at position $i$. The next bit of $c$ is then
@@ -1129,20 +1133,60 @@ in the wavelet matrix, and the LF function allows us to move from one character 
 previous in the original input text. When we compute LCP values, we need to be able to
 compare characters in two suffixes from start to potentially end of the input, therefore
 we need to be able to move from one character to the next, which is the inverse of the LF
-function. The inverse LF function for a position $i$ computes the next cyclic-shift by
-first determining what character is in the first column of the CS at position $i$ in the
-sorted cyclic-shifts, and its $rank$ in the first column. With the character and rank of
-that character, we can perform a $select$ on the BWT for that character and rank, which
-will give us the location of where that character is located in the last column (BWT)
-which is the next CS. This is the next cyclic-shift because it is the cyclic-shift where
-the character which was previously in the first column, but is now cycled one character to
-the left, which corresponds to the next CS. To find which character is in the first column
-at position $i$, recall that the $F$ column in the sorted cyclic-shifts just contain all
-the characters of the input in sorted order. We can therefore use the $C$ to determine
-which character is located at exactly position $i$, just by counting the number of
-occurrences of other characters.
+function. 
+
+The inverse LF function for a position $i$ computes the next cyclic-shift by first
+determining what character is in the first column of the CS at position $i$ in the sorted
+cyclic-shifts, and its $rank$ in the first column. With the character and rank of that
+character, we can perform a $select$ on the BWT for that character and rank, which will
+give us the location of where that character is located in the last column (BWT) which is
+the next CS. This is the next cyclic-shift because it is the cyclic-shift where the
+character which was previously in the first column, but is now cycled one character to the
+left, which corresponds to the next CS. To find which character is in the first column at
+position $i$, recall that the $F$ column in the sorted cyclic-shifts just contain all the
+characters of the input in sorted order. We can therefore use the $C$ to determine which
+character is located at exactly position $i$, just by counting the number of occurrences
+of the previous characters. If $C$ is implemented as an array where the $C[c]$ holds the
+number of smaller characters than $c$ in the input, finding the correct character can be
+done efficiently with a binary search. When we know which character is located at position
+$i$ in the first column, we do $select_c(i - C[c])$ to determine where that occurence of
+$c$ is located in the last column (the BWT), which is then returned as the result of the
+inverse LF function.
+
+With the inverse LF function, computing the LCP value between two suffixes at position $i$
+and $j$ is done by repeatedly applying the inverse LF function to $i$ and $j$, and
+comparing the characters at those positions in the BWT.
 
 \Todo{Eureka moment, vi kan kanskje gjøre noe binary search greier her for å speede opp
 inverse LF}
 
+\Todo{Algorithm for iterating over suffixes which need to update their LCP value}
+
+\Todo{Algorithm for updating a single LCP value}
+
 \section{Dynamic clone extraction}
+
+The LCP is no longer represented as an array, but as a a balanced tree. As trees are more
+costly to traverse linearly compared to arrays, we also want to improve how we extract
+clones in this phase. The goal of this phase is still to find the indices in the
+fingerprint which corresponds to the start of code clones, which will later be mapped by
+back to the original source code again.
+
+Recall that the algorithm in the initial detection in \cref{initialdetection} traversed
+the suffixes from beginning to end, and extracts indices of suffixes where the LCP value
+is above the token threshold parameter. Also recall that some clones were filtered, those
+being clones which extend past a single fragment, or clones which are contained inside a
+larger clone. This algorithm now be recreated for the balanced tree LCP, which also
+optimizes the algorithm to reduce the amount of nodes we need to examine.
+
+When updating a value in the LCP array, we can check to see if the new value is above the
+token threshold. If the previous value was below the treshold, and the new value is above
+the treshold, we know that this is a node which could potentially be a code clone, so
+storing these nodes can reduce the amount of nodes we need to examine. Since potentially
+multiple updates to an LCP value happens as potentially multiple edit operations are
+performed before extracting clone indices, we can reduce the amount of insertions/removals
+from this set by filtering nodes with a too low LCP value after we have done all LCP value
+updates.
+
+After all LCP values are updated and we have filtered out nodes, we are left with a set of
+all the nodes with an LCP value above the token treshold parameter.

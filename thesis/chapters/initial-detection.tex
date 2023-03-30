@@ -655,7 +655,7 @@ shown in \cref{lspimplementation}.
         
         \For{$\Var{i} \From 0 \To \Var{n} - 1$}{
             $\Var{firstIndex} \gets \ArrayAccess{\Var{cloneIndices}}{\Var{i}}$ \;
-            $\Var{secondIndex} \gets \ArrayAccess{\Var{cloneIndices}}{\Var{i}}$ \;
+            $\Var{secondIndex} \gets \SA{\ISA{\Var{firstIndex}} - 1}$ \;
             $\Var{size} \gets \LCP{\ISA{\Var{firstIndex}}} - 1$ \;\;
 
 
