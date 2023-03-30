@@ -1009,8 +1009,8 @@ left side of level $i + 1$, and vice versa for $1$ bits.
 	\end{center}
 \end{table}
 
-The Burrows-Wheeler transform (BWT) is a transform on strings, often performed on strings
-to improve compression~\cite{BWT}. The transform is computed by sorting all
+The Burrows-Wheeler transform (BWT) is a transform on strings, often performed to improve
+compression and searching~\cite{BWT}. The transform is computed by sorting all
 ``cyclic-shifts'' of the string lexicographically and extracting a new string from the
 last column of the cyclic-shift'' matrix. \$ is added to the string as a unique
 terminating character, this makes some of the algorithms on the BWT simpler. \$ is always
@@ -1068,22 +1068,22 @@ the following implementation chapter for the dynamic code clone detection algori
 
 
 An essential property of the BWT is that the transformation is reversible. By examining
-the BWT of a string T, we see that the BWT is a permutation of T. We will also see that
+the BWT of a string T, we see that the BWT is a permutation of S. We will also see that
 there is a correlation between the characters in the first column of the cyclic-shift
 matrix and the last column (the BWT).
 
-T can be calculated from the BWT as long as there is a unique terminating character (\$),
-or the position of the final character is stored. T is computed backwards by starting at
-the final character ($T[n - 1]$) and then finding the cyclic-shift where that character
+S can be calculated from the BWT as long as there is a unique terminating character (\$),
+or the position of the final character is stored. S is computed backwards by starting at
+the final character ($S[n - 1]$) and then finding the cyclic-shift where that character
 occurs in the first column (the previous cyclic-shift). The character in the last column
-of that cyclic-shift is $T[n - 2]$. If there are multiple of the same character, the nth
+of that cyclic-shift is $S[n - 2]$. If there are multiple of the same character, the nth
 occurrence of a certain symbol in the last column will map to the nth occurrence of the
 same symbol in the first column. This process is repeated until we finish the cycle,
 returning to the final character in the last column. Essentially, this process consists of
 traversing cyclic-shifts backwards and looking at the final character, which will give us
-T, since the final character of the cyclic-shift is continually shifting one position.
+S, since the final character of the cyclic-shift is continually shifting one position.
 
-We can use the fact that the first column consists of the letters of T in sorted order to
+We can use the fact that the first column consists of the letters of S in sorted order to
 determine the previous cyclic-shift with only the last column. We can calculate the
 previous cyclic-shift from only the last column by determining how many characters are
 lexicographically smaller than the current character, and also the rank of the current

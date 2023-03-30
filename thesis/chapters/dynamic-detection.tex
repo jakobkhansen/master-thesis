@@ -532,26 +532,27 @@ This algorithm is based on the 4-stage algorithm for updating a Burrows-Wheeler 
 (BWT), also by Salson et al.~\cite{DynamicBWT}. Recall that the BWT is a transform on an
 input string which is often used for compression and text-search purposes. The BWT is also
 reversible by using the LF function to compute the original string in reverse. The
-LF-function is computed for a position $i$ such that $LF(i) = rank(i, BTW[i]) + C[BWT[i]]$
+LF function is computed for a position $i$ such that $LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$
 where the array $C$ contains for any character $c$, how many characters are
 lexicographically smaller than $c$. This function can intuitively be used in the context
 of the BWT to allow us to move from $CS_i$ to $CS_{i-1}$. Also recall that the suffix
 array and the BWT of a string is tightly related to the point where one can compute the
-BWT from the suffix array. The algorithm which dynamically updates the BWT can therefore
-be used to dynamically update the suffix array as well.
+BWT from the suffix array. Any updates to the BWT will therefore lead to similar updates
+to the suffix array, so the algorithm which updates the BWT can be used to determine how
+the suffix array changes as well.
 
 \subsubsection{Updating BWT on insertion}
 
 First we will observe which parts of a BWT changes when we insert a single character. Note
-that we will only consider what changes for the BWT, meaning the final character in each
-shift, not the whole cyclic-shift. We will consider an insertion of a character $c$,
-inserted at position $i$. We know that we will have exactly one more $CS$ for the string,
-which starts with the inserted character $c$, at position $i$. This $CS$ ends with the
-character at position $i - 1$. We also know that exactly one $CS$ will change its last
-character, which is the cyclic-shift previously starting at position $i$, but is now at
-position $i + 1$ after the insertion. This new cyclic-shift will now end with the new
-inserted character, $c$. These are the only changes that happen to the characters in the
-BWT, but the ordering might not be correct anymore.
+that we will only consider changes to the BWT, meaning the final character in each shift,
+not the whole cyclic-shift. We will consider an insertion of a character $c$, inserted at
+position $i$. We know that we will have exactly one more $CS$ for the string, which starts
+with the inserted character $c$, at position $i$. This $CS$ ends with the character at
+position $i - 1$. We also know that exactly one $CS$ will change its last character, which
+is the cyclic-shift previously starting at position $i$, but is now at position $i + 1$
+after the insertion. This new cyclic-shift will now end with the new inserted character,
+$c$. These are the only changes that happen to the characters in the BWT, but the ordering
+might not be correct anymore.
 
 \begin{table}[t]
 	\begin{center}
@@ -596,7 +597,7 @@ occured. In table \ref{table:bwtupdatestages} We see that the new $CS_2$ is
 cyclic-shifts are located by first looking up $i$ in the ISA, $\ISA{2} = 6$. This is the
 location of $CS_3$ (after the insertion), where the final character is updated to the
 inserted character \verb|B|. To find the position where the new cyclic-shift should be
-inserted, we can use the LF-function to move from the $CS_3$ to $CS_2$. Computing
+inserted, we can use the LF function to move from the $CS_3$ to $CS_2$. Computing
 $LF(6)$ after the substitute gives us $5$, which is where the new $CS_2$ should be
 inserted in the BWT. When we insert in the BWT, we only need to consider the final
 character of $CS_2$, which in this case is \verb|A|, the character which was previously
@@ -751,7 +752,7 @@ elements in SA are reordered in the same fashion.
 Algorithm \ref{alg:updatesuffixarrayinsert} dynamically updates a suffix array and BWT
 when a single character is inserted. This algorithm can easily be extended to insert a
 string instead of a single character by adding a loop which continuously updates the
-\verb|pointOfInsertion| to the previous $CS$ with the LF-function, and inserts all the
+\verb|pointOfInsertion| to the previous $CS$ with the LF function, and inserts all the
 characters at that position into the BWT and SA backwards. This is more efficient than
 calling the single character algorithm multiple times, because the reordering stage is
 only performed once. The details for insertions/deletions of multiple characters is
@@ -782,7 +783,7 @@ In our example $substituted = ISA[3] = 7$, $deleted = LF(7) = 5$ and $pos = LF(5
 Then $BWT[deleted]$ is deleted, and $BWT[substituted]$ is set to the deleted character.
 Then $expected = LF(6) = 3$. Note that $substituted$ was decremented after the deletion
 because the deletion moved that $CS$ one position up. When the reordering stage happens,
-we have $pos = 2$ and $expected = 3$, so we perform the row-move in the BWT and SA in the
+we have $pos = 2$ and $expected = 3$, so we perform the reordering in the BWT and SA in the
 same fashion as previously, and the algorithm will again terminate after one iteration of
 the reordering phase.
 
@@ -792,7 +793,7 @@ Substitution operations are also possible and covered in the original paper, but
 time constraints, these were implemented as a deletion followed by an insertion, which is
 less efficient than a single operation, since the reordering stage is done twice.
 
-\subsubsection{LF-function}
+\subsubsection{LF function}
 
 The LF function is called multiple times for any operation which is done to update the
 suffix array. Therefore, it is important to be able to efficient compute $LF$ at any point
@@ -1012,16 +1013,17 @@ the respective node is also deleted.
 
 In the initial construction of the dynamic permutation, LCP values would be inserted
 together with the nodes. When dynamically updating the LCP values as suffixes are
-inserted/removed, it is more complicated. Salson et al.\cite{DynamicExtendedSuffixArrays}
-also describe a procedure for updating the LCP values after an insert/delete operation.
+inserted/removed, the procedure is more complicated. Salson et
+al.\cite{DynamicExtendedSuffixArrays} also describe a procedure for updating the LCP
+values after an insert/delete operation, which we will use.
 
 When inserting a character into the input string, the suffix array changes by inserting a
-new value, and afterwards moving values from one position to another (move-row stage).
+new value, and afterwards moving values from one position to another (reordering stage).
 Similarly, a deletion in the suffix array consists of deleting a value, and performing the
-same move-row operations. The moving of a value from position $i$ to $j$ can be decomposed
-into a deletion at position $i$ followed by an insertion at position $j$. When updating
-the LCP array we therefore need to consider how insertion of a value and deletion of a
-value affects the LCP values.
+same reordering operations. The moving of a value from position $i$ to $j$ can be
+decomposed into a deletion at position $i$ followed by an insertion at position $j$. When
+updating the LCP array we therefore need to consider how insertion of a value and deletion
+of a value in SA affects the LCP values.
 
 The idea for this algorithm is to keep track of all positions which could possibly have
 its LCP value changed, and update the LCP values after the SA is fully updated. There are
@@ -1037,16 +1039,17 @@ four different cases where an LCP value at a position $i$ could be changed:
 
     \item A character was inserted/deleted in the middle of the LCP for the suffix at
         position $i$ in SA, which shortens the LCP value between it and the suffix at
-        position $i - 1$.
+        position $i - 1$, and the LCP value between the suffix at position $i$ and $i + 1$.
 
     \item A character was inserted/deleted at the end of the LCP for the suffix at
         position $i$ in SA, which could potentially extend the LCP value between it and
-        the suffix at position $i - 1$.
+        the suffix at position $i - 1$, and the LCP value between the suffix at position
+        $i$ and $i + 1$.
+
 \end{enumerate}
 
-For each position in the LCP array, we will store a dynamic bitset where a set bit at
-position $i$ indicates that at some point, the LCP value at position $i$ needs to be
-updated.
+To cover the first two cases, we will store a dynamic bitset where a set bit at position
+$i$ indicates that at some point, the LCP value at position $i$ needs to be updated.
 
 For an insertion at position $i - 1$ in SA (case 1), we will set the bit at position $i$,
 as the suffix it compares its LCP to has changed. We will also insert a set bit at
@@ -1061,11 +1064,10 @@ After setting these bits while performing an insert/delete operation in the SA, 
 now contains all the positions of LCP values which need to be updated for the first two
 cases. The other two cases are more complex to find the positions of. Instead of inserting
 the positions of these suffix into the bitset, we will iterate over the suffixes which
-could possibly have their LCP value changed.
-
-Iteration over every suffix and recomputing the LCP value takes linear time in the size of
-the fingerprint and is therefore too slow for this algorithm. However, we can reduce the
-number of suffixes we need to update by using a series of observations.
+could possibly have their LCP value changed. Iteration over every suffix and recomputing
+the LCP value takes linear time in the size of the fingerprint and is therefore too slow
+for this algorithm. However, we can reduce the number of suffixes we need to update by
+using a series of observations.
 
 The first observation is that we only need to consider suffixes where the
 insertion/deletion of a character at position $i$ has changed the suffix. Those are the
@@ -1077,12 +1079,12 @@ the suffix at position $SA[k]$ is compared with $SA[k - 1]$, and at position $k 
 suffix at position $SA[k + 1]$ is compared with $SA[k]$. Since both of these LCP values
 depend on the suffix at position $SA[k] = j$, they can potentially change when the suffix
 is changed. The positions in SA which possibly can be changed can be found using the
-LF-function. In the final phase of the suffix array update algorithm when we have
+LF function. In the final phase of the suffix array update algorithm when we have
 inserted/deleted an element at position $i$, we are reordering suffixes at position $j
 \leq i$. These are the suffixes we are looking for, but we can skip all suffixes which are
-reordered, as they are already marked to be computed in the bitset. Therefore, the
-variable $pos$ will point to the next suffix which could potentially change its
-LCP value at the end of algorithm \ref{alg:updatesuffixarrayinsert}.
+reordered, as they are already marked to be computed in the bitset for the previous cases.
+Therefore, the variable $pos$ points to the next suffix we need to consider at the end of
+algorithm \ref{alg:updatesuffixarrayinsert}.
 
 Another useful observation when iterating over suffixes is that after an
 insertion/deletion, no two suffixes will have the insertion/deletion occur at the same
@@ -1090,9 +1092,57 @@ position. This is true because no two suffixes start on the same position in the
 and an insertion/deletion at a position $i$ in the input can therefore never correspond to
 an insert/deletion at the same position for two different suffixes. With that in mind,
 another useful observation is that given two suffixes with an LCP value of $p$, any change
-inside the range of the LCP in either of the suffixes, will change the LCP value.
-Combining this observation with the previous knowledge that the LCP value for a suffix at
-position $i$ is at minimum one less than the LCP value for the previous suffix at position
-$i - 1$, 
+inside the range of the LCP in either of the suffixes, will change $p$.
+
+The idea is to determine if the insertion/deletion is out of range to possibly affect the
+LCP value of a suffix. Recall that the LCP value for a suffix at position $i - 1$ is at
+minimum one less than the LCP value for the previous suffix at position $i$, as discussed
+in \cref{initialdetection}. We can determine that it is impossible for the LCP value at
+position $i - 1$ to change, if neither of the LCP values which is affected by the suffix
+at position $i$ changes, unless the insertion/deletion happens at position $i - 1$. This
+is explained by the fact that at minimum, the LCP of the suffix at position $i$ covers
+every character of the LCP of the suffix at position $i - 1$ except for the first
+character. If the first character was the position of the insertion/deletion, it can
+change the LCP value, but that case is already handled by the positions stored in the
+bitset. Since the suffix at position $i - 1$ did not update, this holds recursively for
+the next suffix at position $i - 2$ as well. Therefore, as soon as we find a single suffix
+at position $i$ which does not lead to an LCP value update, this will recursively hold for
+all suffixes at position $j < i$.
+
+With this in mind, the algorithm to update the LCP array has two stages. Given the bitset
+of positions which need to be updated in correlation with the first two cases, we perform
+a $select$ operation to continuously find the location of set bits in the bitset, and use
+their position to determine which positions in the LCP array need to be computed. After
+all the positions in the bitset has been updated in the LCP array, we move on the last two
+cases. From the position of $pos$, which was computed during the suffix array update, we
+continuously call the LF function on $pos$ to find the previous suffix. At each position,
+we update the LCP value of the suffix at position $pos$ and $pos + 1$, as these two LCP
+values are both affected by the suffix at position $SA[pos]$. When we encounter the
+situation where both LCP values at position $pos$ and $pos + 1$ did not lead to a change
+in LCP values, the algorithm is finished and the LCP array is updated. Algorithm \ref{}
+shows how the LCP array is updated, given the bitset of updated positions which is built
+during algorithm \ref{alg:updatesuffixarrayinsert}.
+
+The actual computation of LCP values is also more complex than it seems. In the dynamic
+detection algorithm we are not storing the entire fingerprint, we only have the BWT stored
+in the wavelet matrix, and the LF function allows us to move from one character to the
+previous in the original input text. When we compute LCP values, we need to be able to
+compare characters in two suffixes from start to potentially end of the input, therefore
+we need to be able to move from one character to the next, which is the inverse of the LF
+function. The inverse LF function for a position $i$ computes the next cyclic-shift by
+first determining what character is in the first column of the CS at position $i$ in the
+sorted cyclic-shifts, and its $rank$ in the first column. With the character and rank of
+that character, we can perform a $select$ on the BWT for that character and rank, which
+will give us the location of where that character is located in the last column (BWT)
+which is the next CS. This is the next cyclic-shift because it is the cyclic-shift where
+the character which was previously in the first column, but is now cycled one character to
+the left, which corresponds to the next CS. To find which character is in the first column
+at position $i$, recall that the $F$ column in the sorted cyclic-shifts just contain all
+the characters of the input in sorted order. We can therefore use the $C$ to determine
+which character is located at exactly position $i$, just by counting the number of
+occurrences of other characters.
+
+\Todo{Eureka moment, vi kan kanskje gjøre noe binary search greier her for å speede opp
+inverse LF}
 
 \section{Dynamic clone extraction}
