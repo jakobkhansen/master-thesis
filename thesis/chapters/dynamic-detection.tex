@@ -1164,13 +1164,13 @@ inverse LF}
 
 \Todo{Algorithm for updating a single LCP value}
 
-\section{Dynamic clone extraction}
+\section{Dynamic clone extraction and source-mapping}
 
 The LCP is no longer represented as an array, but as a a balanced tree. As trees are more
 costly to traverse linearly compared to arrays, we also want to improve how we extract
 clones in this phase. The goal of this phase is still to find the indices in the
-fingerprint which corresponds to the start of code clones, which will later be mapped by
-back to the original source code again.
+fingerprint which corresponds to the start of code clones, which will later be mapped back
+to the original source code again.
 
 Recall that the algorithm in the initial detection in \cref{initialdetection} traversed
 the suffixes from beginning to end, and extracts indices of suffixes where the LCP value
@@ -1189,4 +1189,72 @@ from this set by filtering nodes with a too low LCP value after we have done all
 updates.
 
 After all LCP values are updated and we have filtered out nodes, we are left with a set of
-all the nodes with an LCP value above the token treshold parameter.
+all the nodes with an LCP value above the token threshold parameter. In order to filter
+out clones which are contained within other clones, we need to add a similar check to the
+loop which was added in algorithm \ref{alg:cloneextraction}, however since the set only
+contains nodes with an LCP values above the token threshold, the algorithm will be
+slightly different. Instead of adding a loop which skips past indices which are contained
+clones, we can instead check if the last index added contains the current clone we are
+looking at. Doing the process in this fashion allows us to skip over many checks if there
+are long stretches of suffixes in the fingerprint with LCP values below the token
+treshold. Algorithm \ref{alg:dynamiccloneextraction} shows how this algorithm is
+implemented.
+
+\begin{algorithm}[t]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\DynamicCloneExtraction{nodesAboveTreshold}}{
+        $\Var{clones} \gets \textrm{empty\ list}$
+
+        $\Var{lastAdded} \gets -1$ \;
+        $\Var{lastLCP} \gets -1$ \;
+
+        \For{$\Var{node} \In \Var{nodesAboveTreshold}$}{
+            
+            $\Var{index} \gets \GetRankOfNode{$\Access{\Var{node}}{\Var{pointer}}$}$ \;
+
+            \If{$\Var{lastAdded} \neq -1$}{
+                $\Var{difference} \gets \Var{index} - \Var{lastAdded}$ \;
+                \If{$\Access{\Var{node}}{\Var{key}} + \Var{difference} \leq \Var{lastLCP}$}{
+                    \Continue
+                }
+            }
+
+            \Add{$\Var{clones}, \Var{node}$} \;
+            $\Var{lastAdded} \gets \Var{index}$ \;
+            $\Var{lastLCP} \gets \Access{\Var{node}}{\Var{key}}$
+        }
+
+        \Return $\Var{clones}$
+    }
+
+  \vspace{0.5cm}
+  \caption{Extract clone indices in dynamic extended suffix array}
+  \label{alg:dynamiccloneextraction}
+\end{algorithm}
+
+After applying this algorithm we are left with the nodes with inorder ranks which
+correspond to the same indices as in the initial detection, and for the final phase,
+mapping the clone indices back to the original source code, we can do almost the same
+procedure as in the initial detection. The algorithm for this is almost the same as
+algorithm \ref{alg:buildclonemap}, but some parts are changed to avoid traversing through
+the trees many times to find the second index, which we would have to do if we used
+algorithm \ref{alg:buildclonemap} without any modifications. The problem with algorithm
+\ref{alg:buildclonemap} is that it computes the expression $\SA{\ISA{\Var{firstIndex}} -
+1}$ to find the index of the matching clone. This is not a problem in the initial
+detection, because SA and ISA are arrays, which give $O(1)$ time access. This is not the
+case for the dynamic extended suffix array, which would require $O(\log n)$ access time
+for that expression. Instead, only the nodes of the clone indices in algorithm
+\ref{alg:dynamiccloneextraction} is stored, and for a node $firstNode$, when we can find
+the node of the matching $secondNode$ in $O(1)$ time by finding the predecessor of
+$\Var{firstNode}$ and following its pointer. Remember that the nodes we have stored as
+clone indices are nodes in the $A$ tree which corresponds to $SA$ indices. Following the
+pointer corresponds to SA values, or alternatively, ISA indices. After we have both the
+$\Var{firstNode}$ and $\Var{secondNode}$, we can get their fingerprint indices by getting
+the inorder rank of their pointer, with algorithm \ref{alg:getrankofnode}. Afterwards, the
+algorithm continues as previously. While this still requires traversing the tree in
+$O(\log n)$ time, we have reduced the number of traversals needed from $5$ with a direct
+translation of \ref{alg:buildclonemap} to $2$ with the smarter traversal of nodes
+described here.
+
+Now that we have successfully source-mapped from our dynamic extended suffix arrays to
+code clones, we are finished, and clones are sent to be displayed to the client.
