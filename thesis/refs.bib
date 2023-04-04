@@ -14,6 +14,22 @@
 	abstract = {The suffix tree data structure has been intensively described, studied and used in the eighties and nineties, its linear-time construction counterbalancing his space-consuming requirements. An equivalent data structure, the suffix array, has been described by Manber and Myers in 1990. This space-economical structure has been neglected during more than a decade, its construction being too slow. Since 2003, several linear-time suffix array construction algorithms have been proposed, and this structure has slowly replaced the suffix tree in many string processing problems. All these constructions are building the suffix array from the text, and any edit operation on the text leads to the construction of a brand new suffix array. In this article, we are presenting an algorithm that modifies the suffix array and the Longest Common Prefix (LCP) array when the text is edited (insertion, substitution or deletion of a letter or a factor). This algorithm is based on a recent four-stage algorithm developed for dynamic Burrows–Wheeler Transforms (BWT). For minimizing the space complexity, we are sampling the Suffix Array, a technique used in BWT-based compressed indexes. We furthermore explain how this technique can be adapted for maintaining a sample of the Extended Suffix Array, containing a sample of the Suffix Array, a sample of the Inverse Suffix Array and the whole LCP array. Our practical experiments show that it operates very well in practice, being quicker than the fastest suffix array construction algorithm.}
 }
 
+@article{DynamicExtendedSuffixArraysReorderings,
+title = {On the number of elements to reorder when updating a suffix array},
+journal = {Journal of Discrete Algorithms},
+volume = {11},
+pages = {87-99},
+year = {2012},
+note = {Special issue on Stringology, Bioinformatics and Algorithms},
+issn = {1570-8667},
+doi = {https://doi.org/10.1016/j.jda.2011.01.002},
+url = {https://www.sciencedirect.com/science/article/pii/S1570866711000037},
+author = {M. Léonard and L. Mouchard and M. Salson},
+keywords = {FM-index, Burrows–Wheeler Transform, Suffix array, Longest common prefix, Dynamic data structure, Self-index, Complexity},
+abstract = {Recently new algorithms appeared for updating the Burrows–Wheeler Transform or the suffix array, when the text they index is modified. These algorithms proceed by reordering entries and the number of such reordered entries may be as high as the length of the text. However, in practice, these algorithms are faster for updating the Burrows–Wheeler Transform or the suffix array than the fastest reconstruction algorithms. In this article we focus on the number of elements to be reordered for real-life texts. We show that this number is related to LCP values and that, on average, Lave entries are reordered, where Lave denotes the average LCP value, defined as the average length of the longest common prefix between two consecutive sorted suffixes. Since we know little about the LCP distribution for real-life texts, we conduct experiments on a corpus that consists of DNA sequences and natural language texts. The results show that apart from texts containing large repetitions, the average LCP value is close to the one expected on a random text.}
+}
+
+
 @article{DynamicBWT,
 	title = {A four-stage algorithm for updating a Burrows–Wheeler transform},
 	journal = {Theoretical Computer Science},
