@@ -14,46 +14,38 @@ the clones is run, and the clone-list is updated.
 \section{Affordable operations}
 
 Before looking at the approach, it is useful to determine the time cost associated with
-different operations. If we can for example afford to iterate over the contents of a
-single file, that will be useful for our algorithm. Table \ref{table:affordableoperations}
-shows which operations are affordable or not for an incremental update.
+different operations. We can for example afford to iterate over the contents of a
+single file, which will be useful for our algorithm. 
 
-\begin{table}[t!]
-	\begin{center}
-		\begin{tabular}{|p{1in} | p{1in} | p{0.6in} | p{2.5in}|}
-			\hline
+We cannot afford to iterate over the entire code base, meaning the contents of all files
+in the code base. The initial detection takes linear time in the size of the code base,
+therefore, iterating over the entire code base will likely make the algorithm as slow as
+the initial detection.
 
-			Description                    & Complexity              & Affordable & Explanation                               \\\hline
+As mentioned, we can afford to iterate over the contents of a single file. Iterating over
+the contents of a file with up to a few thousands lines is not a very expensive operation
+to perform and will not take a significant amount of time. The whole string of the file
+contents will be needed for tree-sitter to incrementally re-parse the file.
 
-			Content of all files           & $O(|\Var{code\ base}|)$ & No         & Iterating over the
-			entire code base will be the same complexity as the initial detection,
-			therefore this operation is too slow.                                                                             \\\hline
+However, parsing an entire file can be too expensive. While the runtime of parsing a
+single file is still linear in the size of file content, parsing a large file from scratch
+can take a significant amount of time in practice, and for small code bases with large
+files, parsing will take a significant portion of the total runtime of a dynamic update.
+This is why incremental re-parsing with tree-sitter is used, which lowers the runtime
+closer to $O(\vert \text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
 
-			Content of a file              & $O(|\Var{file}|)$       & Yes        & Iterating over the content
-			of a single file is likely a very small percentage of the entire code
-			base.                                                                                                             \\\hline
+\Todo{Some table with statistics of parsing times here?}
 
-			Parsing a file                 & $O(|\Var{file}|)$       & No         & While the complexity of
-			parsing a single file is still linear in the size of the file, parsing a large
-			file from scratch can take a significant amount of time in practice.                                              \\\hline
+We can also afford two more useful operations, iterating over the documents in the index
+(not their contents), and iterating over the clone objects. We can afford to do these
+operations because the number of documents and the number of clones is likely multiple
+magnitudes smaller than the size of the entire code base. Iterating over the documents
+will be useful when we are updating the document index, and iterating over the clones is
+necessary to do when the clones are mapped back to their original source code locations.
 
-			Incrementally reparsing a file & $O(|\Var{edit}|)$       & Yes        & Re-using the
-			AST of a file in order to speed up the parsing of the same file with
-			after an edit is significantly faster than parsing the entire file.                                               \\\hline
-
-			Document index                 & $O(|\Var{documents}|)$  & Yes        & The number of files in a code
-			base is likely many orders of magnitude smaller than the size of the code base
-			itself.                                                                                                           \\\hline
-
-			Clones                         & $O(|\Var{clones}|)$     & Yes        & The number of clones in the code base and
-			the area they cover is likely a very small portion of the code base itself.
-			itself.                                                                                                           \\\hline
-		\end{tabular}
-		\caption{Affordable operations for incremental updates}
-		\label{table:affordableoperations}
-	\end{center}
-\end{table}
-
+Why we can afford these operations will be become clearer in \cref{evaluation}, the main
+idea is that all the operations we can afford will take an insignificant amount of time
+compared to updating the suffix array.
 
 \section{Updating the document index}
 
