@@ -25,13 +25,13 @@ the initial detection.
 As mentioned, we can afford to iterate over the contents of a single file. Iterating over
 the contents of a file with up to a few thousands lines is not a very expensive operation
 to perform and will not take a significant amount of time. The whole string of the file
-contents will be needed for tree-sitter to incrementally re-parse the file.
+contents will be needed for Tree-sitter to incrementally re-parse the file.
 
 However, parsing an entire file can be too expensive. While the runtime of parsing a
 single file is still linear in the size of file content, parsing a large file from scratch
 can take a significant amount of time in practice, and for small code bases with large
 files, parsing will take a significant portion of the total runtime of a dynamic update.
-This is why incremental re-parsing with tree-sitter is used, which lowers the runtime
+This is why incremental re-parsing with Tree-sitter is used, which lowers the runtime
 closer to $O(\vert \text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
 
 \Todo{Some table with statistics of parsing times here?}
