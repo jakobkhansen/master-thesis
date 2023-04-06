@@ -38,7 +38,7 @@ duplicated are considered clones of each other.
 
 \begin{definition}[Code clone]
 	A code clone is a code snippet which is equal to or similar to another code snippet. The two
-	code snippets are both code clones, and together they form a code clone pair.
+	code snippets are both code clones, and together they form a clone pair.
 	Similarity is determined by some metric such as number of equal lines of code.
 \end{definition}
 
@@ -66,106 +66,108 @@ types classify code snippets as code clones with an increasing amount of lenienc
 Therefore, Type-1 code clones are very similar, while Type-4 clones are not necessarily
 syntactically similar at all. When defining types, it is the syntactic and structural
 differences which is compared, not functionality. The set of code clones classified by a
-code clone type is also a subset of the next type, meaning all Type-1 clones are also
-Type-2 clones, but not vice versa.
+code clone type is also a subset of the next type, meaning all type-1 clones are also
+type-2 clones, but not vice versa.
 
-The code clone types are defined as follows:
+\textbf{Type-1} clones are syntactically identical. The only differences for a pair of
+type-1 clones are elements without meaning, like comments and white-space. This is code
+which is generally ignored when source code is lexed and parsed. Figure
+\ref{fig:type1clone} shows an example of a type-1 clone pair where only a comment and
+white-space is added to the snippet on the right.
 
-\textbf{Type-1} clones are syntactically identical. The only differences allowed are elements
-without meaning, like comments and white-space. Example:
-
-\Todo{Redo these}
-\begin{tcolorbox}
+\begin{figure}[t]
 	\begin{center}
-		\begin{tabular}{c | c}
-            \begin{lstlisting}
+        \begin{tabular}{p{5cm} | p{5cm}}
+			\begin{lstlisting}
 for (int i = 0; i < 10;   i++) {
-
     print(i);
 }
-        \end{lstlisting} &
+\end{lstlisting} &
 			\begin{lstlisting}
-
 for (int i = 0; i < 10; i++) {
     // A comment
 
     print(i);
 }
-        \end{lstlisting}
+            \end{lstlisting}
 		\end{tabular}
 	\end{center}
-\end{tcolorbox}
+    \caption{Type-1 clone pair}
+    \label{fig:type1clone}
+\end{figure}
 
 
-\textbf{Type-2} clones are structurally identical. Possible differences include
+\textbf{Type-2} clones are structurally identical. Possible differences include changes to
 identifiers, literals and types. Type-2 clones are not much harder to detect than type-1
 clones, since consistently renaming identifiers, literals and types allow a type-1
 detection algorithm to find type-2 clones~\cite{Zibran_real_time_search}. This type of
-clone is relevant to consider in refactoring scenarios when merging code clones. This is
-because type-2 clones can be relatively simple to parameterize in order to hide the
-differences in the merged code, and allows the original locations of clones to be replaced
-with a call to the merged code, with different parameters. Example:
+clone is relevant to consider in refactoring scenarios when merging code clones as they
+can be relatively simple to parameterize in order to merge two clones with differing
+literals for example. The original locations of clones can then be replaced with a call to
+the merged code with different parameters. Figure \ref{fig:type2clone} shows an example of
+a type-2 clone pair where the numbers in the for loop initialization and condition
+could be parameterized to correctly merge the two clones.
 
-\begin{center}
-	\begin{tcolorbox}
-		\begin{tabular}{c | c}
-			\begin{lstlisting}
+\begin{figure}[t]
+	\begin{center}
+        \begin{tabular}{p{5cm} | p{5cm}}
+\begin{lstlisting}
 for (int i = 0; i < 10; i++) {
     print(i);
 }
-    \end{lstlisting} &
-	\begin{lstlisting}
-for (int (*\textbf j*) = (*\textbf 1*); (*\textbf j*) < 10; (*\textbf j++*)) {
+\end{lstlisting} & \begin{lstlisting}
+for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf 20*); (*\textbf j++*)) {
     print((*\textbf j*));
 }
-    \end{lstlisting}
+\end{lstlisting}
 		\end{tabular}
-	\end{tcolorbox}
-\end{center}
+	\end{center}
+	\caption{Type-2 clone pair}
+	\label{fig:type2clone}
+\end{figure}
 
 \textbf{Type-3} clones are required to be structurally similar, but not equal. Differences
 include statements that are added, removed or modified. This clone type relies on a
 threshold $\theta$ which determines how structurally different snippets can be in order to
-be considered Type-3 clones~\cite{Inoue_introduction_to_cc}. The granularity for this
-difference could be based on differing tokens, lines, etc. Detecting this type of clone is
-hard. Example:
+be considered Type-3 clones~\cite[6]{Inoue_introduction_to_cc}. The granularity for this
+difference could for example be based on the number of differing tokens or lines.
+Detecting this type of clone is generally harder and takes more computation than type-1
+and type-2 clones. Figure \ref{fig:type3clone} shows two code snippets where the code
+snippet on the right has an added statement.
 
-\begin{tcolorbox}
+\begin{figure}[t]
 	\begin{center}
-		\begin{tabular}{c | c}
+        \begin{tabular}{p{5cm} | p{5cm}}
 			\begin{lstlisting}
-// Clone 1
 for (int i = 0; i < 10; i++) {
     print(i);
 }
 \end{lstlisting} &
 			\begin{lstlisting}
-// Clone 2
 for (int i = 0; i < 10; i++) {
     print(i);
-    (*\textbf{int x = 10;}*)
+    (*\textbf{print(i*2);}*)
 }
 \end{lstlisting}
 		\end{tabular}
 	\end{center}
-\end{tcolorbox}
-
-
+    \caption{Type-3 clone pair}
+    \label{fig:type3clone}
+\end{figure}
 
 
 In this example there is a one line difference between the two snippets, so if $\theta
-	\geq
-	1$, the two snippets would be considered Type-3 clones.
+\geq 1$, the two snippets would be considered Type-3 clones.
 
 \textbf{Type-4} clones have no requirement for syntactical or structural similarity, but
 are generally only relevant to detect when they have similar functionality. Detecting this
 type of clone is very challenging, but attempts have been made using program dependency
-graphs~\cite{SeedType4Detection}. The following example shows two code snippets which have
-no clear syntactic or structural similarity, but is functionally equal:
+graphs~\cite{SeedType4Detection}. Figure \ref{fig:type4clone} shows two code snippets
+which have no clear syntactic or structural similarity, but is functionally equal.
 
-\begin{tcolorbox}
+\begin{figure}[t]
 	\begin{center}
-		\begin{tabular}{c | c}
+        \begin{tabular}{p{5cm} | p{5cm}}
 			\begin{lstlisting}
 print((n*(n-1))/2)
 \end{lstlisting} &
@@ -180,7 +182,9 @@ print(sum);
 \end{lstlisting}
 		\end{tabular}
 	\end{center}
-\end{tcolorbox}
+    \caption{Type-4 clone pair}
+    \label{fig:type4clone}
+\end{figure}
 
 
 Type-1 clones are often referred to as ``exact'' clones, while Type-2 and Type-3 clones

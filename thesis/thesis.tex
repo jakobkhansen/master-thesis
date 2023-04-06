@@ -53,7 +53,8 @@
   stringstyle=\color{mauve},
   breaklines=true,
   breakatwhitespace=true,
-  tabsize=3
+  tabsize=3,
+  escapeinside={(*}{*)}
 }
 
 
@@ -66,8 +67,8 @@
 \def\addsquare#1{\tikz\node[draw]{#1};}
 \def\addcircle#1{\tikz\node[draw,circle]{#1};}
 
-\title{CCDetect-LSP: Incremental code clone detection for IDEs}
-\subtitle{Language- and IDE agnostic incremental code clone detection for IDEs}
+\title{Incremental clone detection for IDEs using dynamic suffix arrays}
+\subtitle{CCDetect-LSP: Detecting duplicate code incrementally in IDEs}
 
 
 \author{Jakob Konrad Hansen}

@@ -93,6 +93,16 @@ running time of this phase on average is closer to $O(\vert\text{edits}\vert \ti
 
 \Todo{Complexity of clone extraction and source-mapping in dynamic structures}
 
+Finally, we have the clone extraction and source-mapping phases. Recall that in the
+dynamic detection clone extraction phase, we had stored all nodes with an LCP value above
+the token threshold, and iterate over those to determine which of them are clones or not.
+In the worst-case every index in the LCP array would be above the token threshold, which
+would be an $O(f)$ time traversal. However, this is highly unlikely, and instead the
+running time should be closer to $O(\vert\text{clones}\vert)$. Since the nodes with LCP
+value above the token threshold are either clones, or contained clones.
+
+\Todo{Statistic showing how many nodes above the token threshold}
+
 \section{Performance comparison}
 
 \Todo{Flame graphs?}
