@@ -660,7 +660,7 @@ pre-calculating all answers in a space efficient table~\cite{JacobsonsRank}.
 \begin{definition}[Dynamic bitset]
 
     A dynamic bitset is a bitset which in addition to other operations allow inserting and
-    deleting bits (indel operations).
+    deleting bits.
 
     An insert operation $insert(i, v)$ on a bitset B inserts the value v at position i in
     B, pushing all values at position $\geq i$ one position up.
@@ -674,14 +674,14 @@ The standard implementation of a dynamic bitset would implement the whole bitset
 single array of bytes $B$, which allows for accessing values in $O(1)$ time, but inserting
 and deleting takes $O(n)$ time, where $n$ is the number of bits in $B$.
 
-One way to speed up the indel operations would be to represent the bitset as a balanced
-tree containing multiple smaller bitsets. To represent a bitset of $n$ bits, we can divide
-the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each contains
-$O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, inserting and deleting
-takes only $O(log(n))$ time. The bitsets reside at the leaves of our balanced tree, and
-internal nodes contain only two integers, storing the number of bits in the left subtree
-($N$), and the number of set bits in the left subtree ($S$). To access, insert or delete
-on index $i$, the tree is traversed to find the correct bitset where the ith bit is
+One way to speed up the insertions/deletions would be to represent the bitset as a
+balanced tree containing multiple smaller bitsets. To represent a bitset of $n$ bits, we
+can divide the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each
+contains $O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, inserting and
+deleting takes only $O(log(n))$ time. The bitsets reside at the leaves of our balanced
+tree, and internal nodes contain only two integers, storing the number of bits in the left
+subtree ($N$), and the number of set bits in the left subtree ($S$). To access, insert or
+delete on index $i$, the tree is traversed to find the correct bitset where the ith bit is
 located, where the operation is done at that position. Finding the correct bitset and
 position is done by utilizing $N$ and $S$ in each node which is traversed. All operations
 now run in $O(\log(n))$ time, since traversing the tree to the correct bitset takes
@@ -767,7 +767,7 @@ The classic data structure to efficiently compute $rank$ and $select$ queries on
 is the \textbf{wavelet tree}~\cite{WaveletTree}. The data structure is a binary tree where every
 node consists of a bitset, and each level of the tree consists of the bits of a single
 position in each character of the string. Each bitset in the wavelet tree can for example
-be implemented as a dynamic bitset to allow indel operations on a wavelet tree.
+be implemented as a dynamic bitset to allow insertions/deletions on a wavelet tree.
 
 \begin{figure}[t]
 	\begin{center}
@@ -865,9 +865,9 @@ The wavelet tree can be traversed in $O(\log \sigma)$ time where $\sigma$ is the
 the alphabet. However, the $access$, $rank$ and $select$ operations also depend on how
 fast the bitsets can perform $access$, $rank$ and $select$ operations. If the bitsets are
 implemented using for example Jacobson's rank~\cite{JacobsonsRank}, the bitsets have a
-$O(1)$ $access$, $rank$ and $select$ time, but if we require dynamic bitsets for indel
-operations, the time complexity drops to $O(\log n \log \sigma)$ because a bitset
-operation which takes $O(\log n)$ time is required in each level of the tree.
+$O(1)$ $access$, $rank$ and $select$ time, but if we require dynamic bitsets for
+insertion/deletions, the time complexity increases to $O(\log n \log \sigma)$ because a
+bitset operation which takes $O(\log n)$ time is required in each level of the tree.
 
 The wavelet tree can also be implemented without pointers, known as a levelwise or
 pointerless wavelet tree\cite{LevelwiseWaveletTree}. Table \ref{table:levelwisewavelettree}
@@ -883,9 +883,9 @@ wavelet matrix is a matrix of bitsets, instead of a tree of bitsets. Similarly t
 levelwise wavelet tree, for a string $S$ of size $n$, each level of the matrix consists of
 a bitset of size $n$. The difference between a levelwise wavelet tree and a wavelet matrix
 is that the assumption that the "children" of an interval $[x, y]$ needs to occupy exactly
-$[x, y]$ is no longer true. We can instead simply put all $0$ bits to the left in the next
-level, and all $1$ bits to the right. For each level we store an integer $z_l$, which
-holds the number of zero bits in level $l$. 
+$[x, y]$ is no longer true. We can instead put all $0$ bits to the left in the next level,
+and all $1$ bits to the right. For each level we store an integer $z_l$, which holds the
+number of zero bits in level $l$. 
 
 For $access$ operations, we traverse each level similarly to a levelwise wavelet tree, but
 instead of traversing a smaller and smaller interval in each level, we simply look at the
@@ -896,7 +896,8 @@ preceding position to the final $i$, which we subtract from $i$, to count only t
 of proceeding number of $a$ characters. Table \ref{table:waveletmatrix} shows an example
 wavelet matrix, and algorithm \ref{alg:waveletmatrixaccess} and
 \ref{alg:waveletmatrixrank} shows how $access$ and $rank$ operations can be carried out
-for a wavelet matrix.
+for a wavelet matrix. The time complexities for $access$, $rank$ and $select$ operations
+is the same as for wavelet trees.
 
 \begin{table}[t]
 	\begin{center}

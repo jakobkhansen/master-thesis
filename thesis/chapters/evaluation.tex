@@ -71,10 +71,20 @@ previous optimization made the input strings.
 The worst-case complexity of dynamically updating the extended suffix array is actually
 slower than a linear time SACA algorithm in the worst-case. The worst-case scenario when
 inserting/deleting a character in the fingerprint is that every single suffix needs to be
-reordered, meaning we have $O(f)$ reorderings, where each reordering takes $O(\log(f))$
+reordered, meaning we reorder $O(f)$ suffixes, where each reordering takes $O(\log(f))$
 time, as it requires deleting and inserting an element in the dynamic extended suffix
-array. This results in a $O(f \times \log(f))$ running time of this phase, which is worse
-than the $O(f)$ running time of the SACA algorithm.
+array. In addition, we need to call the LF function twice for each reordering, which has a
+$O(\sigma + \log n \log\sigma)$ complexity. The complexity of the LF function comes from a
+$rank$ call in the wavelet matrix, and an iteration over $C$ to find the number of smaller
+characters. This results in a $O(f \times (\log f + \sigma + \log n \log\sigma))$ running
+time of this phase, which is worse than the $O(f)$ running time of the SACA algorithm. In
+addition, before the reordering we use the LF function, insert/delete in the wavelet
+matrix and the $C$ array. The highest complexity of these is again the LF function. If we
+are inserting/deleting multiple characters, the number of LF function calls is increased,
+with a complexity of $O(n \times (\sigma + \log n \log\sigma))$, where $n$ is the
+number of characters inserted/deleted. Note that while there are many factors in this time
+complexity, all the factors should be quite low compared to $f$, making the complexity of
+reordering the suffixes the slowest factor of this phase.
 
 The average-case complexity of this phase is however highly likely to be faster. Salson et
 al.~\cite{DynamicExtendedSuffixArraysReorderings} have shown that on average, the number
@@ -88,24 +98,23 @@ reorderings for lower LCP values seems intuitive, as lower LCP values mean that 
 insertion/deletion will affect the ordering of fewer suffixes in the input. With this
 information, it would be more accurate to downplay the importance of the $O(f)$ number of
 reorderings in our analysis, and we therefore claim that the average running time of
-inserting/deleting a character is closer to $O(\log(f))$. We extend this to account for
-multiple insertions/deletions as well, so for each edit operations which was computed in
-the last phase, we perform an insertion/deletion. Therefore, the total running time of
-this phase on average is closer to $O(\vert\text{edits}\vert \times \log(f))$.
+inserting/deleting a character is closer to $O(\log f + \sigma + \log n \log\sigma))$. We
+extend this to account for multiple insertions/deletions as well, so for each edit
+operations which was computed in the last phase, we perform an insertion/deletion.
+Therefore, the total running time of this phase on average is closer to
+$O(\vert\text{edits}\vert \times (\log f + \sigma + \log n \log\sigma)))$.
 
 \Todo{Need to show average LCP value in performance benchmark to build on this claim.}
 
-\Todo{Complexity of clone extraction and source-mapping in dynamic structures}
-
 Next there is the clone extraction phase. Recall that in the dynamic detection clone
 extraction phase, we had stored all nodes with an LCP value above the token threshold, and
-iterate over those to determine which of them are clones or not. In the worst-case every
-index in the LCP array would be above the token threshold, which would be an $O(f)$ time
-traversal. However, this is highly unlikely, since the nodes with LCP value above the
-token threshold are either clones, or contained clones. The number of contained clones is
-limited by the number of clones because each clone can only have a limited amount of
-contained clones. Therefore, the number of LCP nodes examined should be closer to
-$O(\vert\text{clones}\vert)$, which is highly likely to be much less expensive than
+iterate over those to determine which of them are clones or not. In the worst-case, every
+index in the LCP array would be above the token threshold, which would be an $O(f)$
+complexity iteration. However, this is highly unlikely, since the nodes with LCP value
+above the token threshold are either clones, or contained clones. The number of contained
+clones is limited by the number of clones because each clone can only have a limited
+amount of contained clones. Therefore, the number of LCP nodes examined should be closer
+to $O(\vert\text{clones}\vert)$, which is highly likely to be much less expensive than
 iterating over all the LCP nodes. For each examined LCP node, we need to traverse from the
 node, to its pointer node, and then to the root of the $B$ tree to determine the
 fingerprint index of that LCP node. We do the same to determine the index of the matching
@@ -138,3 +147,41 @@ these properties do lead to better performance for the incremental detection.
 \section{Memory usage}
 
 \section{Verifying clones with BigCloneBench}
+
+In order to verify that CCDetect-LSP correctly identifies clones, we should also verify
+that the clones the tool outputs are actually clones. BigCloneBench~\cite{BigCloneBench}
+is a clone detection benchmark of a set of known clones in a dataset called
+``IJaDataset''. The benchmark consists of the IJaDataset and a database containing
+information of the clones which exist in the dataset. BigCloneEval~\cite{BigCloneEval} is
+a tool which simplifies evaluation of a tool on the BigCloneBench. BigCloneEval evaluates
+a tool by running the tool on the dataset, letting the tool output all the clones the tool
+finds, and then matching the clones the tool found with the clones in the database. The
+clones in the database are manually verified by humans, and include type-1 to type-3
+clones.
+
+We evaluated CCDetect-LSP by running the initial detection algorithm on the dataset, and
+outputting all the clones the tool found. BigCloneEval expects to get a file where each
+line contains a clone pair, where a clone is specified with filename, starting and
+ending line. This was simple to extract from our clone-map, where we converted our ranges
+which point to the beginning and ending token, to just the line number of those tokens.
+
+BigCloneEval reports the recall of a tool, meaning the percentage of found clones.
+Therefore, we did not make sure that our conversion to the format BigCloneEval expects
+gave the minimum number of clone pairs. For example, for a clone pair of clones $A$ and
+$B$, we output both that $A$ is a clone of $B$ and that $B$ is a clone of $A$, which is
+superfluous. This would lead to a bad precision, but does not affect the recall in the
+report which BigCloneEval outputs.
+
+We used the following command and parameters to evaluate CCDetect-LSP:
+$$
+\text{./evaluateTool --min-tokens=100 -s=100 --output=ccdetect.report -t=1 }
+$$
+
+For CCDetect-LSP, we used mostly the default parameters of BigCloneEval, but we increased
+the minimum clone size to $100$ and set the minimum similarity threshold to be $100\%$,
+since we are only evaluating CCDetect-LSP for type-1 clone recall. This was done to reduce
+the time an evaluation takes as it does not consider type-3 clones when the similarity
+threshold is set to $100\%$, and the default token threshold of $50$ requires a lot of
+time to match clones with the database.
+
+\Todo{Now logs of bcb report}

@@ -823,14 +823,21 @@ A complication with the wavelet data structures is to update the data structure 
 alphabet increases in size. In our case the alphabet size will at some point increase to a
 size where elements need an additional bit. For the wavelet matrix, this can be solved by
 simply inserting a new row at the beginning of the matrix (level $0$), where the bitset
-consists of all zeroes. Afterwards, the new element which should be the only element with
-a $1$ bit in the first position can be inserted as normal.
+consists of all zeroes. Afterwards, the new element is inserted in the normal fashion,
+which should be the only element with a $1$ bit in the first position.
 
 \Todo{Algorithm to insert/delete in wavelet matrix}
 
-\Todo{CharacterCount array}
-
-\section{Dynamic extended suffix arrays}
+\Todo{CharacterCount array} The $C$ array can be implemented in two ways. Either $C[c]$
+holds the number of smaller character than $c$ in the input, or $C[c]$ holds the number of
+occurrences of $c$. There are trade-offs with either implementation, as storing the number
+of smaller characters requires a linear scan whenever a character is inserted/deleted,
+while storing the number of occurrences requires computing the number of characters
+whenever the LF function is called. We have chosen the approach of storing the number of
+occurrences, as updating the array is simpler in cases where the alphabet size increases.
+When we later update LCP values, we will see that there is a possibility that choosing the
+option of storing the number of smaller characters in $C$ is faster. \section{Dynamic
+extended suffix arrays}
 
 A major bottleneck when inserting/deleting elements in the suffix array is that when an
 element is removed, all elements after it needs to be moved by one index so that the gap
@@ -1139,12 +1146,12 @@ left, which corresponds to the next CS. To find which character is in the first 
 position $i$, recall that the $F$ column in the sorted cyclic-shifts just contain all the
 characters of the input in sorted order. We can therefore use the $C$ to determine which
 character is located at exactly position $i$, just by counting the number of occurrences
-of the previous characters. If $C$ is implemented as an array where the $C[c]$ holds the
-number of smaller characters than $c$ in the input, finding the correct character can be
-done efficiently with a binary search. When we know which character is located at position
-$i$ in the first column, we do $select_c(i - C[c])$ to determine where that occurence of
-$c$ is located in the last column (the BWT), which is then returned as the result of the
-inverse LF function.
+of the previous characters. If $C$ is instead implemented as an array where the $C[c]$
+holds the number of smaller characters than $c$ in the input, finding the correct
+character can be done efficiently with a binary search. When we know which character is
+located at position $i$ in the first column, we do $select_c(i - C[c])$ to determine where
+that occurence of $c$ is located in the last column (the BWT), which is then returned as
+the result of the inverse LF function.
 
 With the inverse LF function, computing the LCP value between two suffixes at position $i$
 and $j$ is done by repeatedly applying the inverse LF function to $i$ and $j$, and
