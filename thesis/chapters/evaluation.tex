@@ -11,62 +11,64 @@ the initial detection where parsing the entire code base is necessary, and subse
 detections which still constructs the suffix array from scratch, but does not require
 parsing the entire code base. We will call this type of detection the SACA detection,
 while the detection which uses the dynamic extended suffix arrays will be called the
-incremental detection. This is to show that the dynamic extended suffix array is faster
-for this use case than building the suffix array from scratch, even when the initial
-parsing is removed from the picture. Performance will be evaluated in two ways:
+incremental detection. This is done to compare the dynamic extended suffix array against
+building the suffix array from scratch. Performance will be evaluated in two ways:
 
 \begin{itemize}
-    \item Complexity analysis of phases in initial detection and incremental detection
-    \item Performance comparison of initial detection, incremental detection and another
-        tool on code bases of different sizes
+    \item Informal complexity analysis of phases in initial, SACA and incremental detection
+    \item Performance benchmark of initial, SACA and incremental detection
+    \item Performance benchmark comparison with iClones~\cite{GodeIncrementalCloneDetection}
 \end{itemize}
 
-In addition, we will use the BigCloneBench~\cite{BigCloneBench} and
+In addition, we will use BigCloneBench~\cite{BigCloneBench} and
 BigCloneEval~\cite{BigCloneEval} to verify that CCDetect-LSP correctly identifies type-1
 clones.
 
 \section{Time complexity of detection}
 
 In this section we will conduct an informal analysis of the running time of each phase of
-the initial, SACA and incremental detection to argue that the complexity of the
-incremental detection is more efficient than the initial detection on average. In each
-phase we will argue the run time in terms of Big O notation. Some claims will be
-substantiated in the next section where we look at concrete code bases and their
-properties.
+the initial, SACA and incremental detection to argue that the average runtime complexity
+of the incremental detection is more efficient than the initial detection. In each phase
+we will argue the run time in terms of Big O notation. Some claims will be substantiated
+in the next section where we look at concrete code bases and their properties.
 
 The initial detection runs in $O(n)$ time, where $n$ is the number of characters in the
 code base. The bottleneck of the initial detection is reading and parsing all the content
 in each file. Tree-sitter generates Generalized LR (GLR) parsers~\cite{GLR}, which in the
-worst-case have a $O(n^3)$ running time, but $O(n)$ for any deterministic grammar. As most
-programming languages have deterministic grammars, we will assume that the running time of
-parsing with Tree-sitter takes $O(n)$ time. After the initial parsing, the SACA detection
-runs in $O(f)$ time, where $f$ is the size of the fingerprint and $f \ll n$. The running
-time is $O(f)$ because the suffix array construction is performed for every update, which
-takes linear time in the size of the input, which is the fingerprint. The extraction of
-clones from the LCP array also runs in $O(f)$ as it is a single scan over the LCP array.
-The final source-mapping is a bit more complicated, taking $O(\vert\text{clones}\vert
-\times \log (\vert\text{documents}\vert))$, this is because for each clone, we binary
-search the list of documents to find the correct document for that clone. This is highly
-likely to be less time consuming than the suffix array construction, as the number of
-documents and number of clones are usually multiple orders of magnitude lower than the
-size of the whole code base. Therefore, we get a final running time of $O(f) +
+worst-case have a $O(n^3)$ running time, but $O(n)$ for any deterministic grammar. As
+programming languages generally have deterministic grammars, we will assume that the
+running time of parsing with Tree-sitter takes $O(n)$ time. After the initial parsing, the
+SACA detection runs in $O(f)$ time, where $f$ is the size of the fingerprint and $f \ll
+n$. The running time is $O(f)$ because the suffix array construction is performed for
+every update, which takes linear time in the size of the input, which is the fingerprint.
+The extraction of clones from the LCP array also runs in $O(f)$ as it is a single scan
+over the LCP array. The final source-mapping is a bit more complicated, taking
+$O(\vert\text{clones}\vert \times \log (\vert\text{documents}\vert))$. This complexity
+comes from binary-searching the list of documents to find the correct document for each
+clone. This is highly likely to be less time consuming than the suffix array construction,
+as the number of documents and number of clones are usually orders of magnitude lower than
+the size of the whole code base. Therefore, we get a final running time of $O(f) +
 O(\vert\text{clones}\vert \times \log(\vert\text{document}\vert))$, where $O(f)$ is highly
-likely to be the factor which grows faster.
+likely to be the slowest factor.
 
 For the incremental detection, we have already parsed the code base and built the index
 and dynamic extended suffix array structure for the code base. Afterwards, when an edit
-$E$ is performed in a document $D$, extracting the edit operations takes $O(\vert D\vert +
-\vert E\vert^2)$ where $\vert E\vert \leq \vert D\vert$. Note that the size of the edit is
-calculated as the area which $E$ covers, meaning that if an edit consists of changing a
-token at the beginning of the file, and a token at the end of the file, $\vert E\vert
-\approx \vert D\vert$. Also note that $\vert D\vert$ is the size of the fingerprint for
-the document $D$. We get this time complexity because Hirschberg's algorithm runs in $O(n
-\times m)$ where in our case, $n \approx m$. If the size of the edit is contained in a
-smaller area, we apply the optimization which reduces the size of the edit by comparing
-characters at the beginning and end of the string, as discussed in
-\cref{dynamicdetection}. This processes takes $O(\vert D\vert)$, and afterwards
-Hirschberg's algorithm takes in worst-case $O(\vert E\vert^2)$, depending on how small the
-previous optimization made the input strings.
+$E$ is performed in a document $D$, the first phase is to update the document index. We
+iterate over the documents to update their fingerprint ranges, and when a document which
+has been edited is reached, the new document content is incrementally re-parsed, queried
+for fragments and then the fragments are fingerprinted. In the worst-case, we have to
+fingerprint the entire document, which has a complexity of $O(\vert D\vert)$.
+
+Next, extracting the edit operations which have happened to $D_f$ (fingerprint of $D$),
+takes $O(\vert D_f\vert + \vert E\vert^2)$ where $\vert E\vert \leq \vert D_f\vert$. Note
+that the size of the edit is calculated as the area which $E$ covers, meaning that if an
+edit consists of changing a token at the beginning of the file, and a token at the end of
+the file, then $\vert E\vert \approx \vert D_f\vert$. We get this time complexity because
+Hirschberg's algorithm runs in $O(n \times m)$ where in our case, $n \approx m$. If the
+size of the edit is contained in a smaller area, we apply the optimization which reduces
+the size of the edit by comparing characters at the beginning and end of the string, as
+discussed in \cref{dynamicdetection}. This process has a complexity of $O(\vert D\vert)$,
+and afterwards Hirschberg's algorithm has a worst-case complexity of $O(\vert E\vert^2)$.
 
 The worst-case complexity of dynamically updating the extended suffix array is actually
 slower than a linear time SACA algorithm in the worst-case. The worst-case scenario when
@@ -74,16 +76,17 @@ inserting/deleting a character in the fingerprint is that every single suffix ne
 reordered, meaning we reorder $O(f)$ suffixes, where each reordering takes $O(\log(f))$
 time, as it requires deleting and inserting an element in the dynamic extended suffix
 array. In addition, we need to call the LF function twice for each reordering, which has a
-$O(\sigma + \log n \log\sigma)$ complexity. The complexity of the LF function comes from a
+$O(\sigma + \log f \log\sigma)$ complexity. The complexity of the LF function comes from a
 $rank$ call in the wavelet matrix, and an iteration over $C$ to find the number of smaller
-characters. This results in a $O(f \times (\log f + \sigma + \log n \log\sigma))$ running
+characters. This results in a $O(f \times (\log f + \sigma + \log f \log\sigma))$ running
 time of this phase, which is worse than the $O(f)$ running time of the SACA algorithm. In
-addition, before the reordering we use the LF function, insert/delete in the wavelet
-matrix and the $C$ array. The highest complexity of these is again the LF function. If we
-are inserting/deleting multiple characters, the number of LF function calls is increased,
-with a complexity of $O(n \times (\sigma + \log n \log\sigma))$, where $n$ is the
-number of characters inserted/deleted. Note that while there are many factors in this time
-complexity, all the factors should be quite low compared to $f$, making the complexity of
+addition, before the reordering when we are inserting/deleting characters in the BWT, we
+use the LF function and insert/delete in the wavelet matrix and the $C$ array. The highest
+complexity of these operations is again the LF function. If an edit operation consists of
+inserting/deleting multiple characters, the number of LF function calls is increased, with
+a complexity of $O(e \times (\sigma + \log f \log\sigma))$, where $e$ is the number of
+characters inserted/deleted. Note that while there are many factors in this time
+complexity, all the factors should be quite small compared to $f$, making the complexity of
 reordering the suffixes the slowest factor of this phase.
 
 The average-case complexity of this phase is however highly likely to be faster. Salson et
@@ -92,17 +95,17 @@ of reorderings required for an insertion/deletion in a suffix array is highly co
 with the average LCP value of the input. Their data shows that for multiple different
 types of data such as genome sequences and english text, the average LCP value of the
 input is generally magnitudes lower than the input size. In our experience, this applies
-to source code as well, as the average LCP values in the fingerprint of code bases we have
-tested on have all had an average LCP values well below $100$. A lower number of
-reorderings for lower LCP values seems intuitive, as lower LCP values mean that the
-insertion/deletion will affect the ordering of fewer suffixes in the input. With this
-information, it would be more accurate to downplay the importance of the $O(f)$ number of
-reorderings in our analysis, and we therefore claim that the average running time of
-inserting/deleting a character is closer to $O(\log f + \sigma + \log n \log\sigma))$. We
-extend this to account for multiple insertions/deletions as well, so for each edit
-operations which was computed in the last phase, we perform an insertion/deletion.
-Therefore, the total running time of this phase on average is closer to
-$O(\vert\text{edits}\vert \times (\log f + \sigma + \log n \log\sigma)))$.
+to source code as well, as code bases we have tested on have all had an average LCP values
+well below $100$. A lower number of reorderings for lower LCP values seems intuitive, as
+lower LCP values mean that the insertion/deletion will affect the ordering of fewer
+suffixes in the input. With this information, it would be more accurate to downplay the
+importance of the $O(f)$ number of reorderings in our analysis, and we therefore claim
+that the average running time of an edit operation on the suffix array is closer to $O(\log f +
+(e \times \sigma + \log f \log\sigma))$. We extend this to account for multiple edit operations as
+well, so for each edit operations which was computed in the last phase, we perform an
+insertion/deletion of $e$ characters. Therefore, the total running time of this phase on
+average is closer to $O(\vert\text{edits}\vert \times (\log f + (e \times \sigma + \log f
+\log\sigma))))$.
 
 \Todo{Need to show average LCP value in performance benchmark to build on this claim.}
 
@@ -126,7 +129,8 @@ see that the average-case performance is closer to $O(\vert\text{clones}\vert \t
 Finally, the source-mapping phase is easier to analyze. As we now know all the positions
 of clones and their matches, building the clone-map takes $O(\vert\text{clones}\vert
 \times \log(\vert\text{documents}\vert))$ time. We perform the binary-search over the
-documents to get the source location, for each clone index we found in the previous phase.
+documents to get the source location for each clone index we found in the previous phase.
+This is the same complexity for both the SACA and incremental detection.
 
 With this informal analysis, we have shown that in the average case, the incremental
 detection should be faster than the SACA detection, as none of the phases reach or exceed
@@ -149,7 +153,7 @@ these properties do lead to better performance for the incremental detection.
 \section{Verifying clones with BigCloneBench}
 
 In order to verify that CCDetect-LSP correctly identifies clones, we should also verify
-that the clones the tool outputs are actually clones. BigCloneBench~\cite{BigCloneBench}
+that the clones the tool outputs are correct clones. BigCloneBench~\cite{BigCloneBench}
 is a clone detection benchmark of a set of known clones in a dataset called
 ``IJaDataset''. The benchmark consists of the IJaDataset and a database containing
 information of the clones which exist in the dataset. BigCloneEval~\cite{BigCloneEval} is
