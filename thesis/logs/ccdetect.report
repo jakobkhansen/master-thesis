@@ -1,0 +1,40 @@
+
+-- Versioning --
+ BigCloneEval: Release Version 0.1
+BigCloneBench: Version 1.0 (2016-06-19)
+-- Selected Clones --
+         Min Lines: null
+         Max Lines: null
+        Min Tokens: 100
+        Max Tokens: null
+  Min Pretty Lines: null
+  Max Pretty Lines: null
+        Min Judges: null
+    Min Confidence: null
+          Sim Type: BOTH
+Minimum Similarity:
+
+-- Clone Matcher --
+Coverage Matcher.  Coverage Ratio = 0.7, minimum raito is of reference clone: null
+
+================================================================================
+	All Functionalities
+================================================================================
+-- Recall Per Clone Type (type: numDetected / numClones = recall) --
+              Type-1: 23205 / 23210 = 0.9997845756139595
+              Type-2: 55 / 3547 = 0.015506061460389062
+      Type-2 (blind): 2 / 245 = 0.00816326530612245
+ Type-2 (consistent): 53 / 3302 = 0.016050878255602665
+
+-- Inter-Project Recall Per Clone Type (type: numDetected / numClones = recall)  --
+              Type-1: 4620 / 4625 = 0.9989189189189189
+              Type-2: 24 / 3185 = 0.0075353218210361065
+      Type-2 (blind): 0 / 223 = 0.0
+ Type-2 (consistent): 24 / 2962 = 0.008102633355840648
+
+-- Intra-Project Recall Per Clone Type (type: numDetected / numClones = recall) --
+-- Recall Per Clone Type --
+              Type-1: 18585 / 18585 = 1.0
+              Type-2: 31 / 362 = 0.0856353591160221
+      Type-2 (blind): 2 / 22 = 0.09090909090909091
+ Type-2 (consistent): 29 / 340 = 0.08529411764705883
