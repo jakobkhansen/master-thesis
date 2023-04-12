@@ -109,16 +109,22 @@ suffix array can and should also be updated incrementally to further improve eff
 
 The input to the dynamic suffix array algorithm is a set of edit operations. Therefore, we
 need to know what exactly has changed in the fingerprint before we can update the suffix
-array. We need to determine what edit operations have happened. Edit operations are either
-deleting, inserting or substituting a section of the code.
+array. We need to determine what edit operations have happened. Edit operations can be either
+deleting, inserting or substituting a number of characters in the fingerprint.
 
-There are two approaches we could take to determine the edit operations. The first is to
-look at the ranges that the LSP client sends with each \verb|textDocument/didChange|
-message and determine which tokens in the fingerprint have been affected by this message.
-However, this approach tightly couples the algorithm to LSP and the scenario where we know
-the exact ranges of each change. Also, we might do unnecessary amounts of operations if we
-do multiple edits, since some operations could cancel each other out, for example by
-inserting and then deleting some text.
+There are a couple of approaches we could take to determine the edit operations. The
+simplest is to regard an entire file as changed, and perform a delete operation which
+removes the entire fingerprint of that file, and then an insertion, which inserts the new
+fingerprint of that file. This is a very simple approach, but leads to an unnecessary size
+for the edit operations. The fingerprint of the file is likely to be very similar to the
+previous version, therefore deleting and then inserting the entire files fingerprint could
+be a lot more work than it needs to be. The first is to look at the ranges that the LSP
+client sends with each \verb|textDocument/didChange| message and determine which tokens in
+the fingerprint have been affected by this message. However, this approach tightly couples
+the algorithm to LSP and the scenario where we know the exact ranges of each change. Also,
+we might do unnecessary amounts of operations if we do multiple edits, since some
+operations could cancel each other out, for example by inserting and then deleting some
+text.
 
 The other approach is to determine the changes of the fingerprint via an edit distance
 algorithm. An edit distance algorithm is an algorithm which calculates the distance
