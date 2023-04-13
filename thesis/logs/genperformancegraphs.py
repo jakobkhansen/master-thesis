@@ -19,9 +19,10 @@ for file in os.scandir("performance/"):
     df = pd.DataFrame({"CCDetect": list(ccdetect.iloc[0]), "iClones": list(iclones.iloc[0])})
     print(df)
     ax = df.plot(kind="bar", rot=0, title=chart_name)
-    ax.set(xlabel="Version", ylabel="Runtime (ms)", yscale="log")
+    ax.set(xlabel="Insertions", ylabel="ms (log)", yscale="log")
 
-    plt.show()
+    pdfname = ccdetectfile.split(".")[0].split("_")[0] + "_" + ccdetectfile.split(".")[0].split("_")[1]
+    plt.savefig(f"../figures/performancegraphs/{pdfname}.pdf")
 
 #     x = np.array(range(3, 9))
 #     y_nosig = np.array([800.450, 1200.648, 1601.243, 2001.556, 2401.533, 2804.002])
