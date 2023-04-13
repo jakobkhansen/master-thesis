@@ -1,0 +1,66 @@
+* Evaluation
+  - Currently setting up code bases and experiments to evaluate dynamic detection vs saca
+    detection
+  - Also got access to this tool iclones, which does incremental clone detection as well,
+    but is not integrated with IDE's
+  - Preliminary testing on 1MLOC code bases shows that
+  --- CCDetect-LSP use less memory and is faster for smaller edits, but 
+  --- CCDetect-LSP becomes slower once the size of edits reach hundreds of tokens in size
+  --- Therefore it would seem that (CCDetect-LSP > iClones) for IDE scenario, but (CCDetect-LSP < iClones) for revision scenario
+
+* Code bases
+  - Need to determine how many and what sizes code bases we should do for the evaluation
+  - Also, need to determine what type and how large edits we should do as well
+  - Current plan is that each revision of the code base increases the amount of edits
+    applied to the code base.
+  - Becomes quite a lot of graphs if we include all of this:
+  --- 10KLOC code base (maybe not interesting?)
+  ----- insert 10 tokens
+  ----- insert 100 tokens
+  ----- insert 500 tokens
+  ----- delete 10 tokens
+  ----- delete 100 tokens
+  ----- delete 500 tokens
+  --- 100KLOC code base
+  ----- insert 10 tokens
+  ----- insert 100 tokens
+  ----- insert 500 tokens
+  ----- delete 10 tokens
+  ----- delete 100 tokens
+  ----- delete 500 tokens
+  --- 1MLOC code base
+  ----- insert 10 tokens
+  ----- insert 100 tokens
+  ----- insert 500 tokens
+  ----- delete 10 tokens
+  ----- delete 100 tokens
+  ----- delete 500 tokens
+  --- ~3MLOC / max which iClones can handle with 16GB RAM
+  ----- insert 10 tokens
+  ----- insert 100 tokens
+  ----- insert 500 tokens
+  ----- delete 10 tokens
+  ----- delete 100 tokens
+  ----- delete 500 tokens
+  --- ~6MLOC / max which CCDetect-LSP can handle with 16GB RAM
+  ----- insert 10 tokens
+  ----- insert 100 tokens
+  ----- insert 500 tokens
+  ----- delete 10 tokens
+  ----- delete 100 tokens
+  ----- delete 500 tokens
+
+* Writing
+  - Wrote a first draft of the dynamic detection chapter, probably missing some figures
+    and algorithms near the end
+  - Started writing on evaluation things, but of course I need to actually do the
+    evaluations before I can write about them
+  - BigCloneBench is in, informal complexity analysis is in, actual benchmarks are being
+    worked on
+
+* Plan for next weeks
+  - Set up the rest of code bases this week
+  - Represent all the data and finish the rest of the evaluation chapter
+  - Then write a conclusion chapter (how long should this be?)
+  - After that we are pretty much done with the first draft I think, just need to fill in
+    some gaps here and there and rework
