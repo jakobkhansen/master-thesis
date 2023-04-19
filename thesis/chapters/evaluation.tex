@@ -194,6 +194,7 @@ these properties do lead to better performance for the incremental detection.
 \section{Benchmark performance}
 
 \Todo{Introduce code bases taken from BigCloneBench}
+
 For the performance benchmark we will benchmark the running time of CCDetect-LSP on code
 bases and edits of different sizes. We will compare the performance of the incremental
 detection with the SACA detection and iClones~\cite{GodeIncrementalCloneDetection}.
@@ -212,22 +213,64 @@ its analysis. For each code base to analyze, we will store $n$ revisions of it, 
 revision contains some changes to some of the files. This will make it easy to run both
 CCDetect-LSP and iClones on the same code bases, and compare their results.
 
-The code bases which are to be analyzed by the tools are code bases which are a part of
-the IJaDataset provided by BigCloneBench~\cite{BigCloneBench}. We chose to use these code
-bases as they are representative enough of real code bases, and the dataset provides many
-code bases of varying size.
+We randomly picked open-source code bases of differing sizes and differing amounts of
+duplication to run the benchmark on. We selected the code bases neo4j, elasticsearch and
+intellij-community, as they were all Java code bases and were of different sizes.
+
+\Todo{Invalid values here}
+\begin{table}
+    \caption{Properties of code bases}
+    \label{tab:}
+    \begin{center}
+        \begin{tabular}[c]{l|l|l|l}
+            Code base & LOC & Clones detected & LCP_{avg} \\
+            \hline
+            \textbf{neo4j} & 1MLOC & 1500 & 30 \\
+            \hline
+            \textbf{elasticsearch} & 3.2MLOC & 1500 & 30 \\
+            \hline
+            \textbf{intellij-community} & 5.8MLOC & 1500 & 30 \\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{table}
+
+\Todo{Table containing code base size, number of clones, average LCP value, etc with
+correct values}
 
 \Todo{Introduce code bases and tests}
 
-\Todo{Flame graphs?}
+\begin{figure}
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_DEL10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_DEL100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_INS100.pdf}
+    \end{center}
+    \caption{neo4j (1MLOC) performance benchmark}
+    \label{fig:neo4j}
+\end{figure}
 
 \begin{figure}
     \begin{center}
-        \includegraphics[width=0.45\textwidth]{figures/performancegraphs/1MLOC_INSERT10.pdf}
-        \includegraphics[width=0.45\textwidth]{figures/performancegraphs/1MLOC_INSERT100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS100.pdf}
     \end{center}
-    \caption{}
-    \label{fig:}
+    \caption{elasticsearch (3.2MLOC) performance benchmark}
+    \label{fig:neo4j}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_DEL10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_DEL100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_INS100.pdf}
+    \end{center}
+    \caption{intellij-community (5.8MLOC) performance benchmark}
+    \label{fig:neo4j}
 \end{figure}
 
 

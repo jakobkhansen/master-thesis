@@ -64,3 +64,11 @@
   - Then write a conclusion chapter (how long should this be?)
   - After that we are pretty much done with the first draft I think, just need to fill in
     some gaps here and there and rework
+
+* notes
+  - Use same jvm args as iclones
+
+  - pull claims out to top of informal analysis
+  - "Adapted from" in algos
+  - big picture phases picture for initial and incremental det
+  - abstract overview of algorithm in introduction
