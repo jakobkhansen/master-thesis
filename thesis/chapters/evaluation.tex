@@ -209,11 +209,14 @@ revision contains some changes to some of the files. This will make it easy to r
 CCDetect-LSP and iClones on the same code bases, and compare their results.
 
 We randomly picked open-source code bases of differing sizes and differing amounts of
-duplication to run the benchmark on. We selected the code bases neo4j, elasticsearch and
-intellij-community, as they were all different size Java code bases. Table
-\ref{tab:codebases} shows some properties of the code bases, including its number of
-lines, the number of clones detected by CCDetect-LSP for a token threshold of 100, and the
-average LCP value.
+duplication to run the benchmark on. We selected the code bases neo4j\footnote{neo4j:
+\url{https://github.com/neo4j/neo4j}}, elasticsearch\footnote{elasticsearch:
+\url{https://github.com/elastic/elasticsearch}} and
+intellij-community\footnote{intellij-community:
+\url{https://github.com/JetBrains/intellij-community}}, as they were all different size
+Java code bases. Table \ref{tab:codebases} shows some properties of the code bases,
+including its number of lines, the number of clones detected by CCDetect-LSP for a token
+threshold of 100, and the average LCP value.
 
 \begin{table}[t]
     \begin{center}
@@ -236,7 +239,21 @@ average LCP value.
 \end{table}
 
 
-\Todo{Introduce test generation and profiling}
+For each code base, we generate new revisions of the code base for the incremental
+updates. Generating new revisions of a code base means that we copied the code base and
+applied a few insertions/deletions to random files, to simulate how a programmer would
+edit files when programming. Generating new revisions of code bases is not an easy
+problem, since each edit performed in a file should still give a valid program which can
+be parsed. If the file cannot be parsed, Tree-sitter will not give a proper AST for the
+file. Because of this, generating insertions is hard, because we need to make sure that
+the location we are inserting some code is a valid location for that code. It is easier to
+generate deletions first instead. Deletions are easier to generate, as we can use
+Tree-sitter to determine where for example a fragment of size $n$ is located, and remove
+that section of code in the next revision. When we have generated for example $10$
+revisions where the difference between each revision is deletion of some number of
+fragments, we can very easily reverse those revisions so that the final revision is now
+the first revision, and so on. This will translate to each deletion becoming an insertion
+instead, as an insertion is simply an inversion of a deletion.
 
 \begin{figure}
     \begin{center}
@@ -253,9 +270,7 @@ average LCP value.
     \begin{center}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL10.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL100.pdf}
-        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS10.pdf}
-        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS100.pdf}
-    \end{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS10.pdf} \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS100.pdf} \end{center}
     \caption{elasticsearch performance benchmark}
     \label{fig:neo4j}
 \end{figure}
