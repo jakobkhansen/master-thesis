@@ -145,9 +145,10 @@ al.~\cite{DynamicExtendedSuffixArraysReorderings} have shown that on average, th
 of reorderings required for an insertion/deletion in a suffix array is highly correlated
 with the average LCP value of the input. Their data shows that for multiple different
 types of data such as genome sequences and english text, the average LCP value of the
-input is generally magnitudes lower than the input size. In our experience, this applies
+input is generally magnitudes lower than the input size. In our experiments, this applies
 to source code as well, as code bases we have tested on have all had an average LCP values
-well below $100$. A lower number of reorderings for lower LCP values seems intuitive, as
+well below $100$. See table \ref{tab:codebases} to see the average LCP value for different
+codebases. A lower number of reorderings for lower LCP values seems intuitive, as
 lower LCP values mean that the insertion/deletion will affect the ordering of fewer
 suffixes in the input. With this information, it would be more accurate to downplay the
 importance of the $O(f)$ number of reorderings in our analysis, and we therefore claim
@@ -157,8 +158,6 @@ well, for each edit operations which was computed in the last phase, we perform 
 insertion/deletion of $e$ characters. Therefore, the total complexity of this phase on
 average is closer to $O(\vert\text{edits}\vert \times (\log f + (e \times \sigma + \log f
 \log\sigma)))$.
-
-\Todo{Need to show average LCP value in performance benchmark to build on this claim.}
 
 Next there is the clone extraction phase. Recall that in the dynamic detection clone
 extraction phase, we had stored all nodes with an LCP value above the token threshold, and
@@ -189,11 +188,7 @@ the $O(f)$ running time of the SACA detection. In the next section we will show 
 properties we have assumed for this analysis are present in multiple code bases, and that
 these properties do lead to better performance for the incremental detection.
 
-\Todo{Statistic showing how many nodes above the token threshold}
-
 \section{Benchmark performance}
-
-\Todo{Introduce code bases taken from BigCloneBench}
 
 For the performance benchmark we will benchmark the running time of CCDetect-LSP on code
 bases and edits of different sizes. We will compare the performance of the incremental
@@ -215,30 +210,33 @@ CCDetect-LSP and iClones on the same code bases, and compare their results.
 
 We randomly picked open-source code bases of differing sizes and differing amounts of
 duplication to run the benchmark on. We selected the code bases neo4j, elasticsearch and
-intellij-community, as they were all Java code bases and were of different sizes.
+intellij-community, as they were all different size Java code bases. Table
+\ref{tab:codebases} shows some properties of the code bases, including its number of
+lines, the number of clones detected by CCDetect-LSP for a token threshold of 100, and the
+average LCP value.
 
-\Todo{Invalid values here}
-\begin{table}
-    \caption{Properties of code bases}
-    \label{tab:}
+\begin{table}[t]
     \begin{center}
-        \begin{tabular}[c]{l|l|l|l}
-            Code base & LOC & Clones detected & $\text{LCP}_{\text{avg}}$ \\
+        \begin{tabular}[c]{|l|l|l|l|}
             \hline
-            \textbf{neo4j} & 1MLOC & 1500 & 30 \\
+            \textbf{Code base} & \textbf{LOC} & \textbf{Clones detected} & $\textbf{LCP}_{\textbf{avg}}$ \\
             \hline
-            \textbf{elasticsearch} & 3.2MLOC & 1500 & 30 \\
+            neo4j & 1MLOC & 1313 & 9 \\
             \hline
-            \textbf{intellij-community} & 5.8MLOC & 1500 & 30 \\
+            elasticsearch & 3.2MLOC & 9986 & 14 \\
+            \hline
+            intellij-community & 5.8MLOC & 3585 & 19 \\
             \hline
         \end{tabular}
     \end{center}
+    \caption{Properties of code bases}
+    \label{tab:codebases}
+    \Todo{Table containing code base size, number of clones, average LCP value, etc with
+    correct values. Number of indices in LCP array of value above 100?}
 \end{table}
 
-\Todo{Table containing code base size, number of clones, average LCP value, etc with
-correct values}
 
-\Todo{Introduce code bases and tests}
+\Todo{Introduce test generation and profiling}
 
 \begin{figure}
     \begin{center}
@@ -247,7 +245,7 @@ correct values}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_INS10.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_INS100.pdf}
     \end{center}
-    \caption{neo4j (1MLOC) performance benchmark}
+    \caption{neo4j performance benchmark}
     \label{fig:neo4j}
 \end{figure}
 
@@ -258,7 +256,7 @@ correct values}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS10.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS100.pdf}
     \end{center}
-    \caption{elasticsearch (3.2MLOC) performance benchmark}
+    \caption{elasticsearch performance benchmark}
     \label{fig:neo4j}
 \end{figure}
 
@@ -269,7 +267,7 @@ correct values}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_INS10.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_INS100.pdf}
     \end{center}
-    \caption{intellij-community (5.8MLOC) performance benchmark}
+    \caption{intellij-community performance benchmark}
     \label{fig:neo4j}
 \end{figure}
 
