@@ -208,34 +208,25 @@ its analysis. For each code base to analyze, we will store $n$ revisions of it, 
 revision contains some changes to some of the files. This will make it easy to run both
 CCDetect-LSP and iClones on the same code bases, and compare their results.
 
-We randomly picked open-source code bases of differing sizes and differing amounts of
-duplication to run the benchmark on. We selected the code bases neo4j\footnote{neo4j:
-\url{https://github.com/neo4j/neo4j}}, elasticsearch\footnote{elasticsearch:
-\url{https://github.com/elastic/elasticsearch}} and
-intellij-community\footnote{intellij-community:
-\url{https://github.com/JetBrains/intellij-community}}, as they were all different size
-Java code bases. Table \ref{tab:codebases} shows some properties of the code bases,
-including its number of lines, the number of clones detected by CCDetect-LSP for a token
-threshold of 100, and the average LCP value.
+
 
 \begin{table}[t]
     \begin{center}
-        \begin{tabular}[c]{|l|l|l|l|}
+        \begin{tabular}[c]{|l|l|l|l|l|}
             \hline
-            \textbf{Code base} & \textbf{LOC} & \textbf{Clones detected} & $\textbf{LCP}_{\textbf{avg}}$ \\
+            \textbf{Code base} & \textbf{LOC} & \textbf{Clones detected} &
+            $\textbf{LCP}_{\textbf{avg}}$ & $\textbf{LCP}_{\geq \textbf{100}}$ \\
             \hline
-            neo4j & 1MLOC & 1313 & 9 \\
+            neo4j & 1MLOC & 1313 & 9 & 27557\\
             \hline
-            elasticsearch & 3.2MLOC & 9986 & 14 \\
+            elasticsearch & 3.2MLOC & 9986 & 14 & 289511 \\
             \hline
-            intellij-community & 5.8MLOC & 3585 & 19 \\
+            intellij-community & 5.8MLOC & 3585 & 19 & 336190 \\
             \hline
         \end{tabular}
     \end{center}
     \caption{Properties of code bases}
     \label{tab:codebases}
-    \Todo{Table containing code base size, number of clones, average LCP value, etc with
-    correct values. Number of indices in LCP array of value above 100?}
 \end{table}
 
 
@@ -248,12 +239,61 @@ be parsed. If the file cannot be parsed, Tree-sitter will not give a proper AST 
 file. Because of this, generating insertions is hard, because we need to make sure that
 the location we are inserting some code is a valid location for that code. It is easier to
 generate deletions first instead. Deletions are easier to generate, as we can use
-Tree-sitter to determine where for example a fragment of size $n$ is located, and remove
-that section of code in the next revision. When we have generated for example $10$
-revisions where the difference between each revision is deletion of some number of
-fragments, we can very easily reverse those revisions so that the final revision is now
-the first revision, and so on. This will translate to each deletion becoming an insertion
-instead, as an insertion is simply an inversion of a deletion.
+Tree-sitter to determine where a fragment of size $n$ is located, and remove that section
+of code in the next revision. When we have generated for example $10$ revisions where the
+difference between each revision is deletion of some number of fragments. If we then want
+to generate insertions instead, we can easily reverse the ordering of the revisions of the
+deletion test so that the final revision is now the first revision, and so on. This will
+translate to each deletion becoming an insertion, as an insertion is simply an inversion
+of a deletion. Figure \ref{fig:revisioninversion} show graphically how a test consisting
+of three revisions with deletions can be inverted to create a test of insertions.
+
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{figures/revisioninversion.drawio.pdf}
+    \end{center}
+    \caption{Reversion of an evaluation test. Delete100x10 to Insert100x10}
+    \label{fig:revisioninversion}
+\end{figure}
+
+With this technique, generating an arbitrary amount of tests is now simple. There are
+multiple variables we can tune when generating the tests. Primarily the three most
+important factors of the tests is the size of the code base, the number of revisions, the
+number of edit operations, and the size of those edit operations.
+
+The size of the code base will naturally affect the running time of the algorithm. We
+randomly picked open-source code bases of differing sizes and differing amounts of
+duplication to run the benchmark on. We selected the code bases neo4j\footnote{neo4j:
+\url{https://github.com/neo4j/neo4j}}, elasticsearch\footnote{elasticsearch:
+\url{https://github.com/elastic/elasticsearch}} and
+intellij-community\footnote{intellij-community:
+\url{https://github.com/JetBrains/intellij-community}}, as they were all different size
+Java code bases. Table \ref{tab:codebases} shows some properties of the code bases,
+including its number of lines, the number of clones detected by CCDetect-LSP for a token
+threshold of $100$, the average LCP value and the number of LCP values above $100$.
+
+Additionally, we chose to set the size of the edit operations to $10$ and $100$, and the
+number of edits to $10$ in each revision. We believe these values to be slightly larger
+than what is realistic for an IDE scenario where a programmer is editing and updating the
+fingerprint of a single file at a time. For a test where we are performing $10$ insertions
+of $100$ tokens, this means we are inserting $1000$ tokens in a single edit, which is
+likely larger than any realistic edit. Therefore, if the data shows that the algorithm can
+handle these types of edits in ``real-time'', we can claim that the algorithm can handle
+most realistic editing scenarios.
+
+The benchmarks will be performed on a computer with an Intel i7-2600K CPU with 4 cores,
+and 16GB RAM.
+
+\Todo{Is the disk relevant here? Probably not for the incremental detection, but maybe for
+initial since we are reading the entire code base from the disk}
+
+Figure \ref{fig:neo4j}, \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark
+results on the different code bases. Each graph shows the running time of the SACA
+detection, the incremental detection and iClones incremental detection. The running time
+is shown on a log scale, as the initial detection is extremely slow compared to the
+subsequent detections. iClones was not able to run on the intellij-community code base,
+as the memory usage was higher than 16GB, therefore only the CCDetect-LSP algorithms is
+shown on those graphs.
 
 \begin{figure}
     \begin{center}
@@ -272,7 +312,7 @@ instead, as an insertion is simply an inversion of a deletion.
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL100.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS10.pdf} \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS100.pdf} \end{center}
     \caption{elasticsearch performance benchmark}
-    \label{fig:neo4j}
+    \label{fig:elasticsearch}
 \end{figure}
 
 \begin{figure}
@@ -283,7 +323,7 @@ instead, as an insertion is simply an inversion of a deletion.
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_INS100.pdf}
     \end{center}
     \caption{intellij-community performance benchmark}
-    \label{fig:neo4j}
+    \label{fig:intellij}
 \end{figure}
 
 

@@ -107,30 +107,35 @@ and already see a substantial improvement in performance. The major bottleneck o
 detection is to parse and fingerprint the entire code base. However, the updating of the
 suffix array can and should also be updated incrementally to further improve efficiency.
 
-The input to the dynamic suffix array algorithm is a set of edit operations. Therefore, we
-need to know what exactly has changed in the fingerprint before we can update the suffix
-array. We need to determine what edit operations have happened. Edit operations can be either
-deleting, inserting or substituting a number of characters in the fingerprint.
+The input to the dynamic suffix array algorithm is a set of edit operations. An edit
+operation can be either deleting, inserting or substituting a set of consecutive
+characters in the fingerprint. The dynamic suffix array algorithm will take each edit
+operation, and update its suffix array to reflect the new state of the fingerprint.
+Therefore, the first problem to solve is to determine what exactly has changed in the
+fingerprint. 
 
 There are a couple of approaches we could take to determine the edit operations. The
-simplest is to regard an entire file as changed, and perform a delete operation which
-removes the entire fingerprint of that file, and then an insertion, which inserts the new
-fingerprint of that file. This is a very simple approach, but leads to an unnecessary size
-for the edit operations. The fingerprint of the file is likely to be very similar to the
-previous version, therefore deleting and then inserting the entire files fingerprint could
-be a lot more work than it needs to be. The first is to look at the ranges that the LSP
-client sends with each \verb|textDocument/didChange| message and determine which tokens in
-the fingerprint have been affected by this message. However, this approach tightly couples
-the algorithm to LSP and the scenario where we know the exact ranges of each change. Also,
-we might do unnecessary amounts of operations if we do multiple edits, since some
-operations could cancel each other out, for example by inserting and then deleting some
-text.
+simplest is that whenever a file has changed, regard the entire file as changed, and
+perform a delete operation which removes the entire fingerprint of that file, and then an
+insertion, which inserts the new fingerprint of that file. This is a very simple approach,
+but leads to an unnecessary size for the edit operations. The fingerprint of the file is
+likely to be very similar to the previous version, therefore deleting and then inserting
+the entire files fingerprint could be a lot more work than it needs to be. However, this
+idea that we can always reduce the number of operations to only two, a deletion and an
+insertion, will be useful in our final algorithm.
 
-The other approach is to determine the changes of the fingerprint via an edit distance
+Another approach is to look at the ranges that the LSP client sends with each
+\verb|textDocument/didChange| message and determine which tokens in the fingerprint have
+been affected according to this range. However, this approach tightly couples the
+algorithm to LSP and the scenario where we know the exact ranges of each change. Also, we
+might do unnecessary amounts of operations if we do multiple edits, since some operations
+could cancel each other out, for example by inserting and then deleting the same text.
+
+A better approach is to determine the changes of the fingerprint using an edit distance
 algorithm. An edit distance algorithm is an algorithm which calculates the distance
 between two strings $S_1$ and $S_2$. Distance between two strings is the minimum number of
 edit operations (insert, delete, substitute) which is required to transform $S_1$ into
-$S_2$. Many of the algorithms which calculates the edit distance also allows computing
+$S_2$. Many of the algorithms which calculates the edit distance, also allows computing
 what the operations are.
 
 The classic algorithm for calculating edit distance operations is attributed to Wagner and
@@ -226,12 +231,12 @@ record EditOperation {
 }
 \end{lstlisting}
 
-where type is either an insert, delete or subsitute.
+where type is either an insert, delete or substitute.
 
-One way to combine operations this is to find operations of the same type which are
-sequenced in the matrix. For example in table \ref{tab:wagnerfischermatrix}, we have two
-consecutive delete operations, where \verb|P| and \verb|U| is deleted at position $2$.
-These two operations could be combined to a single delete operation of two characters.
+One way to combine operations is to find operations of the same type which are sequenced
+in the matrix. For example in table \ref{tab:wagnerfischermatrix}, we have two consecutive
+delete operations, where \verb|P| and \verb|U| is deleted at position $2$. These two
+operations could be combined to a single delete operation of two characters.
 
 The idea for the algorithm which computes the edit operations is to traverse the optimal
 matrix path backwards and for each operation we either append to the current operation if
@@ -250,16 +255,16 @@ except that the position of the operation is decremented for each character we a
 
 Note that this algorithm is not an optimal algorithm, as this is a trade-off between
 processing many characters in few operations, versus processing many operations with few
-characters. One could for example always have only two operations, deleting the whole
-string, and inserting the new string. This is only two operations, but likely processes
-more characters in total compared to our algorithm. This trade-off will become apparent
-when discussing the dynamic suffix array updates.
+characters. As mentioned earlier, one could always reduce the solution to be only two
+operations, deleting the whole string, and inserting the new string. This is only two
+operations, but likely processes more characters in total compared to our algorithm. This
+trade-off will become apparent when discussing the dynamic suffix array updates.
 
 \subsubsection{Optimizing memory usage and operations}
 
 A problem with the above solution is the memory usage of the matrix. It is not feasible to
 input the entire old and new fingerprint into an edit distance algorithm, as the full
-fingerprint can have many million symbols, and the old and new fingerprint is likely
+fingerprint can have millions of symbols, and the old and new fingerprint is likely
 approximately the same size. This would require a matrix which is too large to fit in
 memory. We will use a few techniques to reduce the memory usage of this algorithm without
 compromising on the time complexity.
@@ -355,7 +360,7 @@ contains $3000$ lines, the number of tokens can exceed $10000$, which would requ
 approximately a $10000 \times 10000$ size matrix, which is approaching a memory usage
 which too large.
 
-A solution to this problem is to reduce the required memory from the polinomial $O(n*m)$
+A solution to this problem is to reduce the required memory from the polinomial $O(n \times m)$
 memory usage, to a linear $O(n)$ memory usage. A stepping stone towards such a solution is
 an observation attributed to Ukkonen, which reduces the required memory to linear growth
 in the size of either of the strings~\cite{UkkonenEditDistance}. The observation shows
@@ -394,12 +399,13 @@ how to find the actual edit operation. This is not possible, because we don't ha
 entire matrix available to traverse anymore. However, this can be solved using
 Hirschberg's algorithm~\cite{HirschbergsAlgorithm}. Hirschberg's algorithm is an algorithm
 which can compute the edit operations of two strings in the same time complexity as the
-Wagner-Fischer algorithm, but uses only linear space in either of the input strings.
+Wagner-Fischer algorithm, but uses only linear space in the size of either of the input
+strings.
 
 The first insight we need for this algorithm is that there is at minimum one edit
 operation on each row/column of the edit distance matrix. This is intuitive, because in
 order to ``travel'' from the top-left to the bottom-right of the matrix, the path needs to
-visit all the cells from the top to the bottom, visiting all the rows, and from the left
+visit at least one cell from the top to the bottom, visiting all the rows, and from the left
 to the right, visiting all the columns. Hirschberg's algorithm uses this insight to
 compute one position of the optimal path at a time, which it finds in the middle row
 between two already known positions of the path. Table \ref{tab:hirschbergs} shows an
@@ -514,6 +520,14 @@ corresponds to a delete operation, just as in the matrix-based algorithm.
 Using Hirschberg's algorithm, we are now able to compute the edit operations for very
 large files without memory usage issues.
 
+A final problem we should be aware of is that in some instances, the number of edit
+operations can be very large. As mentioned, our algorithm which aggregates edit operations
+together is not optimal, and could likely be improved to reduce the number of edit
+operations when we allow more than one character in each operation. Therefore, in
+instances where the edit distance algorithm returns so many edit operations that it is
+likely very slow to use them in the next phase, we will instead reduce the solution to
+only two operations, deletion and insertion of the entire minimized string. In practice
+this optimization can often avoid large spikes in the running time of the next phase.
 
 \section{Dynamic suffix array updates}
 
