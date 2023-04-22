@@ -197,54 +197,34 @@ detection with the SACA detection and iClones~\cite{GodeIncrementalCloneDetectio
 iClones is a tool which similarly to CCDetect-LSP, does incremental clone detection. The
 tool takes $n$ revisions of the same code base and will after the initial detection, reuse
 as much information as possible to reduce the amount of work needed to analyze consecutive
-revisions. The algorithm which iClones uses is based on generalized suffix trees (GST), and the
-tool can detect up to type-3 clones. For a revision $i$, iClones processes a file which
-contains which files have changed between revision $i - 1$ and $i$. For each file which
-has changed, the suffixes in the file is inserted into the GST, reusing nodes of the tree
-if possible.
+revisions. The algorithm which iClones uses is based on generalized suffix trees (GST),
+and the tool can detect up to type-3 clones. For a revision $i$, iClones excepts to have a
+file named \verb|changed| in the root folder of the revision, which contains information
+on which files have changed between revision $i - 1$ and $i$. For each file which has
+changed, the suffixes in the file is inserted into the GST, reusing nodes of the tree if
+possible.
 
-For the performance benchmark we will set up code bases similarly to how iClones performs
-its analysis. For each code base to analyze, we will store $n$ revisions of it, where each
-revision contains some changes to some of the files. This will make it easy to run both
-CCDetect-LSP and iClones on the same code bases, and compare their results.
+For the performance benchmark, the code bases are set up in the way iClones expects. For
+each code base to analyze, we will store $n$ revisions of it, where each revision contains
+some changes to some of the files. An evaluation program for CCDetect-LSP was written so
+that it can process this same setup, making it simple to run both CCDetect-LSP and iClones
+on the same code bases, and compare their results.
 
-
-
-\begin{table}[t]
-    \begin{center}
-        \begin{tabular}[c]{|l|l|l|l|l|}
-            \hline
-            \textbf{Code base} & \textbf{LOC} & \textbf{Clones detected} &
-            $\textbf{LCP}_{\textbf{avg}}$ & $\textbf{LCP}_{\geq \textbf{100}}$ \\
-            \hline
-            neo4j & 1MLOC & 1313 & 9 & 27557\\
-            \hline
-            elasticsearch & 3.2MLOC & 9986 & 14 & 289511 \\
-            \hline
-            intellij-community & 5.8MLOC & 3585 & 19 & 336190 \\
-            \hline
-        \end{tabular}
-    \end{center}
-    \caption{Properties of code bases}
-    \label{tab:codebases}
-\end{table}
-
-
-For each code base, we generate new revisions of the code base for the incremental
-updates. Generating new revisions of a code base means that we copied the code base and
-applied a few insertions/deletions to random files, to simulate how a programmer would
-edit files when programming. Generating new revisions of code bases is not an easy
-problem, since each edit performed in a file should still give a valid program which can
-be parsed. If the file cannot be parsed, Tree-sitter will not give a proper AST for the
-file. Because of this, generating insertions is hard, because we need to make sure that
-the location we are inserting some code is a valid location for that code. It is easier to
-generate deletions first instead. Deletions are easier to generate, as we can use
-Tree-sitter to determine where a fragment of size $n$ is located, and remove that section
-of code in the next revision. When we have generated for example $10$ revisions where the
-difference between each revision is deletion of some number of fragments. If we then want
-to generate insertions instead, we can easily reverse the ordering of the revisions of the
-deletion test so that the final revision is now the first revision, and so on. This will
-translate to each deletion becoming an insertion, as an insertion is simply an inversion
+For each code base, we can generate new revisions. Generating new revisions of a code base
+means that we copy the code base and apply a few insertions/deletions to random files, to
+simulate how a programmer would edit files when programming. Generating new revisions of
+code bases is not a trivial problem, since each edit performed in a file should still give
+a valid program which can be parsed. If the file cannot be parsed, Tree-sitter will not
+give a proper AST for the file. Because of this, generating insertions is hard, because we
+need to make sure that the location we are inserting some code is a valid location for
+that code. It is easier to generate deletions first instead. Deletions are easier to
+generate, as we can use Tree-sitter to determine where a fragment of size $n$ is located,
+and remove that section of code in the next revision. For example in Java, we can delete
+an entire method, and still know that the program will parse to a valid AST afterwards.
+After we have generated for example $10$ revisions where the difference between each
+revision is deletion of some number of fragments, we can then reverse the ordering of the
+revisions, so that the final revision is now the first revision, and so on. This will
+translate each deletion to instead be an insertion, as an insertion is simply an inversion
 of a deletion. Figure \ref{fig:revisioninversion} show graphically how a test consisting
 of three revisions with deletions can be inverted to create a test of insertions.
 
@@ -256,21 +236,50 @@ of three revisions with deletions can be inverted to create a test of insertions
     \label{fig:revisioninversion}
 \end{figure}
 
-With this technique, generating an arbitrary amount of tests is now simple. There are
+With this technique, generating an arbitrary amount of tests is now possible. There are
 multiple variables we can tune when generating the tests. Primarily the three most
-important factors of the tests is the size of the code base, the number of revisions, the
-number of edit operations, and the size of those edit operations.
+important factors of the tests is the size of the code base, the number of edit operations
+in each revision, and the size of those edit operations.
 
 The size of the code base will naturally affect the running time of the algorithm. We
 randomly picked open-source code bases of differing sizes and differing amounts of
 duplication to run the benchmark on. We selected the code bases neo4j\footnote{neo4j:
-\url{https://github.com/neo4j/neo4j}}, elasticsearch\footnote{elasticsearch:
+\url{https://github.com/neo4j/neo4j}}, graal\footnote{graal:
+\url{https://github.com/oracle/graal}}, flink\footnote{flink:
+\url{https://github.com/apache/flink}}, elasticsearch\footnote{elasticsearch:
 \url{https://github.com/elastic/elasticsearch}} and
 intellij-community\footnote{intellij-community:
-\url{https://github.com/JetBrains/intellij-community}}, as they were all different size
-Java code bases. Table \ref{tab:codebases} shows some properties of the code bases,
-including its number of lines, the number of clones detected by CCDetect-LSP for a token
-threshold of $100$, the average LCP value and the number of LCP values above $100$.
+\url{https://github.com/JetBrains/intellij-community}}. The code bases chosen were
+different size Java code bases, with different amounts of duplication. Table
+\ref{tab:codebases} shows some properties of the code bases, including its number of
+lines, the number of clones detected by CCDetect-LSP for a token threshold of $100$, the
+average LCP value and the number of LCP values above $100$. An interesting aspect of the
+graal and flink code bases is that they both contain $\sim2.2\text{MLOC}$, but graal has a
+much higher $\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array
+update.
+
+\begin{table}[t]
+    \begin{center}
+        \begin{tabular}[c]{|l|l|l|l|l|}
+            \hline
+            \textbf{Code base} & \textbf{LOC} & \textbf{Clones detected} &
+            $\textbf{LCP}_{\textbf{avg}}$ & $\textbf{LCP}_{\geq \textbf{100}}$ \\
+            \hline
+            neo4j & 1MLOC & 1313 & 9 & 27557\\
+            \hline
+            graal & 2.2MLOC & 2012 & 28 & 154452\\
+            \hline
+            flink & 2.3MLOC & 4729 & 13 & 155754\\
+            \hline
+            elasticsearch & 3.2MLOC & 9986 & 14 & 289511 \\
+            \hline
+            intellij-community & 5.8MLOC & 3585 & 19 & 336190 \\
+            \hline
+        \end{tabular}
+    \end{center}
+    \caption{Properties of code bases}
+    \label{tab:codebases}
+\end{table}
 
 Additionally, we chose to set the size of the edit operations to $10$ and $100$, and the
 number of edits to $10$ in each revision. We believe these values to be slightly larger
@@ -281,19 +290,25 @@ likely larger than any realistic edit. Therefore, if the data shows that the alg
 handle these types of edits in ``real-time'', we can claim that the algorithm can handle
 most realistic editing scenarios.
 
-The benchmarks will be performed on a computer with an Intel i7-2600K CPU with 4 cores,
-and 16GB RAM.
-
-\Todo{Is the disk relevant here? Probably not for the incremental detection, but maybe for
-initial since we are reading the entire code base from the disk}
+The benchmarks will be performed on a computer with an Intel i7-2600K CPU with a 3.4GHz
+clock speed and 4 cores, and 16GB RAM. The SACA detection, incremental detection and
+iClones will be run with a token threshold of $100$, and the processing time of each
+revision will be timed using a simple clock mechanism programmed in Java. The results is
+an average
 
 Figure \ref{fig:neo4j}, \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark
 results on the different code bases. Each graph shows the running time of the SACA
 detection, the incremental detection and iClones incremental detection. The running time
 is shown on a log scale, as the initial detection is extremely slow compared to the
-subsequent detections. iClones was not able to run on the intellij-community code base,
-as the memory usage was higher than 16GB, therefore only the CCDetect-LSP algorithms is
-shown on those graphs.
+subsequent detections. iClones was not able to run on the intellij-community code base, as
+the memory usage exceeded 16GB, therefore only the CCDetect-LSP algorithms is shown on
+those graphs. The elasticsearch code base with a size of $3.2\text{MLOC}$ was
+approximately the maximum size code base iClones could handle memory wise.
+
+\Todo{Graphs for graal and flink}
+
+\Todo{Graphs for elasticsearch showing what happens when the number of insertions increase
+as well}
 
 \begin{figure}
     \begin{center}
