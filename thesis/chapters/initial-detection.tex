@@ -1,11 +1,22 @@
 \chapter{Implementation: Initial detection}
 \label{initialdetection}
 
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_all.drawio.pdf}
+    \end{center}
+    \caption{Phases of the detection algorithm}
+    \label{fig:allphases}
+\end{figure}
 
-This chapter discusses the detection module of CCDetect-LSP. It consists of the detection
-algorithm which takes the document index as input, and outputs a list of code clones. The
-initial input to the algorithm will be the raw source code of each document in the index,
-in text format.
+This chapter discusses the detection module of CCDetect-LSP and how the initial detection
+algorithm finds code clones. It consists of the detection algorithm which takes the
+document index as input, and outputs a list of code clones. The initial input to the
+algorithm will be the raw source code of each document in the index, in text format.
+Figure \ref{fig:allphases} shows all the phases of the detection algorithm and in each
+section a figure will be shown to illustrate which part of the pipeline is being
+discussed. The previous chapter has already detailed the first two phases, how a document
+index is built for each file of the source code.
 
 The algorithm detects syntactical type-1 code clones, based on a token-threshold. Clones
 detected are therefore snippets of source-code which has at least $N$ equal tokens, where
@@ -26,6 +37,12 @@ source-mapped back to the original source-code locations, which the LSP server c
 as diagnostics.
 
 \section{Fragment selection}
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_fragmentselection.drawio.pdf}
+    \end{center}
+\end{figure}
 
 The first phase of the algorithm involves extracting the relevant fragments of source code
 which should be considered for detection. A fragment in this case is considered as a
@@ -50,9 +67,8 @@ program. Readers interested in the details of the query system are referred to t
 Tree-sitter documentation~\cite{treesitter}.
 
 Using a tree-sitter query, the algorithm parses the program into an AST and queries the
-tree for a list of all nodes which matches the query. For each node, all the tokens which
-it covers (the values in all the leaves in its subtree) are extracted and sent to the next
-phase.
+tree for a list of all nodes which matches the query. For each node, all the tokens in the
+subtree of the node are extracted and sent to the next phase.
 
 \Todo{Algorithm?}
 
@@ -62,7 +78,11 @@ the tree until a node of a specific type is found, using the visitor pattern~\ci
 
 \section{Fingerprinting}
 
-\Todo{Høyere abstraksjonsnivå med infinite alphabets}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_fingerprint.drawio.pdf}
+    \end{center}
+\end{figure}
 
 \newsavebox{\firstlisting}
 \begin{lrbox}{\firstlisting}
@@ -138,9 +158,13 @@ values in the fingerprint will be useful for the matching algorithm where the su
 is constructed and utilized for detection. The fingerprint of each fragment is stored in
 the relevant document object.
 
-
 \section{Suffix array construction}
 
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_suffix.drawio.pdf}
+    \end{center}
+\end{figure}
 
 The next step is to input the fingerprint into a suffix array construction algorithm
 (SACA), so that the suffix array can be used to find repeating sequences. Recall that the
@@ -344,7 +368,7 @@ with $n$ halving in each call. Therefore, the recurrence will have the complexit
 = O(n)
 \end{gather*}
 
-\subsubsection{Building ISA and LCP arrays}
+\subsection*{Building ISA and LCP arrays}
 
 Computing the ISA after constructing the SA is simple. Since the ISA is simply the inverse
 of SA, it can be constructed in linear time with a single loop as seen in Algorithm
@@ -433,6 +457,12 @@ the characters at that offset.
 
 
 \section{Clone extraction}
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_cloneextraction.drawio.pdf}
+    \end{center}
+\end{figure}
 
 With the extended suffix array computed, we can now consider which substrings (prefixes of
 suffixes) we want to extract as potential code clones. In this phase the indices of the
@@ -537,6 +567,12 @@ clones.
 
 \section{Source-mapping}
 
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_sourcemap.drawio.pdf}
+    \end{center}
+\end{figure}
+
 With the clone indices in the fingerprint computed, we are almost finished. The final step
 is to map the clone indices back to the original source code. In order to correctly
 identify where a clone is located, we need to know which file the clone is located in, the
@@ -603,7 +639,7 @@ extracted in the previous phase, and the position where the clone ends, which is
 the starting range of the first token (at position $i$) and the ending range of the second
 token (at position $i + \text{LCP}[\text{ISA}[i]]$):
 
-\subsubsection{Aggregating clones}
+\subsection*{Aggregating clones}
 
 With this algorithm to get the clone locations, the next step is to make sure that
 matching code clones are collected into buckets of clone classes. Remember that the LCP

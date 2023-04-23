@@ -212,7 +212,7 @@ substitute \verb|R| with \verb|D| at position $0$. Afterwards \verb|P| and \verb
 deleted at position $2$. Then the \verb|B| which is now at position $2$ is substituted by
 \verb|M|. This continues with more substitutions until we finally have \verb|DEMOCRAT|.
 
-\subsubsection{Aggregating edit operations}
+\subsection*{Aggregating edit operations}
 
 In the next phase we will feed the edit operations into an algorithm which dynamically
 updates our suffix array based on those operations. However, this algorithm will be more
@@ -260,7 +260,7 @@ operations, deleting the whole string, and inserting the new string. This is onl
 operations, but likely processes more characters in total compared to our algorithm. This
 trade-off will become apparent when discussing the dynamic suffix array updates.
 
-\subsubsection{Optimizing memory usage and operations}
+\subsection*{Optimizing memory usage and operations}
 
 A problem with the above solution is the memory usage of the matrix. It is not feasible to
 input the entire old and new fingerprint into an edit distance algorithm, as the full
@@ -556,7 +556,7 @@ BWT from the suffix array. Any updates to the BWT will therefore lead to similar
 to the suffix array, so the algorithm which updates the BWT can be used to determine how
 the suffix array changes as well.
 
-\subsubsection{Updating BWT on insertion}
+\subsection*{Updating BWT on insertion}
 
 First we will observe which parts of a BWT changes when we insert a single character. Note
 that we will only consider changes to the BWT, meaning the final character in each shift,
@@ -702,7 +702,7 @@ that every position of the BWT is now in the correct location. We know that ther
 no more row-moves for any other $CS$ down to order $0$ because $LF(pos) = LF(expected)$,
 which would be true for all future iterations as soon as $pos = expected$
 
-\subsubsection{Updating SA on insertion}
+\subsection*{Updating SA on insertion}
 
 The suffix array is updated similarly to the BWT. When we insert the new cyclic-shift at
 position $5$ in the BWT, we similarly insert the value $2$ at position $5$ in SA. We
@@ -773,7 +773,7 @@ calling the single character algorithm multiple times, because the reordering st
 only performed once. The details for insertions/deletions of multiple characters is
 covered in the original paper~\cite{DynamicExtendedSuffixArrays}.
 
-\subsubsection{Deletion}
+\subsection*{Deletion}
 
 A deletion of a single character is a similar procedure as an insertion, as it is simply
 reversing the substitution and insertion, and then performing the reordering stage again.
@@ -802,13 +802,13 @@ we have $pos = 2$ and $expected = 3$, so we perform the reordering in the BWT a
 same fashion as previously, and the algorithm will again terminate after one iteration of
 the reordering phase.
 
-\subsubsection{Substitution}
+\subsection*{Substitution}
 
 Substitution operations are also possible and covered in the original paper, but due to
 time constraints, these were implemented as a deletion followed by an insertion, which is
 less efficient than a single operation, since the reordering stage is done twice.
 
-\subsubsection{LF function}
+\subsection*{LF function}
 
 The LF function is called multiple times for any operation which is done to update the
 suffix array. Therefore, it is important to be able to efficient compute $LF$ at any point

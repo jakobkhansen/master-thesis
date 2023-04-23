@@ -404,7 +404,7 @@ server sends a corresponding response, also in the form of JSON-RPC messages.
 The following algorithms and data structures will be useful insight in following chapters to
 define the detection algorithm
 
-\subsubsection{Incremental-parsing}
+\subsection*{Incremental-parsing}
 
 While writing code, programmers usually only edit small regions of code at a time. One
 ``edit'' will therefore only affect small parts of the internal representations of the
@@ -433,7 +433,7 @@ algorithm~\cite{PracticalAlgorithmsForIncremental}.
 
 \Todo{Explain Wagner's algorithm with figure and example}
 
-\subsubsection{Suffix trees}
+\subsection*{Suffix trees}
 
 A classic algorithm~\cite{Zibran_real_time_search, GodeIncrementalCloneDetection} for code
 clone detection traverses a suffix-tree in order to find maximal repeats in all suffixes
@@ -531,7 +531,7 @@ repeat would be ANA, since A and NA are not maximal.
 	\end{center}
 \end{figure}
 
-\subsubsection{Suffix arrays}
+\subsection*{Suffix arrays}
 
 The suffix array (SA) of a string T contains a lexicographical sorting of all suffixes in
 T. The suffix array does not contain the actual suffixes, but it contains integers
@@ -625,7 +625,7 @@ which has been shown to be as powerful as a suffix tree, in terms of what can be
 with it with the same time complexity, but uses a smaller amount of
 memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}.
 
- \subsubsection{Dynamic bitsets}
+ \subsection*{Dynamic bitsets}
 
 A bitset is an array of bits, each bit representing either the value true or false. A bit
 with the value of 1 is usually referred to as a set bit, and a value of 0 is referred to
@@ -746,7 +746,7 @@ set bits (select).
   \label{alg:dynbitaccess}
 \end{algorithm}
 
-\subsubsection{Wavelet tree and wavelet matrix}
+\subsection*{Wavelet tree and wavelet matrix}
 
 We can extend the notion of rank and select queries to strings as well. 
 
@@ -969,7 +969,7 @@ each character is inserted. Before constructing the next level, each character i
 by the current bit, so that all the characters with $0$ bits at position $i$ occupies the
 left side of level $i + 1$, and vice versa for $1$ bits.
 
-\subsubsection{Burrows-Wheeler transform}
+\subsection*{Burrows-Wheeler transform}
 
 \begin{table}[t]
 	\begin{center}
