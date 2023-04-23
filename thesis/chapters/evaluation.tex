@@ -314,7 +314,18 @@ approximately the maximum size code base iClones could handle memory wise.
 \Todo{Graphs for elasticsearch showing what happens when the number of insertions increase
 as well}
 
-\begin{figure}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/WorldWind_DEL10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/WorldWind_DEL100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/WorldWind_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/WorldWind_INS100.pdf}
+    \end{center}
+    \caption{WorldWind performance benchmark}
+    \label{fig:WorldWind}
+\end{figure}
+
+\begin{figure}[H]
     \begin{center}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_DEL10.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_DEL100.pdf}
@@ -325,7 +336,31 @@ as well}
     \label{fig:neo4j}
 \end{figure}
 
-\begin{figure}
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/graal_DEL10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/graal_DEL100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/graal_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/graal_INS100.pdf}
+    \end{center}
+    \caption{graal performance benchmark}
+    \label{fig:graal}
+\end{figure}
+
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/flink_DEL10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/flink_DEL100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/flink_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/flink_INS100.pdf}
+    \end{center}
+    \caption{flink performance benchmark}
+    \label{fig:flink}
+\end{figure}
+
+\begin{figure}[H]
     \begin{center}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL10.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL100.pdf}
@@ -334,7 +369,7 @@ as well}
     \label{fig:elasticsearch}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
     \begin{center}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_DEL10.pdf}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_DEL100.pdf}
