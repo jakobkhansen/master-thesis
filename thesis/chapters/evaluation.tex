@@ -243,7 +243,8 @@ in each revision, and the size of those edit operations.
 
 The size of the code base will naturally affect the running time of the algorithm. We
 randomly picked open-source code bases of differing sizes and differing amounts of
-duplication to run the benchmark on. We selected the code bases neo4j\footnote{neo4j:
+duplication to run the benchmark on. We selected the code bases
+WorldWind\footnote{WorldWind: \url{https://github.com/NASAWorldWind/WorldWindJava}}, neo4j\footnote{neo4j:
 \url{https://github.com/neo4j/neo4j}}, graal\footnote{graal:
 \url{https://github.com/oracle/graal}}, flink\footnote{flink:
 \url{https://github.com/apache/flink}}, elasticsearch\footnote{elasticsearch:
@@ -265,6 +266,8 @@ update.
             \textbf{Code base} & \textbf{LOC} & \textbf{Clones detected} &
             $\textbf{LCP}_{\textbf{avg}}$ & $\textbf{LCP}_{\geq \textbf{100}}$ \\
             \hline
+            WorldWind & 550KLOC & 1517 & 18 & 63967\\
+            \hline
             neo4j & 1MLOC & 1313 & 9 & 27557\\
             \hline
             graal & 2.2MLOC & 2012 & 28 & 154452\\
@@ -281,20 +284,21 @@ update.
     \label{tab:codebases}
 \end{table}
 
-Additionally, we chose to set the size of the edit operations to $10$ and $100$, and the
-number of edits to $10$ in each revision. We believe these values to be slightly larger
-than what is realistic for an IDE scenario where a programmer is editing and updating the
-fingerprint of a single file at a time. For a test where we are performing $10$ insertions
-of $100$ tokens, this means we are inserting $1000$ tokens in a single edit, which is
-likely larger than any realistic edit. Therefore, if the data shows that the algorithm can
-handle these types of edits in ``real-time'', we can claim that the algorithm can handle
-most realistic editing scenarios.
+Additionally, we chose to test both an edit size of $10$ and $100$ with $10$ edits in each
+revision. We believe these values to be slightly larger than what is realistic for an IDE
+scenario where a programmer is editing and updating the fingerprint of a single file at a
+time. For a test where we are performing $10$ insertions of $100$ tokens, this means we
+are inserting $1000$ tokens in a single edit, which is likely larger than any realistic
+edit. Therefore, if the data shows that the algorithm can handle these types of edits in
+``real-time'', we can claim that the algorithm can handle most realistic editing
+scenarios.
 
 The benchmarks will be performed on a computer with an Intel i7-2600K CPU with a 3.4GHz
 clock speed and 4 cores, and 16GB RAM. The SACA detection, incremental detection and
 iClones will be run with a token threshold of $100$, and the processing time of each
-revision will be timed using a simple clock mechanism programmed in Java. The results is
-an average
+revision will be timed using a simple clock mechanism programmed in Java. 
+
+\Todo{Average results}
 
 Figure \ref{fig:neo4j}, \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark
 results on the different code bases. Each graph shows the running time of the SACA
