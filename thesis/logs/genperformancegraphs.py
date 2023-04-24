@@ -10,6 +10,8 @@ import pathlib
 
 from pandas.core.frame import DataFrame
 
+plt.gcf().subplots_adjust(left=0.15)
+
 for file in os.scandir("results/"):
     ccdetectfile = file.name
     if not ccdetectfile.endswith(".ccdetect"):
@@ -50,9 +52,12 @@ for file in os.scandir("results/"):
     print(df)
     ax = df.plot(kind="bar", rot=0, title=chart_name)
     ax.set(xlabel="Revision", ylabel="ms (log)", yscale="log")
-    ax.ticklabel_format(useOffset=False)
+    ax.get_yaxis().set_major_formatter(
+    mpl.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+
 
     pdfname = ccdetectfile.split(".")[0].split("_")[0] + "_" + ccdetectfile.split(".")[0].split("_")[1]
+    plt.tight_layout()
     plt.savefig(f"../figures/performancegraphs/{pdfname}.pdf")
 
 #     x = np.array(range(3, 9))
