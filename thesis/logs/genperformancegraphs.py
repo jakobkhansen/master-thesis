@@ -50,6 +50,7 @@ for file in os.scandir("results/"):
     print(df)
     ax = df.plot(kind="bar", rot=0, title=chart_name)
     ax.set(xlabel="Revision", ylabel="ms (log)", yscale="log")
+    ax.ticklabel_format(useOffset=False)
 
     pdfname = ccdetectfile.split(".")[0].split("_")[0] + "_" + ccdetectfile.split(".")[0].split("_")[1]
     plt.savefig(f"../figures/performancegraphs/{pdfname}.pdf")

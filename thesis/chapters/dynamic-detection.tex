@@ -34,9 +34,7 @@ single file is still linear in the size of file content, parsing a large file fr
 can take a significant amount of time in practice, and for small code bases with large
 files, parsing will take a significant portion of the total runtime of a dynamic update.
 This is why incremental re-parsing with Tree-sitter is used, which lowers the runtime
-closer to $O(\vert \text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
-
-\Todo{Some table with statistics of parsing times here?}
+closer to $O(\vert\text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
 
 We can also afford two more useful operations, iterating over the documents in the index
 (not their contents), and iterating over the clone objects. We can afford to do these
@@ -50,6 +48,12 @@ idea is that all the operations we can afford will take an insignificant amount 
 compared to updating the suffix array.
 
 \section{Updating the document index}
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_documentindex.drawio.pdf}
+    \end{center}
+\end{figure}
 
 The first step of an incremental update is to update the document index. We will also look
 at how we can reduce memory usage of the index without a loss in terms of the time
@@ -83,6 +87,12 @@ reparse of the file content. After this reparse, we have efficiently updated a d
 content and AST. After this update, we also set $\Access{D}{changed} = \True$
 
 \section{Updating fingerprints}
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_fingerprint.drawio.pdf}
+    \end{center}
+\end{figure}
 
 With the updated AST for all documents, we can update the fingerprint of all documents
 which have been changed. For each document $D$ where $\Access{D}{changed} = \True$, the
@@ -533,6 +543,13 @@ this optimization can often avoid large spikes in the running time of the next p
 
 \section{Dynamic suffix array updates}
 
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{figures/phases/phases_suffix.drawio.pdf}
+    \end{center}
+\end{figure}
+
 Now that we know how the fingerprint has changed after an edit, the next phase is to input
 the edit operations into an algorithm which dynamically updates the suffix array. The
 algorithm discussed in this section will be run once for each edit operation.
@@ -850,16 +867,17 @@ which should be the only element with a $1$ bit in the first position.
 
 \Todo{Algorithm to insert/delete in wavelet matrix}
 
-\Todo{CharacterCount array} The $C$ array can be implemented in two ways. Either $C[c]$
-holds the number of smaller character than $c$ in the input, or $C[c]$ holds the number of
-occurrences of $c$. There are trade-offs with either implementation, as storing the number
-of smaller characters requires a linear scan whenever a character is inserted/deleted,
-while storing the number of occurrences requires computing the number of characters
-whenever the LF function is called. We have chosen the approach of storing the number of
-occurrences, as updating the array is simpler in cases where the alphabet size increases.
-When we later update LCP values, we will see that there is a possibility that choosing the
-option of storing the number of smaller characters in $C$ is faster. \section{Dynamic
-extended suffix arrays}
+The $C$ array can be implemented in two ways. Either $C[c]$ holds the number of smaller
+character than $c$ in the input, or $C[c]$ holds the number of occurrences of $c$. There
+are trade-offs with either implementation, as storing the number of smaller characters
+requires a linear scan whenever a character is inserted/deleted, while storing the number
+of occurrences requires computing the number of characters whenever the LF function is
+called. We have chosen the approach of storing the number of occurrences, as updating the
+array is simpler in cases where the alphabet size increases. When we later update LCP
+values, we will see that there is a possibility that choosing the option of storing the
+number of smaller characters in $C$ is faster. 
+
+\section{Dynamic extended suffix arrays}
 
 A major bottleneck when inserting/deleting elements in the suffix array is that when an
 element is removed, all elements after it needs to be moved by one index so that the gap
@@ -1179,14 +1197,18 @@ With the inverse LF function, computing the LCP value between two suffixes at po
 and $j$ is done by repeatedly applying the inverse LF function to $i$ and $j$, and
 comparing the characters at those positions in the BWT.
 
-\Todo{Eureka moment, vi kan kanskje gjøre noe binary search greier her for å speede opp
-inverse LF}
-
 \Todo{Algorithm for iterating over suffixes which need to update their LCP value}
 
 \Todo{Algorithm for updating a single LCP value}
 
 \section{Dynamic clone extraction and source-mapping}
+
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=1\textwidth]{figures/phases/phases_extractionandsourcemap.drawio.pdf}
+    \end{center}
+\end{figure}
 
 The LCP is no longer represented as an array, but as a a balanced tree. As trees are more
 costly to traverse linearly compared to arrays, we also want to improve how we extract

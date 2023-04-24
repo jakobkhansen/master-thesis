@@ -298,21 +298,21 @@ clock speed and 4 cores, and 16GB RAM. The SACA detection, incremental detection
 iClones will be run with a token threshold of $100$, and the processing time of each
 revision will be timed using a simple clock mechanism programmed in Java. 
 
-\Todo{Average results}
+\Todo{Average results over multiple runs}
 
-Figure \ref{fig:neo4j}, \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark
-results on the different code bases. Each graph shows the running time of the SACA
-detection, the incremental detection and iClones incremental detection. The running time
-is shown on a log scale, as the initial detection is extremely slow compared to the
-subsequent detections. iClones was not able to run on the intellij-community code base, as
-the memory usage exceeded 16GB, therefore only the CCDetect-LSP algorithms is shown on
-those graphs. The elasticsearch code base with a size of $3.2\text{MLOC}$ was
-approximately the maximum size code base iClones could handle memory wise.
+\Todo{A single run over a large code base showing what happens when number of edit
+operations increase}
 
-\Todo{Graphs for graal and flink}
+Figure \ref{fig:WorldWind}, \ref{fig:neo4j},\ref{fig:graal}, \ref{fig:flink},
+\ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark results on the
+different code bases. Each graph shows the running time of the SACA detection, the
+incremental detection and iClones incremental detection. The running time is shown on a
+log scale, as the initial detection is extremely slow compared to the subsequent
+detections. iClones was not able to run on the intellij-community code base, as the memory
+usage exceeded 16GB, therefore only the CCDetect-LSP algorithms is shown on those graphs.
+The elasticsearch code base with a size of $3.2\text{MLOC}$ was approximately the maximum
+size code base iClones could handle memory wise.
 
-\Todo{Graphs for elasticsearch showing what happens when the number of insertions increase
-as well}
 
 \begin{figure}[H]
     \begin{center}
