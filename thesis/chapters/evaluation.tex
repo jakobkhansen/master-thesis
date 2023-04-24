@@ -303,7 +303,7 @@ timed using a simple clock mechanism programmed in Java.
 \Todo{A single run over a large code base showing what happens when number of edit
 operations increase}
 
-Figure \ref{fig:WorldWind}, \ref{fig:neo4j},\ref{fig:graal}, \ref{fig:flink},
+Figure \ref{fig:WorldWind}, \ref{fig:neo4j}, \ref{fig:graal}, \ref{fig:flink},
 \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark results on the
 different code bases. Each graph shows the running time of the SACA detection, the
 incremental detection and iClones incremental detection. The running time is shown on a
@@ -311,7 +311,7 @@ log scale, as the initial detection is extremely slow compared to the subsequent
 detections. iClones was not able to run on the intellij-community code base, as the memory
 usage exceeded 16GB, therefore only the CCDetect-LSP algorithms is shown on those graphs.
 The elasticsearch code base with a size of $3.2\text{MLOC}$ was approximately the maximum
-size code base iClones could handle memory wise.
+size code base iClones could run on memory wise.
 
 
 \begin{figure}[H]
