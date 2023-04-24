@@ -1,4 +1,6 @@
 
+./evaluateTool --min-tokens=100 -s=100 --output=ccdetect.report -t=1
+
 -- Versioning --
  BigCloneEval: Release Version 0.1
 BigCloneBench: Version 1.0 (2016-06-19)

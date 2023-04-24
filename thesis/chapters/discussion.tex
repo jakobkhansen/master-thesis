@@ -65,6 +65,43 @@ reorderings for lower $\text{LCP}_\text{avg}$ values were often below $20$ and t
 number of reorderings only drastically increases for $\text{LCP}_\text{avg}$ in the
 hundreds, which is more realistic for DNA sequences than for our source code fingerprints.
 
-
-% 43 18
 \section{Clones}
+
+In \cref{evaluation} we showed that CCDetect-LSP correctly identifies type-1 clones in the
+BigCloneBench dataset. The results showed that CCDetect-LSP was able to identify
+practically all type-1 clones, which gives us confidence that our algorithm is correct in
+terms of the reported clones. BigCloneBench also reported that CCDetect-LSP was able to
+detect some type-2 clones, but as previously stated, this is likely accidental.
+
+Detecting type-1 clones is likely the most important clones to detect in an IDE scenario,
+but type-2 clones are also likely useful. Recall that type-2 clones are clones which are
+structurally identical, but allows differences in literals, identifiers and types. Recall
+also that both type-1 and type-2 clones are clones which are often good targets for
+refactoring, since they can be parameterized to account for the differences in literals
+and types, before they are merged into a single function/method. In the case of
+CCDetect-LSP, we could normalize the input to allow detection of type-2 clones by
+consistently fingerprinting tokens to the same value if they are allowed to be different.
+Because CCDetect-LSP is language agnostic and relies only on a Tree-sitter grammar for a
+given programming language, performing this normalization is more challenging than in
+typical clone detectors. This is because CCDetect-LSP needs to know which type of tokens
+should be consistently fingerprinted as the same value. One might also want to only detect
+clones with consistently substituted parameters, Baker's technique needs to be
+implemented\cite{bakerdup} needs to be implemented as well. This could be done by allowing
+the user to configure a list of AST node types which should be consistently fingerprinted,
+but this also requires the user to be intimately familiar with the node types in the AST
+of their chosen programming language.
+
+For type-3 clones we need to consider how useful it is to report these clones in an IDE
+scenario. Recall that type-3 clones are clones which in addition to type-1 and type-2
+clones, allow some leniency in terms of the code clones structure. Type-3 clones allows
+tokens to be added, modified or removed and two type-3 clones are considered equal based
+on some similarity threshold. Seeing such clones in the IDE could possibly lead to a lot
+of noise, and CCDetect-LSP could possibly detect a lot of clones which are not necessarily
+simple to refactor and remove. It would be interesting to see how many type-3 clones are
+reported in different code bases and how much value it would provide to the user to list
+them in the IDE. It would also be interesting to see how implementing a type-3 clone
+algorithm such as \cite{bakertype-3} would affect the speed of the incremental detection,
+and if any type-3 detection algorithms can be made more efficient for an incremental
+detection approach.
+
+\Todo{Baker type-3 algorithm cite here}
