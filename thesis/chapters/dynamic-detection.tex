@@ -1218,8 +1218,9 @@ Recall that the algorithm in the initial detection in \cref{initialdetection} tr
 the suffixes from beginning to end, and extracts indices of suffixes where the LCP value
 is above the token threshold parameter. Also recall that some clones were filtered, those
 being clones which extend past a single fragment, or clones which are contained inside a
-larger clone. This algorithm now be recreated for the balanced tree LCP, which also
-optimizes the algorithm to reduce the amount of nodes we need to examine.
+larger clone. This algorithm will now be converted to run on the balanced tree which
+contains the LCP values, which also optimizes the algorithm to reduce the amount of LCP
+values we need to examine.
 
 When updating a value in the LCP array, we can check to see if the new value is above the
 token threshold. If the previous value was below the treshold, and the new value is above

@@ -377,3 +377,14 @@ size code base iClones could run on memory wise.
 
 \section{Memory usage}
 
+Another important aspect of clone detection tools and especially IDE tools, is the memory
+usage of the tool. As CCDetect-LSP is primarily implemented as an IDE tool, it is
+important that the tool can run alongside other IDE tools and applications. Therefore, we
+will in this section analyze the memory footprint of CCDetect-LSP and again compare the
+SACA detection, incremental detection and iClones. To simplify this analysis, we will for
+each code base run one of the tests we previously ran for the performance benchmark, and
+observe the maximum memory usage of each algorithm, using the
+JProfiler\footnote{JProfiler:
+https://www.ej-technologies.com/products/jprofiler/overview.html} profiling tool.
+
+\Todo{Memory profiling graphs here}
