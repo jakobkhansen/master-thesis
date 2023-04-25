@@ -234,6 +234,15 @@ bibsource = {dblp computer science bibliography, https://dblp.org}
 	abstract = {Sparse Dynamic Programming has emerged as an essential tool for the design of efficient algorithms for optimization problems coming from such diverse areas as computer science, computational biology, and speech recognition. We provide a new sparse dynamic programming technique that extends the Hunt–Szymanski paradigm for the computation of the longest common subsequence (LCS) and apply it to solve the LCS from Fragments problem: given a pair of strings X and Y (of length n and m, respectively) and a set M of matching substrings of X and Y, find the longest common subsequence based only on the symbol correspondences induced by the substrings. This problem arises in an application to analysis of software systems. Our algorithm solves the problem in O(|M|log|M|) time using balanced trees, or O(|M|loglogmin(|M|,nm/|M|)) time using Johnson's version of Flat Trees. These bounds apply for two cost measures. The algorithm can also be adapted to finding the usual LCS in O((m+n)log|Σ|+|M|log|M|) time using balanced trees or O((m+n)log|Σ|+|M|loglogmin(|M|,nm/|M|)) time using Johnson's version of Flat Trees, where M is the set of maximal matches between substrings of X and Y and Σ is the alphabet. These bounds improve on those of the original Hunt–Szymanski algorithm while retaining the overall approach.}
 }
 
+@article{Bakerdup,
+  title={A program for identifying duplicated code},
+  author={Baker, Brenda S},
+  journal={Computing Science and Statistics},
+  pages={49--49},
+  year={1993},
+  publisher={Citeseer}
+}
+
 @book{crosby1980quality,
 	title={Quality is Free: The Art of Making Quality Certain},
 	author={Crosby, P.B.},
@@ -681,22 +690,3 @@ url="https://doi.org/10.1007/978-1-4939-2864-4_412"
 }
 
 
-@article{Bakerdup,
-  title={A program for identifying duplicated code},
-  author={Baker, Brenda S},
-  journal={Computing Science and Statistics},
-  pages={49--49},
-  year={1993},
-  publisher={Citeseer}
-}
-
-@article{BakerLCS,
-    author = {Baker, Brenda and Giancarlo, Raffaele},
-    year = {2002},
-    month = {02},
-    pages = {231-254},
-    title = {Sparse Dynamic Programming for Longest Common Subsequence from Fragments},
-    volume = {42},
-    journal = {Journal of Algorithms},
-    doi = {10.1006/jagm.2002.1214}
-}

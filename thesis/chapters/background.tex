@@ -9,13 +9,11 @@ to requirements''~\cite[8]{crosby1980quality}. In software, a simple measure of
 ``conformance to requirements'' is correctness, and a lack of bugs. However, software
 quality is often measured in other metrics, including metrics which are not directly
 related to functionality~\cite[29]{MetricsAndModelsInSoftwareQuality}. Whenever duplicated
-code needs to changed, it will require changes in multiple locations, meaning that metrics
-such as maintainability, analyzability and changeability are negatively affected.
-
-These metrics are affected negatively by duplicated code. Multiple studies have shown that
-software projects typically contains $10-15\%$ duplicated code~\cite{CloningByAccident}.
-Therefore, research into tools and techniques which can assist in reducing duplicated code
-will be of benefit to almost all software.
+code needs to be changed, it might require changes in multiple locations, which leads to
+metrics such as maintainability, analyzability and changeability being negatively
+affected. Multiple studies have shown that software projects typically contains $10-15\%$
+duplicated code~\cite{CloningByAccident}. Therefore, research into tools and techniques
+which can assist in reducing duplicated code will be of benefit to almost all software.
 
 Duplicated code can lead to a plethora of anti-patterns. Anti-patterns are bad design
 decisions for software which can lead to technical debt. Technical debt occurs when
@@ -29,7 +27,7 @@ code increases in a software project.
 
 \section{Code clones}
 
-Duplicated code is often described as ``code clones'', a pair of code snippets which are
+Duplicated code is often described as ``code clones''. A pair of code snippets which are
 duplicated are considered clones of each other.
 
 \begin{definition}[Code snippet]
@@ -62,18 +60,18 @@ defined such that only equal clones are considered clones, the relation becomes
 transitive, and equivalence classes form clone classes.
 
 Code clones are generally classified into four types~\cite{Inoue_introduction_to_cc}. The
-types classify code snippets as code clones with an increasing amount of leniency.
-Therefore, Type-1 code clones are very similar, while Type-4 clones are not necessarily
-syntactically similar at all. When defining types, it is the syntactic and structural
-differences which is compared, not functionality. The set of code clones classified by a
-code clone type is also a subset of the next type, meaning all type-1 clones are also
-type-2 clones, but not vice versa.
+types would classify two code snippets as code clones with an increasing amount of
+leniency. Therefore, type-1 code clones are very similar, while type-4 clones are not
+necessarily syntactically similar at all. When defining types, it is the syntactic and
+structural differences which is compared, not functionality. The set of code clones
+classified by a code clone type is also a subset of the next type, meaning all type-1
+clones are also type-2 clones, but not vice versa.
 
 \textbf{Type-1} clones are syntactically identical. The only differences for a pair of
-type-1 clones are elements without meaning, like comments and white-space. This is code
-which is generally ignored when source code is lexed and parsed. Figure
-\ref{fig:type1clone} shows an example of a type-1 clone pair where only a comment and
-white-space is added to the snippet on the right.
+type-1 clones are elements without meaning, like comments and white-space, which is
+usually ignored when source code is lexed and parsed anyway. Figure \ref{fig:type1clone}
+shows an example of a type-1 clone pair where only a comment and white-space is added to
+the snippet on the right.
 
 \begin{figure}[t]
 	\begin{center}
@@ -100,13 +98,13 @@ for (int i = 0; i < 10; i++) {
 \textbf{Type-2} clones are structurally identical. Possible differences include changes to
 identifiers, literals and types. Type-2 clones are not much harder to detect than type-1
 clones, since consistently renaming identifiers, literals and types allow a type-1
-detection algorithm to find type-2 clones~\cite{Zibran_real_time_search}. This type of
-clone is relevant to consider in refactoring scenarios when merging code clones as they
-can be relatively simple to parameterize in order to merge two clones with differing
-literals for example. The original locations of clones can then be replaced with a call to
-the merged code with different parameters. Figure \ref{fig:type2clone} shows an example of
-a type-2 clone pair where the numbers in the for loop initialization and condition
-could be parameterized to correctly merge the two clones.
+detection algorithm to find type-2 clones~\cite{Bakerdup}. This type of clone is relevant
+to consider in refactoring scenarios when merging code clones as they can be relatively
+simple to parameterize in order to merge two clones with for example differing literals.
+The original locations of clones can then be replaced with a call to the merged code with
+different parameters. Figure \ref{fig:type2clone} shows an example of a type-2 clone pair
+where the numbers in the for loop initialization and condition could be parameterized to
+correctly merge the two clones.
 
 \begin{figure}[t]
 	\begin{center}
@@ -129,11 +127,13 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf 20*); (*\textb
 \textbf{Type-3} clones are required to be structurally similar, but not equal. Differences
 include statements that are added, removed or modified. This clone type relies on a
 threshold $\theta$ which determines how structurally different snippets can be in order to
-be considered Type-3 clones~\cite[6]{Inoue_introduction_to_cc}. The granularity for this
+be considered type-3 clones~\cite[6]{Inoue_introduction_to_cc}. The granularity for this
 difference could for example be based on the number of differing tokens or lines.
 Detecting this type of clone is generally harder and takes more computation than type-1
 and type-2 clones. Figure \ref{fig:type3clone} shows two code snippets where the code
-snippet on the right has an added statement.
+snippet on the right has an added statement. In this example there is a one line
+difference between the two snippets, so if the similarity is based on differing lines and
+$\theta \geq 1$, the two snippets would be considered Type-3 clones.
 
 \begin{figure}[t]
 	\begin{center}
@@ -156,8 +156,6 @@ for (int i = 0; i < 10; i++) {
 \end{figure}
 
 
-In this example there is a one line difference between the two snippets, so if $\theta
-\geq 1$, the two snippets would be considered Type-3 clones.
 
 \textbf{Type-4} clones have no requirement for syntactical or structural similarity, but
 are generally only relevant to detect when they have similar functionality. Detecting this
@@ -202,8 +200,8 @@ against each other and filtering. The steps are generally as follows:
 	      check for clones, for example generated code. Then partition code into a set of
 	      fragments, depending on granularity such as methods, files or lines.
 	\item \textbf{Transformation}: Transform fragments into an intermediate
-	      representation, with a source-map back to the original code. An algorithm
-          could potentially do multiple transformation before arriving at the wanted
+	      representation, with a source-map which gives the location to the original code.
+          An algorithm could potentially do multiple transformation before arriving at the wanted
           representation
 	      \begin{enumerate}
 		      \item Extraction: Transform source code into the input for the comparison
@@ -221,26 +219,25 @@ against each other and filtering. The steps are generally as follows:
 	\item \textbf{Aggregation}: Optionally aggregating sets of clone pairs into clone sets
 \end{enumerate}
 
-\paragraph{Matching techniques} are techniques which can be applied to source-code to
-detect clone-pairs. Most matching technique will also require specific pre-processing to be
-done in the earlier steps, for example building an AST. Some of the most explored
-techniques are as follows~\cite{ComparisonAndEvaluationOfTechniques}:
+\paragraph{Matching techniques} are the techniques used in the matching stage of the
+algorithm which pairs fragments as clone-pairs. Most matching technique will also require
+specific pre-processing to be done in the earlier steps, for example building an AST. Some
+of the most explored techniques are as follows~\cite{ComparisonAndEvaluationOfTechniques}:
 
 \paragraph{Text-based} approaches do little processing of the source code before
 comparing. Simple techniques such as fingerprinting or incremental hashing have been used
-in this approach. Dot-plots have also been used in newer text-based approaches, placing
-the hashes of fragments in a dot plot for use in comparisons.
+in this approach. 
 
 \paragraph{Token-based} approaches transform source code into a stream of tokens, similar
 to lexical scanning in compilers. The token stream is then scanned for duplicated
-subsequences of tokens. Since token streams can easily filter out superficial differences
+subsequences of tokens. Since lexers often filter out superficial differences
 such as whitespace, indentation and comments, this approach is more robust to such
 differences. Concrete names of identifiers and values can be abstracted away when
-comparing the token-stream, therefore Type-2 clones can easily be identified. Type-3
+comparing the token-stream, therefore type-2 clones can easily be identified. Type-3
 clones can also be identified by comparing the fragments tokens and keeping clone pairs
 with a lexical difference lower than a given threshold. This can be solved with dynamic
 programming~\cite{BakerSparseDynamicProgramming}. A common approach to detect clones using
-token-streams is with a suffix-tree~\cite{Zibran_real_time_search}. A suffix-tree can solve
+token-streams is with a suffix-tree~\cite{Bakerdup}. A suffix-tree can solve
 the \textit{Find all maximal repeats} problem efficiently, which in essence is the same
 problem as finding clone pairs. A similar algorithm can also be performed using a suffix-array
 instead, which requires less memory. This type of code clone detection is very fast
@@ -257,10 +254,14 @@ code fragments in the tree and uses the metrics to determine if the fragments ar
 or not. One way is to use fingerprint functions where the fingerprint includes certain
 metrics, and compare the fingerprints of all fragments to find clones~\cite{Deckard}.
 
-\paragraph{Hybrid} approaches combine multiple approaches in order to improve detection.
-For example Zibran et al. developed a hybrid algorithm combining both token-based suffix
-trees for Type-1 and Type-2 clone detection, with a k-difference dynamic programming
-algorithm for Type-3 clone detection~\cite{Zibran_real_time_search}.
+\paragraph{Hybrid} approaches combine multiple approaches in order to improve detection
+capabilities. For example a common approach which Zibran et
+al.~\cite{Zibran_real_time_search} has implemented is a hybrid algorithm combining both
+token-based suffix trees for type-1 and type-2 clone detection, with the dynamic
+programming algorithm~\cite{BakerSparseDynamicProgramming} for type-3 clone detection.
+Another example of a hybrid approach is the tool named
+Siamese~\cite{SiameseScalableAndIncrementalClone}, which uses multiple intermediate
+representations to get a better accuracy for clone detection.
 
 
 \section{Incremental clone detection}
