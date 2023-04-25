@@ -2,9 +2,9 @@
 
 This chapter will discuss the results of the different evaluations performed in
 \cref{evaluation} and conclude with some insights into which algorithms seem to be more
-efficient in certain cases. Which clones are detected will also be discussed, and the
-possibility of extending the incremental algorithm of CCDetect-LSP to more intricate types
-of clones.
+efficient in each case. We will also discuss the implications of the memory usage, and
+discuss the clones which are detected, and the possibility of extending the incremental
+algorithm of CCDetect-LSP to more intricate types of clones.
 
 \section{Performance}
 
@@ -50,13 +50,14 @@ iClones are generally much faster than the SACA detection, as expected. For the 
 code bases (WorldWind and neo4j), CCDetect-LSP incremental detection seems to be the
 fastest for smaller edit sizes (INS10, DEL10), while iClones seems to be faster for the
 larger edits (INS100, DEL100). It seems that when the code bases increase in size,
-CCDetect-LSP incremental detection scales better than iClones and the SACA detection,
-being able to handle incremental updates even for intellij-community (5.8MLOC) in less
-than 1 second for smaller edits (INS10, DEL10). Elasticsearch (3.2MLOC) was the largest
-code base that iClones could be run on with 16GB RAM, and for this code base it seems that
-CCDetect-LSP starts to outperform the other two detection algorithms in all cases. It
-would be interesting to see if this trend continues for even larger code bases and
-continue to compare CCDetect-LSP incremental detection with iClones, but this would
+CCDetect-LSP incremental detection scales better than iClones and the SACA detection.
+CCDetect-LSP incremental detection is able to handle incremental updates for
+intellij-community (5.8MLOC) in less than 1 second for smaller edits (INS10, DEL10) and
+less than 2 seconds for the larger edits (INS100, DEL100). Elasticsearch (3.2MLOC) was the
+largest code base that iClones could be run on with 16GB RAM, and for this code base it
+seems that CCDetect-LSP starts to outperform the other two detection algorithms in all
+cases. It would be interesting to see if this trend continues for even larger code bases
+and continue to compare CCDetect-LSP incremental detection with iClones, but this would
 require a lot of RAM to benchmark.
 
 In terms of stability of performance, it seems that the SACA detection is naturally very
@@ -88,6 +89,8 @@ the hundreds. These values are more realistic for DNA sequences than for our sou
 fingerprints. It therefore seems that source code is a good candidate to apply the dynamic
 suffix array update algorithm to, as updates in source code will on average lead to few
 suffixes needing to be reordered.
+
+\section{Memory usage}
 
 \section{Clones detected}
 
