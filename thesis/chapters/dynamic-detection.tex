@@ -134,7 +134,7 @@ the entire files fingerprint could be a lot more work than it needs to be. Howev
 idea that we can always reduce the number of operations to only two, a deletion and an
 insertion, will be useful in our final algorithm.
 
-Another approach is to look at the ranges that the LSP client sends with each
+Another possible approach is to look at the ranges that the LSP client provides with each
 \verb|textDocument/didChange| message and determine which tokens in the fingerprint have
 been affected according to this range. However, this approach tightly couples the
 algorithm to LSP and the scenario where we know the exact ranges of each change. Also, we

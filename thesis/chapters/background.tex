@@ -266,11 +266,16 @@ representations to get a better accuracy for clone detection.
 
 \section{Incremental clone detection}
 
-Incremental clone detection involves avoiding recalculation of already calculated results
-when performing code clone detection. Since most code of a codebase will not change
-between revisions, a lot of processing can be avoided. However, this is not a simple
-problem, since changes in a single location can affect clone detection results across the
-entire codebase.
+Incremental clone detection avoids recomputation of already computed results when
+performing code clone detection on consecutive revisions. A revision of a code base is one
+version of a code base which has been changed from a previous revision, and when edited
+becomes the next revision. A revision of the code base could for example be a certain Git commit
+of the code base, or one could say a new revision of the code base is created for each
+edit performed while programming. These two scenarios have respectively been called the
+evolution scenario and the IDE scenario. Since in most cases, an entire codebase will not change
+entirely between revisions, many code clones will remain between revisions, and therefore
+a lot of processing can be avoided. However, this is not a simple problem, since changes
+in a single location can affect clone detection results across the entire codebase.
 
 In order to incrementally detect code clones, an algorithm is run which calculates the
 initial clones, and for successive revisions of the source code, this list is
@@ -287,43 +292,38 @@ scalability.
 Nguyen et al.~\cite{LocalitySensitiveHashingIncremental} showed that an AST-based approach
 utilizing ``Locality-Sensitive Hashing'' can detect clones incrementally with high
 precision, and showed that incremental updates could be done in real-time ($< 1$ second)
-for source code with a size of 300 KLOC.
+for source code with a size of 300KLOC (lines of code).
 
 Hummel et al.~\cite{IndexBasedIncrementalCloneDetection} later introduced the first incremental,
-scalable and distributed clone detection technique for Type-1 and Type-2 clones. This
+scalable and distributed clone detection technique for type-1 and type-2 clones. This
 approach utilizes a custom ``clone index'' data structure which can be updated
 efficiently. The implementation of this data structure is similar to that of an inverted
 index. This technique uses distributed computing to speed up its detection process.
 
 More recently, Ragkhitwetsagul and Krinke~\cite{SiameseScalableAndIncrementalClone}
-presented the tool ``Siamese'', which uses a novel approach of having multiple
+presented the tool Siamese, which as mentioned uses a novel approach of having multiple
 intermediate representations of source code to detect a high number of clones with support
-for incremental detection. The tool can detect up to Type-3 clones, but will only return
-clones based on ``queries'' given to it by the user. Queries are either files or methods
-in source-code, which are then checked for existing code clone.
-
-
+for incremental detection. The tool can detect up to type-3 clones, but will only return
+clones based on ``queries'' given to it by the user, and therefore does not allow listing
+all clones in the code base. Queries are either files or methods in source-code, which are
+then matched with other code clones.
 
 \section{Code clone IDE tooling}
 
-
-Developers are not always aware of the creation of clones in their code. \emph{Clone aware
+Developers are not always aware of the creation of clones in their code. \emph{Clone-aware
 development} means including clone management as a part of the software development
-process. Clone aware development therefore requires programmers to be aware of and be able
-to identify code clones while programming. Since large software projects can contain a lot
-of duplication, it can be hard to keep track of and manage clones. Tools which help
-developers locate and deal with clones can be a solution to this. However, Mathias Rieger
-et al. claims that a problem with many detection tools is that the tools ``report large
-amounts data that must be treated with little tool
+process~\cite{Zibran_real_time_search}. Clone-aware development therefore requires
+programmers to be aware of and be able to identify code clones while programming. Since
+large software projects can contain a lot of duplication, it can be hard to keep track of
+and manage clones. Tools which help developers locate and deal with clones can be a
+solution to this. However, Rieger et al. claims that a problem with many detection
+tools is that the tools ``report large amounts data that must be treated with little tool
 support''~\cite[1]{InsightsSystemWideDuplication}. Detecting and eliminating clones early
 in their lifecycle with IDE integrated tools could be a solution to the problem of dealing
 with too many clones.
 
-There are multiple existing clone detection tools, and the following section will go over
-tools that are integrated into an IDE and offer services to the programmer while developing. Some
-of these tools will 
-
-The IDE-based tools which exist can be categorized as
+There are multiple existing clone detection tools which integrates into IDEs. The
+IDE-based tools which exist can be categorized as
 follows~\cite[8]{Udding_Towards_Convenient_Management}:
 
 \begin{itemize}
@@ -347,10 +347,10 @@ The following tools have been developed as IDE tools to allow for clone-aware de
 
 \begin{itemize}
 
-	\item Minhaz et al. introduced a hybrid technique for performing real-time focused
+	\item Zibran et al. introduced a hybrid technique for performing real-time focused
 	      searches, i.e. searching for code clones of a selected code snippet. This
-	      technique can also detect Type-3 clones~\cite{Zibran_real_time_search}. It was
-	      later used in the tool
+	      technique can also detect Type-3 clones~\cite{Zibran_real_time_search}. This
+          algorithm was later implemented in the tool
 	      \textit{SimEclipse}~\cite{Udding_Towards_Convenient_Management} which is a plugin
 	      for the Eclipse editor. Since this tool can only detect clones of a code snippet
 	      which the developer actively selects, this tool is not well suited for finding
@@ -359,16 +359,16 @@ The following tools have been developed as IDE tools to allow for clone-aware de
     \item Another tool, SHINOBI, which is a plugin for the Visual Studio editor, can
         detect code clones in real-time without the need of the developer to select a code
         snippet, but the clones being displayed seem to only be clones of the source-code
-        which is currently being edited. It can detect Type-1 and Type-2 code clones and
+        which is currently being edited. It can detect type-1 and type-2 code clones and
         uses a token-based suffix array approach to detect clones. The paper does not
         describe how the suffix array is updated, but as the paper was released before the
         first paper describing dynamic suffix arrays~\cite{DynamicExtendedSuffixArrays},
-        one can assume that the suffix array is not dynamically updated.~\cite{SHINOBI}.
+        one can assume that the suffix array is recomputed from scratch in each search.~\cite{SHINOBI}.
 
 	\item The modern IDE IntelliJ has a built-in duplication detection and refactoring
-	      service, it is able to detect Type-1 and (some) type-2 code clones at a method
+	      service, it is able to detect type-1 and (some) type-2 code clones at a method
 	      granularity and refactors by replacing one of the clones with a method call to the
-	      other.
+	      other. The service does not seem to perform incremental updates.
 
 \end{itemize}
 
@@ -386,8 +386,8 @@ to provide language tooling for the client. The goal of the protocol is to avoid
 implementations of the same language tools for every IDE and every language, allowing for
 editor agnostic tooling. Servers which implement LSP will be able to offer IDEs
 code-completion, error-messages, go-to-definition and more. LSP also specifies generic
-code-actions and commands, which the LSP server provides to the client in order to perform
-custom actions defined by the server.
+code-actions and commands, which the LSP server communicates to the client in order to
+perform custom actions defined by the server.
 
 Figure \ref{fig:lspcommunication} shows a sample interaction between client and server
 using LSP. The client sends requests to a server in the form of JSON-RPC messages, and the
@@ -402,37 +402,83 @@ server sends a corresponding response, also in the form of JSON-RPC messages.
 \section{Preliminary algorithms and data structures}
 \label{prelimalgos}
 
-The following algorithms and data structures will be useful insight in following chapters to
-define the detection algorithm
+Before our implementation is discussed, we will look at some preliminary algorithms and
+data structures which will be useful insight in the following chapters.
 
-\subsection*{Incremental-parsing}
+\subsection*{Parsing and incremental-parsing}
 
-While writing code, programmers usually only edit small regions of code at a time. One
-``edit'' will therefore only affect small parts of the internal representations of the
-code which most tools use to perform analysis. Reusing parts of this representation would
-therefore be faster and allow programming tools to scale better. 
+One of the first steps in most interpreters and compilers is to perform lexing and parsing
+on the source code. Lexing is the process of turning the source code into a set of tokens,
+turning strings such as ``if'', ``while'', ``+'' and ``('' into singular values which are
+easier to work with. After the source code has been converted to a token-stream, the next
+step is to parse the source code into a tree structure called a syntax tree. A syntax tree
+is a tree which describes the structure of a program. For example an if-statement would
+usually be a node in the tree, with a condition and a list of statements as children. An
+abstract syntax tree (AST) is a tree where some details of the grammar may be left out in
+the tree structure, such as having concrete nodes of tokens such as ``('' and ``)'', which
+does not matter in a compiler or interpreters understanding of the program.
 
-In our detection algorithm we will need to be able to parse our source code into an AST
+When parsing a program, the parser often relies on a grammar for the language, which
+specifies the structure of the syntax tree, and is usually given in the form of a BNF
+grammar. Given a BNF grammar, one could either write a parser which conforms to this
+grammar (often recursive-descent for LL(1) grammars), or use a parser generator, which
+generates the parser, given the grammar of the language. Parser generators can often
+generate parser which are more complex, which allows for more complex grammars, such as
+LALR(1) or LR(1) grammars.
+
+A syntax tree is not only used for interpreting or compiling a language, it is also used
+to perform static analysis on the program. Static analysis is an analysis which is
+performed without running the program, and is often done in interpreters or compilers in
+order to do for example type-checking or data-flow analysis. Syntax trees are in essence
+very useful to traverse or search a programs structure to look for certain properties of
+nodes or subtrees. Traversing AST's will be useful in our clone detection algorithm in the
+following chapters.
+
+In our detection algorithm we will need to be able to parse our source code into a CST
 representation in order to select specific syntactic regions and extract the tokens.
-Therefore, we need a parsing algorithm, and when source code is edited we need an
-incremental parsing algorithm to more efficiently parse the source code when only a
-small region has been changed.
-
-Incremental parsing is the process of reparsing only parts of a syntax tree whenever an
-edit is performed. The motivation behind incremental parsing is to have a readily
+Therefore, we need a parsing algorithm. For an incremental scenario, a useful observation
+is that when a small edit is applied to a program, the syntax tree will usually not change
+much. Therefore, when source code is edited it would be more efficient to use an
+incremental parsing algorithm to parse the source code when only a small region has been
+changed. Incremental parsing is the process of parsing only parts of a syntax tree
+whenever an edit is performed in a file, and reusing subtrees of the previous syntax tree
+which did not change. The motivation behind incremental parsing is to have a readily
 available syntax tree after every edit, while doing as little computing as possible to
 maintain it.
 
-\verb|Tree-sitter| is a parser generator tool which specializes in incremental parsing. It
+Tree-sitter is a parser generator tool which specializes in incremental parsing. It
 supports incremental parsing, error recovery and querying for specific nodes and
 subtrees~\cite{treesitter}. These features combined allow Tree-sitter to become a powerful
 tool for editing and has been used for IDE features such as syntax-highlighting,
 refactoring and code navigation.
 
-The incremental reparsing in Tree-sitter is performed using Wagner's
-algorithm~\cite{PracticalAlgorithmsForIncremental}.
+The incremental parsing algorithm in Tree-sitter\footnote{For a preliminary introduction
+to Tree-sitter incremental parsing, see the following conference talk:
+\url{https://www.thestrangeloop.com/2018/tree-sitter---a-new-parsing-system-for-programming-tools.html}}
+is inspired by and implemented similarly to Wagner's incremental parsing
+algorithm~\cite{PracticalAlgorithmsForIncremental}. Each node in the AST is decorated with
+information on the range which it covers in the original source code. Whenever an edit is
+performed at location $x$ in the source code, a new AST is built by first marking all the
+nodes where the range of the node contains the position $x$. If a node contains the
+position $x$ and is marked, it needs to be parsed again, but subtrees rooted in nodes
+which are not marked can be reused, and can therefore be reused. Figure
+\ref{fig:incrementalparsing} shows on the left an expression and its corresponding AST. If
+the expression were to be changed to the expression on the right, the AST on the left
+could be incrementally parsed by parsing only the marked nodes, and reusing all the other
+nodes. Especially with the right-most difference node, we see how reusing an entire
+subtree in the AST could save time compared to parsing the entire AST from scratch. In
+larger programs we can see significantly more reusage of subtrees, since an edit to a few
+lines would likely require few nodes to be parsed compared to the number of nodes reused.
 
-\Todo{Explain Wagner's algorithm with figure and example}
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[width=1\textwidth]{figures/incrementalparsing.drawio.pdf}
+    \end{center}
+    \caption{AST's of two expressions. Left AST could be incrementally parsed to
+        the right AST if marked nodes are parsed again and the rest of the tree is reused.}
+    \label{fig:incrementalparsing}
+\end{figure}
+
 
 \subsection*{Suffix trees}
 
