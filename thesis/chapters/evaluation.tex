@@ -383,8 +383,22 @@ important that the tool can run alongside other IDE tools and applications. Ther
 will in this section analyze the memory footprint of CCDetect-LSP and again compare the
 SACA detection, incremental detection and iClones. To simplify this analysis, we will for
 each code base run one of the tests we previously ran for the performance benchmark, and
-observe the maximum memory usage of each algorithm, using the
-JProfiler\footnote{JProfiler:
-https://www.ej-technologies.com/products/jprofiler/overview.html} profiling tool.
+observe the peak memory usage of each algorithm, using the JProfiler\footnote{JProfiler:
+https://www.ej-technologies.com/products/jprofiler/overview.html} profiling tool. In our
+experience, the clone detection tools we are evaluating in this scenario does not have
+large spikes in memory usage, and generally stabilizes at around the peak memory usage.
+Therefore, we only observed the peak memory usage, as it seems representable for the
+amount of memory which would be required to run each tool in an IDE scenario.
 
-\Todo{Memory profiling graphs here}
+JProfiler provides a live memory usage overview which it profiles every $2$ seconds on a
+running JVM process. Figure \ref{fig:memoryusage} shows the results of the memory usage
+test. iClones is again left out for the intellij code base, as the memory usage exceeded
+16GB.
+
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{figures/memoryusage.pdf}
+    \end{center}
+    \caption{Memory usage of each tool when running the DEL10 test for each code base.}
+    \label{fig:memoryusage}
+\end{figure}

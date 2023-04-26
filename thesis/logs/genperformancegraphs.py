@@ -59,28 +59,3 @@ for file in os.scandir("results/"):
     pdfname = ccdetectfile.split(".")[0].split("_")[0] + "_" + ccdetectfile.split(".")[0].split("_")[1]
     plt.tight_layout()
     plt.savefig(f"../figures/performancegraphs/{pdfname}.pdf")
-
-#     x = np.array(range(3, 9))
-#     y_nosig = np.array([800.450, 1200.648, 1601.243, 2001.556, 2401.533, 2804.002])
-#
-#     y_sig = np.array([811.426, 1222.255, 1619.571, 2040.650, 2453.965, 2858.508])
-#
-# # fz = 15
-#     nosig_colour = "green"
-#     sig_colour = "darkblue"
-# # font = {"family": "", "weight": "bold", "size": 22}
-# # mpl.rc("font", **font)
-#     mpl.rcParams.update({"font.size": 13})
-#
-#     plt.plot(x, y_nosig, c=nosig_colour, label="Without signatures")
-#     plt.scatter(x, y_nosig, c=nosig_colour)
-#     plt.plot(x, y_sig, c=sig_colour, label="With signatures")
-#     plt.scatter(x, y_sig, c=sig_colour)
-#     plt.xlabel("Number of hosts in linear topology")
-#     plt.ylabel("RTT (ms)")
-#     plt.grid()
-#     plt.legend()
-#
-#     pp = PdfPages("rtt_plot.pdf")
-#     pp.savefig()
-#     pp.close()

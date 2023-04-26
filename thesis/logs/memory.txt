@@ -1,0 +1,22 @@
+WorldWind CCDetect incremental 1470
+WorldWind CCDetect SACA 338
+WorldWind iClones 2380
+
+neo4j CCDetect incremental 1740
+neo4j CCDetect SACA 576
+neo4j iClones 3000
+
+flink CCDetect incremental 3300
+flink CCDetect SACA 1170
+flink iClones 6190
+
+graal CCDetect incremental 3470
+graal CCDetect SACA 1310
+graal iClones 6410
+
+elasticsearch CCDetect incremental 6050
+elasticsearch CCDetect SACA 2660
+elasticsearch iClones 10120
+
+intellij CCDetect incremental 9880
+intellij CCDetect SACA 3660
