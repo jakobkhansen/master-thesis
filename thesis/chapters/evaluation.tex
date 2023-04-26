@@ -101,7 +101,7 @@ For the incremental detection, we have already parsed the code base and built th
 and dynamic extended suffix array structure for the code base. Afterwards, when an edit
 $E$ is performed in a document $D$, the first phase is to update the document index. We
 iterate over the documents to update their fingerprint ranges, and when a document which
-has been edited is reached, the new document content is incrementally re-parsed, queried
+has been edited is reached, the new document content is incrementally parsed, queried
 for fragments and then the fragments are fingerprinted. In the worst-case, we have to
 fingerprint the entire document, which has a complexity of $O(\vert D\vert)$.
 
@@ -193,7 +193,7 @@ iClones is a tool which similarly to CCDetect-LSP, does incremental clone detect
 tool takes $n$ revisions of the same code base and will after the initial detection, reuse
 as much information as possible to reduce the amount of work needed to analyze consecutive
 revisions. The algorithm which iClones uses is based on generalized suffix trees (GST),
-and the tool can detect up to type-3 clones. For a revision $i$, iClones excepts to have a
+and the tool can detect up to type-3 clones. For a revision $i$, iClones expects to have a
 file named \verb|changed| in the root folder of the revision, which contains information
 on which files have changed between revision $i - 1$ and $i$. For each file which has
 changed, the suffixes in the file is inserted into the GST, reusing nodes of the tree if
@@ -201,12 +201,13 @@ possible.
 
 For the performance benchmark, the code bases are set up in the way iClones expects. For
 each code base to analyze, we will store $n$ revisions of it, where each revision contains
-some changes to some of the files. An evaluation program for CCDetect-LSP was written so
-that it can process this same setup, making it simple to run both CCDetect-LSP and iClones
-on the same code bases, and compare their results.
+some changes to some files. An evaluation program for CCDetect-LSP was written so that it
+can process this same setup, making it simple to run both CCDetect-LSP and iClones on the
+same code bases, and compare their results.
 
-For each code base, we can generate new revisions. Generating new revisions of a code base
-means that we copy the code base and apply a few insertions/deletions to random files, to
+To create a larger sample set of code bases and edits, it is preferrable to generate new
+revisions of a code base programmatically. Generating new revisions of a code base means
+that we copy the code base and apply a number of insertions/deletions to random files, to
 simulate how a programmer would edit files when programming. Generating new revisions of
 code bases is not a trivial problem, since each edit performed in a file should still give
 a valid program which can be parsed. If the file cannot be parsed, Tree-sitter will not
@@ -221,7 +222,9 @@ revision is deletion of some number of fragments, we can then reverse the orderi
 revisions, so that the final revision is now the first revision, and so on. This will
 translate each deletion to instead be an insertion, as an insertion is simply an inversion
 of a deletion. Figure \ref{fig:revisioninversion} show graphically how a test consisting
-of three revisions with deletions can be inverted to create a test of insertions.
+of three revisions with deletions can be inverted to create a test of insertions. With
+this technique we can generate arbitrary tests consisting of either a number of insertions
+or deletions in each revision.
 
 \begin{figure}[t]
     \begin{center}
@@ -231,16 +234,15 @@ of three revisions with deletions can be inverted to create a test of insertions
     \label{fig:revisioninversion}
 \end{figure}
 
-With this technique, generating an arbitrary amount of tests is now possible. There are
-multiple variables we can tune when generating the tests. Primarily the three most
-important factors of the tests is the size of the code base, the number of edit operations
-in each revision, and the size of those edit operations.
+There are multiple variables we can tune when generating the tests. Primarily the three
+most important factors of the tests is the size of the code base, the number of edit
+operations in each revision, and the size of those edit operations.
 
 The size of the code base will naturally affect the running time of the algorithm. We
 randomly picked open-source code bases of differing sizes and differing amounts of
 duplication to run the benchmark on. We selected the code bases
-WorldWind\footnote{WorldWind: \url{https://github.com/NASAWorldWind/WorldWindJava}}, neo4j\footnote{neo4j:
-\url{https://github.com/neo4j/neo4j}}, graal\footnote{graal:
+WorldWind\footnote{WorldWind: \url{https://github.com/NASAWorldWind/WorldWindJava}},
+neo4j\footnote{neo4j: \url{https://github.com/neo4j/neo4j}}, graal\footnote{graal:
 \url{https://github.com/oracle/graal}}, flink\footnote{flink:
 \url{https://github.com/apache/flink}}, elasticsearch\footnote{elasticsearch:
 \url{https://github.com/elastic/elasticsearch}} and
@@ -250,8 +252,8 @@ different size Java code bases, with different amounts of duplication. Table
 \ref{tab:codebases} shows some properties of the code bases, including its number of
 lines, the number of clones detected by CCDetect-LSP for a token threshold of $100$, the
 average LCP value and the number of LCP values above $100$. An interesting aspect of the
-graal and flink code bases is that they both contain $\sim2.2\text{MLOC}$, but graal has a
-much higher $\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array
+graal and flink code bases is that they both contain ${\sim}2.2\text{MLOC}$, but graal has
+a higher $\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array
 update.
 
 \begin{table}[t]
@@ -284,14 +286,17 @@ revision. We believe these values to be slightly larger than what is realistic f
 scenario where a programmer is editing and updating the fingerprint of a single file at a
 time. For a test where we are performing $10$ insertions of $100$ tokens, this means we
 are inserting $1000$ tokens in a single edit, which is likely larger than any realistic
-edit. Therefore, if the data shows that the algorithm can handle these types of edits in
-``real-time'', we can claim that the algorithm can handle most realistic editing
-scenarios.
+edit, but could occur in large-scale automatic refactoring operations. Therefore, if the
+data shows that the algorithm can process these types of edits in ``real-time'', we believe
+that the algorithm can process most realistic editing scenarios.
 
 The benchmarks will be run on a computer with 16GB RAM, and an Intel i7-2600K CPU with a
-3.4GHz clock speed and 4 cores. The SACA detection, incremental detection and iClones will
-be run with a token threshold of $100$, and the processing time of each revision will be
-timed using a simple clock mechanism programmed in Java. 
+3.4GHz clock speed and 4 cores\footnote{Note that this CPU is quite old, and may not be
+representative of today's modern CPUs}. The computer is running Manjaro Linux with kernel
+version 6.1.25-1. The SACA detection, incremental detection and iClones will be run with a
+token threshold of $100$, and the processing time of each revision will be timed using a
+simple clock mechanism programmed in Java. Type-3 clone detection will be disabled for
+iClones.
 
 \Todo{Average results over multiple runs}
 
@@ -301,12 +306,12 @@ operations increase}
 Figure \ref{fig:WorldWind}, \ref{fig:neo4j}, \ref{fig:graal}, \ref{fig:flink},
 \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark results on the
 different code bases. Each graph shows the running time of the SACA detection, the
-incremental detection and iClones incremental detection. The running time is shown on a
-log scale, as the initial detection is extremely slow compared to the subsequent
-detections. iClones was not able to run on the intellij-community code base, as the memory
-usage exceeded 16GB, therefore only the CCDetect-LSP algorithms is shown on those graphs.
-The elasticsearch code base with a size of $3.2\text{MLOC}$ was approximately the maximum
-size code base iClones could run on memory wise.
+incremental detection and iClones. The running time is shown on a log scale, as the
+initial detection is extremely slow compared to the subsequent detections. iClones was not
+able to run on the intellij-community code base, as the memory usage exceeded 16GB,
+therefore only the CCDetect-LSP algorithms is shown on those graphs. The elasticsearch
+code base with a size of $3.2\text{MLOC}$ was approximately the maximum size code base
+iClones could run on before the computer ran out of available memory.
 
 
 \begin{figure}[H]
@@ -386,11 +391,11 @@ each code base run one of the tests we previously ran for the performance benchm
 observe the peak memory usage of each algorithm, using the JProfiler\footnote{JProfiler:
 https://www.ej-technologies.com/products/jprofiler/overview.html} profiling tool. In our
 experience, the clone detection tools we are evaluating in this scenario does not have
-large spikes in memory usage, and generally stabilizes at around the peak memory usage.
-Therefore, we only observed the peak memory usage, as it seems representable for the
-amount of memory which would be required to run each tool in an IDE scenario.
+large spikes in memory usage, and generally stabilizes around the peak memory usage.
+Therefore, we only observed the peak memory usage, as it seems to represent the amount of
+memory which would be required to run each tool in an IDE scenario.
 
-JProfiler provides a live memory usage overview which it profiles every $2$ seconds on a
+JProfiler provides a live memory usage overview which it records every $2$ seconds on a
 running JVM process. Figure \ref{fig:memoryusage} shows the results of the memory usage
 test. iClones is again left out for the intellij code base, as the memory usage exceeded
 16GB.

@@ -1,8 +1,13 @@
 \chapter{Conclusion and future work}
 
-The results show that CCDetect incremental algorithm outperforms the other two algorithms
-both in terms of time and memory on larger code bases. Our algorithm was able to handle
-large edits in an IDE environment for 5.8MLOC in under 2 second,
+The results show that the incremental algorithm of CCDetect-LSP scales better than the
+other two algorithms in terms of time. The algorithm was able to process large edits for
+code bases of over 5MLOC in under 2 seconds, and faster for smaller edits. We have shown
+that our novel application of dynamic suffix arrays for clone detection is a suitable and
+fast approach, and can give comparable and better results than tools which implement a
+dynamic suffix tree. It also outperforms other incremental detection algorithms in terms
+of memory. Even so, the memory usage is still high, and would preferably be lower when
+running on computers with lower specifications, in an IDE scenario. 
 
 \section{Future work}
 
@@ -11,7 +16,34 @@ most interesting to do more research on, to least.
 
 \subsection*{Type-2 and type-3 clones}
 
+An interesting topic which would benefit from further research is the topic of
+incrementally detecting type-3 clones incrementally. A classic algorithm to detect type-3
+algorithms is to use sparse dynamic programming to find matches of type-1 and type-2
+clones which are not exactly similar~\cite{BakerSparseDynamicProgramming}. It would be
+interesting to look at such an algorithm in an incremental perspective, and determine if
+it would be beneficial to try and avoid computation of the same type-3 clones in each
+revision. Another approach could be to create a dynamic data structure which is simple to
+maintain between revisions, and allows extraction of type-3 clones in addition to type-1
+and type-2 clones.
+
+Finding type-2 clones is also useful, but may not be of any interest for research, as
+applying an input normalization of certain tokens is likely a satisfactory solution also
+for incremental detection.
+
 \subsection*{Optimal edit operations}
+
+A problem we discussed in \cref{dynamicdetection} is that our algorithm for computing edit
+operations is not optimal. We wanted to find an optimal amount of edit operations to turn
+one string into another, but we also preferred edit operations of more than one character,
+over many edit operations of one character. We implemented a simple algorithm which would
+aggregate edit operations of the same type which were consecutive in the edit matrix, but
+this could likely be optimized. There is a trade-off in this problem where one could
+always reduce the problem to only two operations, delete the original string, and then
+insert the new string, but this might be more expensive than performing more edit
+operations, with smaller size. A possible approach is to assign a higher weight to
+starting a new edit operation than extending the previous operation, and traverse the edit
+matrix by applying these weights whenever you have a choice to extend the previous edit
+operation or start a new operation.
 
 \subsection*{Refactoring of clones}
 

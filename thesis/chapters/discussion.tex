@@ -9,16 +9,16 @@ algorithm of CCDetect-LSP to more intricate types of clones.
 \section{Performance}
 
 In \cref{evaluation} we saw how the SACA detection, incremental detection and iClones
-performed on multiple code bases of differing size and duplication. This section will
-discuss these observations and consider which factors that contributed to the observed
-outcomes and what this means for CCDetect-LSP as a clone detection tool in an IDE
-environment. While we have tested iClones in our evaluation, we do not have access to the
-source code, which is not open-source. Therefore, we cannot speak much to why iClones is
-faster/slower on certain test instances. It is possible that iClones spends some time to
-build data structures for detecting type-3 clones, which would be unfair for the
-evaluation as type-3 detection is not considered. However, it seems like at minimum, most
-of the work is avoided when type-3 clone detection is disabled, as enabling it drastically
-slows down the benchmarks of iClones.
+performed on multiple code bases of differing size. This section will discuss these
+observations and consider which factors that contributed to the observed outcomes and what
+this means for CCDetect-LSP as a clone detection tool in an IDE environment. While we have
+tested iClones in our evaluation, we do not have access to the source code, which is not
+open-source. Therefore, we cannot speak much to why iClones is faster/slower on certain
+test instances. It is possible that iClones spends some time to build data structures for
+detecting type-3 clones, which would be unfair for the evaluation as type-3 detection is
+not considered. However, it seems like at minimum, most of the work is avoided when type-3
+clone detection is disabled, as enabling it drastically slows down the benchmarks of
+iClones.
 
 It is clear that for the initial detection (revision 0), iClones has the best performance.
 This was unexpected, as one would think that the SACA detection, which does not need to
@@ -28,37 +28,33 @@ the initial detection is generally much faster than the initial iClones detectio
 (revision 0). Since much of the initial detection time is taken up by parsing the entire
 code base, it is possible that the parsing in the SACA detection is slower than iClones
 parsing, not the clone detection. Tree-sitter focuses on being performant on incremental
-re-parsing, and therefore might not be as performant on the initial parse, which could
+parsing, and therefore might not be as performant on the initial parse, which could
 explain why the initial detection for both the CCDetect-LSP detections are slower than
 iClones\footnote{Tree-sitter is not widely discussed in the literature, but is
 open-source. This claim is based on the source code and discussions surrounding it.
-(Github issues)}. In the case of CCDetect-LSP incremental algorithm, it is not unexpected
-that the initial detection is slower than the SACA initial detection, and therefore also
-the slowest algorithm overall for the initial detection. Because CCDetect-LSP incremental
-algorithm does the same work as the initial detection, but also needs to build the
-wavelet-matrix and dynamic extended suffix array data structures, it seems to consistently
-be the slowest algorithm in the initial detection. This is one of the downsides of
-CCDetect-LSP incremental algorithm, as the initial detection can be very slow for larges
-code bases, taking 3-4 minutes for the intellij-community code base.
-
-\Todo{Maybe find a shorter thing to write than "CCDetect-LSP incremental algorithm"
-everywhere}
+(Github issues)}. In the case of our incremental algorithm, it is not unexpected that the
+initial detection is slower than the SACA initial detection, and therefore also the
+slowest algorithm overall for the initial detection. Because our incremental algorithm
+does the same work as the initial detection, but also needs to build the wavelet-matrix
+and dynamic extended suffix array data structures, it seems to consistently be the slowest
+algorithm in the initial detection. This is one of the downsides of our incremental
+algorithm, as the initial detection can be very slow for larger code bases, taking 3-4
+minutes for the intellij-community code base.
 
 For the subsequent incremental detections (revisions 1-9), we see that depending on the
-size of the code base, and the size of the edits, CCDetect-LSP incremental detection and
-iClones are generally much faster than the SACA detection, as expected. For the smallest
-code bases (WorldWind and neo4j), CCDetect-LSP incremental detection seems to be the
-fastest for smaller edit sizes (INS10, DEL10), while iClones seems to be faster for the
-larger edits (INS100, DEL100). It seems that when the code bases increase in size,
-CCDetect-LSP incremental detection scales better than iClones and the SACA detection.
-CCDetect-LSP incremental detection is able to handle incremental updates for
-intellij-community (5.8MLOC) in less than 1 second for smaller edits (INS10, DEL10) and
-less than 2 seconds for the larger edits (INS100, DEL100). Elasticsearch (3.2MLOC) was the
-largest code base that iClones could be run on with 16GB RAM, and for this code base it
-seems that CCDetect-LSP starts to outperform the other two detection algorithms in all
-cases. It would be interesting to see if this trend continues for even larger code bases
-and continue to compare CCDetect-LSP incremental detection with iClones, but this would
-require a lot of RAM to benchmark.
+size of the code base, and the size of the edits, our incremental detection and iClones
+are generally much faster than the SACA detection, as expected. For the smallest code
+bases (WorldWind and neo4j), our incremental detection seems to be the fastest for smaller
+edits (INS10, DEL10), while iClones seems to be faster for the larger edits (INS100,
+DEL100). It seems that when the code bases increase in size, our incremental detection
+scales better than iClones and the SACA detection. The incremental detection is able to
+process updates to intellij-community (5.8MLOC) in less than 1 second for smaller edits
+(INS10, DEL10) and less than 2 seconds for the larger edits (INS100, DEL100).
+Elasticsearch (3.2MLOC) was the largest code base that iClones could be run on with 16GB
+RAM, and for this code base it seems that our incremental detection starts to outperform
+the other two detection algorithms in all cases. It would be interesting to see if this
+trend continues for even larger code bases and continue to compare CCDetect-LSP
+incremental detection with iClones, but this would require more RAM to benchmark.
 
 In terms of stability of performance, it seems that the SACA detection is naturally very
 stable between each revision, as it is recomputing the entire suffix array anyway. The two
@@ -66,31 +62,71 @@ incremental algorithms are more unstable in terms of running time, and this stem
 fact that some incremental updates are less computationally heavy than others. We cannot
 speak to the implementation of iClones, however, we often see that iClones takes an extra
 revision or two before it stabilizes at a lower running time. We can also sometimes see
-spikes in performance for iClones (such as in figure \ref{fig:neo4j}), which could be a
-result of garbage collection, or other implementation details we are not familiar with.
-CCDetect-LSP incremental algorithm has a running time which fluctuates mostly by how much
-time updating the suffix array takes. The other phases are generally either very stable
-(source-mapping) or are too fast to differentiate between revisions (parsing,
-fingerprinting). The time to update the suffix array is highly dependent on how many
-suffixes needs to be reordered. The number of suffixes being reordered directly affects
-how many LCP values need to be updated, which is often the bottleneck of the suffix array
-update. In our testing we examined two different code bases of size
-${\sim}2.2\text{MLOC}$, graal and flink. We hypothesized that graal would have slower
-updates, as it had a much higher $\text{LCP}_\text{avg}$, which would on average lead to
-more suffixes being reordered. However, our results show that the running time for updates
-in these code bases are very similar. The reason why we do not see much of a difference is
-likely because the $\text{LCP}_\text{avg}$ differences in our code bases is too small to
-see any noticeable effect by doubling the $\text{LCP}_\text{avg}$. Inspecting the numbers
-in Salson et al.~\cite{DynamicExtendedSuffixArraysReorderings} which proved this
-correlation between reorderings and $\text{LCP}_\text{avg}$, shows that the number of suffixes
+spikes in performance for iClones (such as in figure \ref{fig:neo4j}). Our incremental
+algorithm has a running time which fluctuates mostly by how much time updating the suffix
+array takes. The other phases are generally either very stable (source-mapping) or are too
+fast to differentiate between revisions (parsing, fingerprinting). The time to update the
+suffix array is highly dependent on how many suffixes needs to be reordered. The number of
+suffixes being reordered directly affects how many LCP values need to be updated, which is
+often the bottleneck of the suffix array update. In our testing we examined two different
+code bases of size ${\sim}2.2\text{MLOC}$, graal and flink. We hypothesized that graal
+would have slower updates, as its $\text{LCP}_\text{avg}$ was more than double that of
+flink. According to Salson et al.~\cite{DynamicExtendedSuffixArraysReorderings}, this
+should on average lead to more suffixes being reordered. However, our results show that
+the running time for updates in these code bases are very similar. The reason why we do
+not see much of a difference could be because the $\text{LCP}_\text{avg}$ differences in
+our code bases is too small to see any noticeable effect by doubling the
+$\text{LCP}_\text{avg}$. Inspecting the numbers by Salson et
+al.~\cite{DynamicExtendedSuffixArraysReorderings}, shows that the number of suffixes
 needing to be reordered for lower $\text{LCP}_\text{avg}$ values were often below $20$ and
-that the number of reorderings only drastically increases for $\text{LCP}_\text{avg}$ in
-the hundreds. These values are more realistic for DNA sequences than for our source code
-fingerprints. It therefore seems that source code is a good candidate to apply the dynamic
-suffix array update algorithm to, as updates in source code will on average lead to few
-suffixes needing to be reordered.
+that the number of reordered suffixes only drastically increases for
+$\text{LCP}_\text{avg}$ in the hundreds. These values are more realistic for inputs such
+as DNA sequences than for our source code fingerprints. It therefore seems that source
+code is a good candidate to apply the dynamic suffix array update algorithm to, as updates
+in source code will on average mean few suffixes need to be reordered.
+
+With these results, it is clear that CCDetect-LSP incremental detection is fast enough to
+be used in an IDE environment for many code bases at least up to ${\sim}2.2$MLOC (flink,
+graal), as most updates can be processed in under $1$ second for these code bases. For
+code bases of larger sizes (elasticsearch, intellij), small edits (INS10, DEL10) can still
+be processed in under $1$ second, but larger edits (INS100, DEL100) can start to take some
+time, as the processing time exceeds $1$ second and can be closer to $2$ seconds. If the
+programmer is generally only performing small edits in few files, and not doing
+large-scale refactoring across many files at once, CCDetect-LSP is likely fast enough to
+feel ``real-time'' even for these large code bases, but might feel sluggish to update on
+such larger refactoring operations.
 
 \section{Memory usage}
+
+In \cref{evaluation}, we also saw the results of the memory usage evaluation for the
+different tools. This section will discuss these results and consider which factors
+increase the memory usage of each tool, and what this means for CCDetect-LSP when used in
+an IDE environment.
+
+The results show a clear picture on how the memory usage scales with the number of lines
+of code. The SACA detection has the lowest peak memory usage, which is expected, since it
+only needs to store the extended suffix array in array form, which is more memory
+efficient than the dynamic structures of the incremental algorithms. The main memory usage
+for the SACA detection is the extended suffix array, which is not much larger than the
+source-mapping information.
+
+For the incremental algorithms it is clear that CCDetect-LSP incremental detection has a
+lower memory usage than iClones, but the memory usage is still quite high compared to the
+SACA detection. Inspecting the JProfiler memory overview shows that the main memory
+bottleneck of CCDetect-LSP incremental detection is the wavelet-matrix, and the dynamic
+extended suffix array data structures. These two data structures take up about the same
+amount of memory, and since they both are pointer-based structures representing values for
+the entire fingerprint, these two take up a lot of memory combined. For iClones, we see
+that the memory usage is even more severe, seemingly doubling the memory usage of
+CCDetect-LSP incremental detection. JProfiler reports that it is the suffix tree data
+structure which is the memory bottleneck in iClones. 
+
+While our incremental detection manages to lower its memory usage compared to iClones, the
+memory usage is still quite high for an IDE tool. For a larger code base such as
+elasticsearch and intellij-community, one would likely require a computer with at least
+16GB RAM in order to justify running CCDetect-LSP incremental detection in the IDE. Again,
+it seems like CCDetect-LSP incremental detection is a good fit for code bases up to
+${\sim}2.2MLOC$ (graal, flink), where the memory usage is lower than 4GB.
 
 \section{Clones detected}
 
@@ -125,8 +161,8 @@ tokens to be added, modified or removed and two type-3 clones are considered equ
 on some similarity threshold. Seeing such clones in the IDE could possibly lead to a lot
 of noise, and CCDetect-LSP could possibly detect a lot of clones which are not necessarily
 simple to refactor and remove. It would be interesting to see how many type-3 clones are
-reported in different code bases and how much value it would provide to the user to list
-them in the IDE. It would also be interesting to see how implementing a type-3 clone
-algorithm such as Baker's algorithm~\cite{BakerSparseDynamicProgramming} would affect the speed of the
-incremental detection, and if any type-3 detection algorithms can be made more efficient
-for an incremental detection approach.
+reported in large code bases and how much value it would provide to the user to list them
+in the IDE. It would also be interesting to see how implementing a type-3 clone algorithm
+such as Baker's algorithm~\cite{BakerSparseDynamicProgramming} would affect the speed of
+the incremental detection, and if any type-3 detection algorithms can be made more
+efficient for an incremental detection approach.
