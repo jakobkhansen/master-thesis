@@ -16,40 +16,84 @@ most interesting to do more research on, to least.
 
 \subsection*{Type-2 and type-3 clones}
 
-An interesting topic which would benefit from further research is the topic of
-incrementally detecting type-3 clones incrementally. A classic algorithm to detect type-3
-algorithms is to use sparse dynamic programming to find matches of type-1 and type-2
-clones which are not exactly similar~\cite{BakerSparseDynamicProgramming}. It would be
-interesting to look at such an algorithm in an incremental perspective, and determine if
-it would be beneficial to try and avoid computation of the same type-3 clones in each
-revision. Another approach could be to create a dynamic data structure which is simple to
-maintain between revisions, and allows extraction of type-3 clones in addition to type-1
-and type-2 clones.
+An interesting topic which would benefit from further research is the topic of detecting
+type-3 clones incrementally. A classic algorithm to detect type-3 algorithms is to use
+sparse dynamic programming to find matches of type-1 and type-2 clones which are not
+exactly similar~\cite{BakerSparseDynamicProgramming}. It would be interesting to look at
+such an algorithm in an incremental perspective, and determine if it would be beneficial
+to try and avoid computation of the same type-3 clones in each revision. Another approach
+could be to create a dynamic data structure which is simple to maintain between revisions,
+and allows extraction of type-3 clones in addition to type-1 and type-2 clones.
 
 Finding type-2 clones is also useful, but may not be of any interest for research, as
-applying an input normalization of certain tokens is likely a satisfactory solution also
-for incremental detection.
+applying an input normalization of certain token types is likely a satisfactory solution
+also for incremental detection.
 
 \subsection*{Optimal edit operations}
 
 A problem we discussed in \cref{dynamicdetection} is that our algorithm for computing edit
-operations is not optimal. We wanted to find an optimal amount of edit operations to turn
-one string into another, but we also preferred edit operations of more than one character,
-over many edit operations of one character. We implemented a simple algorithm which would
-aggregate edit operations of the same type which were consecutive in the edit matrix, but
-this could likely be optimized. There is a trade-off in this problem where one could
-always reduce the problem to only two operations, delete the original string, and then
-insert the new string, but this might be more expensive than performing more edit
-operations, with smaller size. A possible approach is to assign a higher weight to
-starting a new edit operation than extending the previous operation, and traverse the edit
-matrix by applying these weights whenever you have a choice to extend the previous edit
-operation or start a new operation.
+operations is not optimal. The problem was to find an optimal amount of edit operations to
+turn one string into another, but we also preferred edit operations of more than one
+character, over many edit operations of one character. We implemented a simple algorithm
+which would aggregate edit operations of the same type which were consecutive in the edit
+matrix, but this could likely be optimized. There is a trade-off where one could always
+reduce the problem to only two operations, delete the original string, and then insert the
+new string, but this might be more expensive than performing more edit operations, with a
+fewer number of characters. A possible approach is to assign a higher weight to starting a
+new edit operation than extending the previous operation, and build the edit matrix with
+these weights in mind.
 
 \subsection*{Refactoring of clones}
 
+Another interesting topic is the refactoring of clones. Automatic refactoring of clones
+has not been thoroughly researched, but automatic refactoring of code clones could be
+beneficial to practically all software. Some literature exists on the
+topic~\cite{TowardsAutomatedRefactoring, RefactoringOrientedClones}, especially targeted
+at object-oriented programming languages. For CCDetect-LSP it would be interesting to look
+at either combining the clone detection with existing refactoring tools from other LSP
+clients, or to implement refactoring code-actions in CCDetect-LSP itself, which
+automatically refactors to remove the selected clone. However, this would be a hard to
+achieve while CCDetect-LSP is still a language agnostic tool, as different languages have
+completely different paradigms to perform refactoring on.
+
 \subsection*{Compressing data structures}
 
+A problem with CCDetect-LSP in its current state, is its memory usage. As mentioned, when
+the size of the code base grows, the memory usage of CCDetect-LSP grows as well, and might
+reach a point where it is not feasible for lower-end computers to run it simultaneously
+with other applications, which is often the case in an IDE scenario. As mentioned, it is
+possible that reducing the size of the fingerprint by fingerprinting entire lines instead
+of tokens could improve the memory usage, but another potential solution is to compress
+the memory consuming data structures. 
+
+The wavelet matrix can be compressed to zero-order entropy, but Claude et al. explain that
+this compressed wavelet matrix is likely not as efficient as a compressed wavelet
+tree~\cite{WaveletMatrix}. It might be worthwhile to implement either a compressed wavelet
+matrix or a compressed huffman-shaped wavelet tree, and test how this affects both memory
+usage and performance. It is likely that the performance will be slower with this
+compressed data structure, but the memory usage will likely improve as well.
+
+It is also possible to compress the dynamic extended suffix array data structure as
+explained by Salson et al.~\cite{DynamicExtendedSuffixArrays}. This is done by sampling
+(storing) only some values of the dynamic permutation at a time, and computing the values
+at unsampled positions by using the sampled values. This would again slow down the
+performance of accessing the data structure, as computing the values at unsampled
+positions is slower, but it will also reduce the number of values stored, and therefore
+the memory usage will be better.
+
 \subsection*{Lazy LCP array updates}
+
+In the suffix array update phase, for each edit operation we computed in the previous
+phase, we run a suffix array update. In each one of these updates, we determine which
+positions in the LCP array need to be updated, and then compute the LCP value at that
+position. It is possible that we can avoid some work here if multiple of these edit
+operations lead to updating the same LCP positions, as we can delay the computation of
+those LCP values until after all the edit operations have updated the suffix array. We did
+experiment with delaying the LCP update algorithm and processing the bitset which
+contained the positions until after all the edit operations had updated the suffix array,
+but we did not verify the correctness of this approach. This experiment did not show any
+significant gain in performance, as it does seem that few LCP positions are updated
+multiple times, but it is possible that our approach was not correct.
 
 \section{Related work}
 

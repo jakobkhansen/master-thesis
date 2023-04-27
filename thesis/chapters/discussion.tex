@@ -136,6 +136,14 @@ practically all type-1 clones, which gives us confidence that our algorithm is c
 terms of the reported clones. BigCloneBench also reported that CCDetect-LSP was able to
 detect some type-2 clones, but as previously stated, this is accidental.
 
+We decided to store and represent clones as clone classes, rather than clone pairs. We
+chose this because it gives a clearer picture to the programmer of all the clones of a
+certain code snippet, rather than having to navigate multiple times between multiple
+clones to determine all the clones of the snippet. Baars et al. also claims that storing
+clone classes is advantageous in a refactoring scenario, which is intuitive, as
+refactoring a set of clones likely leads to a better result than refactoring only a single
+clone pair~\cite{TowardsAutomatedRefactoring}.
+
 Detecting type-1 clones is likely the most important clones to detect in an IDE scenario,
 but type-2 clones are also likely useful. Recall that type-2 clones are clones which are
 structurally identical, but allows differences in literals, identifiers and types. Recall
@@ -166,3 +174,60 @@ in the IDE. It would also be interesting to see how implementing a type-3 clone 
 such as Baker's algorithm~\cite{BakerSparseDynamicProgramming} would affect the speed of
 the incremental detection, and if any type-3 detection algorithms can be made more
 efficient for an incremental detection approach.
+
+CCDetect-LSP identifies clones on a token level, unlike other tools which identifies
+clones on a line level\cite{Zibran_real_time_search}. It is more fine-grained to detect
+clones on a token level, and it could detect clones which would not be detected on a line
+level without needing to format the source code. However, it is possible that we could see
+a substantial performance and memory usage gain by instead fingerprinting entire lines
+instead of each token. This would drastically reduce the size of the fingerprint, which
+would make the suffix array updates faster and reduce the size of the dynamic extended
+suffix array and wavelet matrix. However, as there are a lot more unique lines in a code
+base than tokens, this would also drastically increase the alphabet size, $\theta$, which
+will at least slow down operations on the wavelet matrix. This is a trade-off which would
+be interesting to explore further.
+
+\section{IDE and language agnostic clone detection}
+
+CCDetect-LSP was implemented as a standalone program, which communicates with an IDE
+client via LSP. This means that the tool is IDE agnostic in the sense that any IDE which
+implements LSP can communicate with CCDetect-LSP and receive code clone information. With
+our implementation we are able to list clones in the form of diagnostics, and allows the
+programmer to navigate between all the matches of a clone via code-actions and/or
+information embedded in the diagnostic. This shows that LSP is capable of supporting the
+bare-minimum needed functionality of a clone detection tool. 
+
+One downside to reporting code clones as diagnostics is that code clones are listed
+together with all other diagnostics reported by other LSP servers. If the project contains
+hundreds of clones this could make the diagnostics list hard to use for any other usage
+than to list clones. A nice addition to the LSP protocol in this regard would be the
+possibility of categorizing diagnostics, and letting the client filter or show only
+diagnostics of a certain category. Another possibility is to let LSP clients know which
+LSP server has sent which diagnostics, so that the LSP client can filter or show only
+diagnostics of a certain LSP server at a time. For CCDetect-LSP it would be nice to be
+able to have a separate view of only code clone diagnostics, which can be opened or closed
+as needed, and allow another LSP server to be the ``main'' source of diagnostics. Ano
+
+Another interesting feature which could be implemented with LSP is the concept of linked
+editing. Linked editing means being able to edit two or more locations at the same time,
+which could be used as an automatic way to apply an edit to all clones at once. LSP has
+since version 3.16 had such a feature, but we are not sure how fitting this feature is for
+code clone linked editing.
+
+The algorithm of CCDetect-LSP is also language agnostic. We have shown that as long as
+there exists a Tree-sitter grammar for a language\footnote{Tree-sitter can parse most
+mainstream languages, see: \url{https://tree-sitter.github.io/tree-sitter/}}, it can be
+parsed and fingerprinted. When the source code has been fingerprinted, there is no longer
+any difference between detection for different languages. Therefore, CCDetect-LSP should
+work for any language, and in our testing, there is nothing which hinders CCDetect-LSP
+from working for any language we have tested, other than grammars not working correctly.
+It is possible to forego parsing the source code, and only use a tokenizer to get the
+tokens. From there one could use a language agnostic tokenization algorithm to avoid
+needing a grammar at all, and makes the algorithm truly language agnostic. However, this
+would not allow any sort of fragment selection, which likely leads to a lot of unnecessary
+code being analyzed for clones, which both slows down the detection process, but can also
+lead to a lot of noise in the clone list. For example in Java, a sorted list of imports at
+the beginning of the file could easily be cloned in multiple files, without any real
+possibility of being refactored to avoid this duplication. For this reason, we believe a
+``grammar-pluggable'' approach with a parser generator such as Tree-sitter is a better
+approach than a completely language agnostic one for the IDE scenario.

@@ -18,17 +18,17 @@ is a code smell which occurs in practically every large software project. Code c
 analysis (duplicate code analysis) has therefore in the last decade become a highly active
 field of research and many tools have been developed to detect duplicated
 code~\cite[6]{Inoue_introduction_to_cc}. This thesis will focus on this type of code
-analysis, and implement an efficient algorithm and tool for detecting code clones which
-targets the IDE scenario.
+analysis and implement a novel algorithm and tool for detecting code clones, which targets
+the IDE scenario.
 
 \section{Motivation and problem statement}
 
 Many tools and algorithms exist for duplicate code detection. However, few of these have
 the capability of efficiently detecting duplicated code in a real-time IDE environment.
-The problem with existing algorithms is that most of them need to rerun the entire
-analysis whenever a small change to a single file happens. Incremental algorithms that do
+The problem with existing algorithms in an IDE scenario is that most of them need to rerun
+the entire analysis whenever a change to any file happens. Incremental algorithms that do
 not recompute all clones from scratch are therefore interesting for use-cases such as in
-IDEs while programming and for analyzing different Git revisions of the same source code,
+IDEs while programming and for analyzing different git revisions of the same source code,
 but this type of algorithm has not been thoroughly explored for code clone analysis. This
 limits the ability for programmers to easily detect duplicated code as they work, as the
 existing tools are also often limited to specific programming languages or IDEs.
@@ -42,8 +42,8 @@ development environment.
 
 \section{Our contribution}
 
-CCDetect-LSP provides clone detection capabilities in a real-time IDE environment. The
-tool allows the user to list and interact with all the code clones in the code base, jump
+CCDetect-LSP provides code clone detection capabilities in a real-time IDE environment.
+The tool allows the user to list and interact with all the clones in the code base, jump
 between matching clones, and get quick feedback while editing code in order to determine
 which clones are introduced/eliminated.
 
