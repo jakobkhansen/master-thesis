@@ -266,22 +266,26 @@ representations to get a better accuracy for clone detection.
 
 \section{Incremental clone detection}
 
-Incremental clone detection avoids recomputation of already computed results when
-performing code clone detection on consecutive revisions. A revision of a code base is one
-version of a code base which has been changed from a previous revision, and when edited
-becomes the next revision. A revision of the code base could for example be a certain Git commit
-of the code base, or one could say a new revision of the code base is created for each
-edit performed while programming. These two scenarios have respectively been called the
-evolution scenario and the IDE scenario. Since in most cases, an entire codebase will not change
-entirely between revisions, many code clones will remain between revisions, and therefore
-a lot of processing can be avoided. However, this is not a simple problem, since changes
-in a single location can affect clone detection results across the entire codebase.
+Incremental clone detection avoids computation of already computed results when performing
+code clone detection on consecutive revisions of a code base.  A revision of a code base
+is one version of a code base which has been changed from a previous revision, and once
+edited, becomes the next revision.  A revision of the code base could for example be a
+certain Git commit of the code base, or one could say a new revision of the code base is
+created for each edit performed while programming. These two scenarios have respectively
+been called the evolution scenario and the IDE scenario. Incremental clone detection could
+be realized in the form of either storing clones between each revision, or by maintaining
+a data structure which is fast to update when the input updates, and also facilitates fast
+extraction of clones. Since in most cases, an entire code base will not change drastically
+in consecutive revisions, many code clones and the general structure of most of the source
+code will remain, and therefore a lot of processing can be avoided. However, this is not a
+simple problem, since changes in a single location can affect clone detection results
+across the entire codebase.
 
 In order to incrementally detect code clones, an algorithm is run which calculates the
 initial clones, and for successive revisions of the source code, this list is
-incrementally updated, more efficiently than the initial run. Different algorithms will
-also maintain different data structures to support detecting new clones faster in
-successive revisions.
+incrementally updated, more efficiently than the initial run. In some cases, this could be
+the same algorithm. As mentioned, different algorithms will also maintain different data
+structures to support detecting new clones faster in successive revisions.
 
 Göde and Koschke proposed the first incremental clone detection
 algorithm~\cite{GodeIncrementalCloneDetection}. The algorithm employs a generalized suffix
@@ -294,8 +298,8 @@ utilizing ``Locality-Sensitive Hashing'' can detect clones incrementally with hi
 precision, and showed that incremental updates could be done in real-time ($< 1$ second)
 for source code with a size of 300KLOC (lines of code).
 
-Hummel et al.~\cite{IndexBasedIncrementalCloneDetection} later introduced the first incremental,
-scalable and distributed clone detection technique for type-1 and type-2 clones. This
+Hummel et al.~\cite{IndexBasedIncrementalCloneDetection} later introduced the first
+incremental and distributed clone detection technique for type-1 and type-2 clones. This
 approach utilizes a custom ``clone index'' data structure which can be updated
 efficiently. The implementation of this data structure is similar to that of an inverted
 index. This technique uses distributed computing to speed up its detection process.
@@ -334,27 +338,27 @@ follows~\cite[8]{Udding_Towards_Convenient_Management}:
 	developers are aware that they are creating clones when pasting already existing code
 	snippets.
 
-	\item\textit{Clone detection and visualization tools:} This category of tools has more
-	sophisticated clone detection capabilities and will detect code clones which occur
-	accidentally.
+    \item\textit{Clone detection and visualization tools:} This category of tools has more
+        sophisticated clone detection capabilities and will detect all code clones
+        algorithmically, unlike copy-paste clone tools.
 
-	\item\textit{Versatile clone management:} This category of tools covers tools which provide more
-	services than the above. Services like refactoring and simultaneous editing of clones fall
-	under this category.
+    \item\textit{Versatile clone management:} This category of tools covers tools which
+        provide more services than the above. Services like refactoring and simultaneous
+        editing of clones fall under this category.
+
 \end{itemize}
 
 The following tools have been developed as IDE tools to allow for clone-aware development:
 
 \begin{itemize}
 
-	\item Zibran et al. introduced a hybrid technique for performing real-time focused
-	      searches, i.e. searching for code clones of a selected code snippet. This
-	      technique can also detect Type-3 clones~\cite{Zibran_real_time_search}. This
-          algorithm was later implemented in the tool
-	      \textit{SimEclipse}~\cite{Udding_Towards_Convenient_Management} which is a plugin
-	      for the Eclipse editor. Since this tool can only detect clones of a code snippet
-	      which the developer actively selects, this tool is not well suited for finding
-	      accidental clones and tracking clones in areas.
+    \item Zibran et al. introduced a hybrid technique for performing real-time focused
+        searches, i.e. searching for code clones of a selected code snippet. This
+        technique can also detect Type-3 clones~\cite{Zibran_real_time_search}. This
+        algorithm was later implemented in the tool
+        \textit{SimEclipse}~\cite{Udding_Towards_Convenient_Management} which is a plugin
+        for the Eclipse editor. This tool is also based on a suffix tree, but it is
+        unclear if this suffix tree is updated incrementally.
 
     \item Another tool, SHINOBI, which is a plugin for the Visual Studio editor, can
         detect code clones in real-time without the need of the developer to select a code
@@ -363,7 +367,8 @@ The following tools have been developed as IDE tools to allow for clone-aware de
         uses a token-based suffix array approach to detect clones. The paper does not
         describe how the suffix array is updated, but as the paper was released before the
         first paper describing dynamic suffix arrays~\cite{DynamicExtendedSuffixArrays},
-        one can assume that the suffix array is recomputed from scratch in each search.~\cite{SHINOBI}.
+        one can assume that the suffix array is recomputed from scratch in each
+        search.~\cite{SHINOBI}.
 
 	\item The modern IDE IntelliJ has a built-in duplication detection and refactoring
 	      service, it is able to detect type-1 and (some) type-2 code clones at a method
@@ -378,23 +383,23 @@ Static analysis tools that integrate with IDEs are usually tightly coupled to a 
 IDE and its APIs, like parsing and refactoring support. This makes it difficult to utilize
 a tool in another IDE, since the API's the tool utilizes is no longer available. In order
 to make IDE-based static analysis tools more widely available, it is useful if such tools
-could be made IDE agnostic. The Language Server Protocol (LSP) is a protocol which
-attempts to solve this problem~\cite{lsp}.
+could be made IDE agnostic. The Language Server Protocol (LSP) is a server-client protocol
+which attempts to solve this problem~\cite{lsp}.
 
-LSP is a protocol which specifies interaction between a client (IDE) and server in order
-to provide language tooling for the client. The goal of the protocol is to avoid multiple
-implementations of the same language tools for every IDE and every language, allowing for
-editor agnostic tooling. Servers which implement LSP will be able to offer IDEs
-code-completion, error-messages, go-to-definition and more. LSP also specifies generic
-code-actions and commands, which the LSP server communicates to the client in order to
-perform custom actions defined by the server.
+LSP is a protocol which specifies interaction between a client (IDE) and server (analysis
+tool) in order to provide language tooling for the client. The goal of the protocol is to
+avoid multiple implementations of the same language tools for every IDE and every
+language, allowing for IDE agnostic tooling. Servers which implement LSP will be able to
+offer IDEs code-completion, error-messages, go-to-definition and more. LSP also specifies
+generic code-actions and commands, which the LSP server communicates to the client in
+order to perform custom actions defined by the server.
 
 Figure \ref{fig:lspcommunication} shows a sample interaction between client and server
 using LSP. The client sends requests to a server in the form of JSON-RPC messages, and the
 server sends a corresponding response, also in the form of JSON-RPC messages.
 
 \begin{figure}[t]
-	\includegraphics[width=\textwidth]{images/lspcommunication.png}
+	\includegraphics[width=\textwidth]{figures/lspcommunication.drawio.pdf}
 	\caption{Example client-server interaction using LSP}
 	\label{fig:lspcommunication}
 \end{figure}
