@@ -1,43 +1,60 @@
 \chapter{Implementation: LSP server architecture}
 \label{lspimplementation}
 
-CCDetect-LSP is integrated into IDEs via the Language server protocol. The tool starts up as
-an LSP server, which an IDE client can connect to and send/receive messages from. The goal
-of the LSP client-server interaction is to give users of the tool an overview of all
-clones as they appear. The LSP server is implemented in Java with the LSP4J library which
-provides an abstraction layer on top of the protocol which is easier to work with
-programmatically.
+The following chapters will discuss how CCDetect-LSP is implemented, and especially
+focuses on our novel algorithm based on dynamic suffix arrays. The current chapter will
+look at the LSP integration and how source code is initially indexed, while the two next
+chapters will discuss first how clones are initially detected by CCDetect-LSP and then how
+this analysis in incrementally updated, faster than running the initial detection again.
 
-The LSP server shows error-messages (diagnostics) which indicate which section of code a
-clone covers, they also provide information about the matching clones and code-actions to
-navigate between them. Whenever source code is edited, the LSP server receives a message
-containing information about what has changed. The LSP server then generates a new list of
-clones, and displays those to the client instead.
+CCDetect-LSP is integrated into IDEs via the Language server protocol. The tool starts up
+as an LSP server, which an IDE client can connect to and send/receive messages from. The
+goal of the LSP client-server interaction is to give users of the tool an overview of all
+clones as they appear in source code, and allow them to navigate between matching clones.
+The LSP server is implemented in Java with the LSP4J library which provides an abstraction
+layer on top of the protocol which is easier to work with programmatically.
+
+\begin{figure}[t]
+	\includegraphics[width=\textwidth]{figures/vscodecodeclone.png}
+	\caption{Code clones displayed in the VSCode IDE}
+	\label{fig:vscodeclones}
+\end{figure}
+
+Figure \ref{fig:vscodeclones} shows how clones are displayed in the VSCode IDE. The image
+shows a section of a file where a Java switch statement has been duplicated in two other
+files. Code clones are displayed inline in the file as an ``Information'' diagnostic, and
+when hovered over, the client shows the \verb|DiagnosticRelatedInformation| information of
+the diagnostic where all the matching clones are displayed and can be clicked to navigate
+to the corresponding match. For a client which may not implement the
+\verb|DiagnosticRelatedInformation| message\footnote{This feature was added to LSP version
+3.16, released in 2020}, invoking the code-action to navigate to the matching clone is
+another option.
 
 The following user-stories shows how interaction with the LSP server works.
 
-\begin{itemize}
-	\item A programmer wants to see code clones for a file in their project, the
-	      programmer opens the file in their IDE and is displayed diagnostics in the code
-	      wherever there are detected clones. The matching code clones are not necessarily
-	      in the same file.
+\begin{itemize} 
+
+    \item A programmer wants to see code clones for a file in their project, the
+        programmer opens the file in their IDE and is shown diagnostics inline with the
+        code wherever there are detected clones. The matching code clones are not
+        necessarily in the same file.
 
 	\item A programmer wants to see all code clones for the current project. The
 	      programmer opens the IDEs diagnostic view and will see all code clones detected
 	      as diagnostics there. The diagnostic will contain information like where the clone
 	      exists, and where the matching clone(s) are.
 
-	\item A programmer wants to jump to one of the matches of a code clone in their
-	      editor. The programmer moves their cursor to the diagnostic and will see a list of
-	      the matching code clones. The programmer will select the wanted code clone which
-	      will move the cursor to the file and location of the selected code clone.
-          Alternatively, a code-action can be invoked to navigate, if the client does not
-          implement the \verb|DiagnosticRelatedInformation| interface.
+    \item A programmer wants to jump to one of the matches of a code clone in their IDE.
+        The programmer moves their cursor to the diagnostic and will see a list of the
+        matching code clones. The programmer selects any of the code clones which will
+        open the file and location of the selected code clone. Alternatively, a
+        code-action can be invoked to navigate, if the client does not implement the
+        \verb|DiagnosticRelatedInformation| interface.
 
       \item A programmer wants to remove a set of clones by applying the
-          ``extract-method'' refactoring. The programmer performs the necessary
-          refactorings, and will see that all the previously detected clones are gone when
-          the LSP server updates.
+          ``extract-method'' refactoring (not implemented by CCDetect-LSP). The programmer
+          performs the necessary refactorings, and will see that all the previously
+          detected clones are gone when the LSP server updates its analysis.
 
 \end{itemize}
 
@@ -125,16 +142,3 @@ code-actions are similarly sent to the client via the \verb|textDocument/codeAct
 message, but this message is only invoked when the client specifically requests code
 actions at a certain location.
 
-Figure \ref{fig:vscodeclones} shows how clones are displayed in the VSCode IDE. Code
-clones are displayed inline in the file as an ``Information'' diagnostic, and when hovered
-over, the client shows the \verb|DiagnosticRelatedInformation| information of the diagnostic
-where all the matching clones are displayed and can be clicked to navigate to the
-corresponding match. For a client which may not implement the
-\verb|DiagnosticRelatedInformation| message (which was added in LSP version 3.16), invoking
-the code-action to navigate to the matching clone is another option.
-
-\begin{figure}
-	\includegraphics[width=\textwidth]{figures/vscodecodeclone.png}
-	\caption{Code clones displayed in the VSCode IDE}
-	\label{fig:vscodeclones}
-\end{figure}
