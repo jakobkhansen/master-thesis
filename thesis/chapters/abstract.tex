@@ -1,3 +1,12 @@
 \chapter*{Abstract}
 
-\Todo{Write abstract}
+Duplicated code, code which is more or less copied to different locations in a code base
+is present in almost all software today. This can especially affect the maintainability
+and extensibility of the software. Algorithms and tools which facilitates detection and
+management of duplicated codes is therefore an important research field. Incremental
+detection algorithms, algorithms which do not need to run the entire analysis from scratch
+for consecutive revisions of the code base, is especially interesting for use cases such
+as when running the detection tool in an IDE. In this thesis we present CCDetect-LSP, a
+duplicate code detection tool which targets the IDE scenario and implements a novel
+incremental clone detection algorithm, which aims to be faster than rerunning the analysis
+from scratch.

@@ -35,7 +35,7 @@ exactly similar~\cite{BakerSparseDynamicProgramming}. It would be interesting to
 such an algorithm in an incremental perspective, and determine if it would be beneficial
 to try and avoid computation of the same type-3 clones in each revision. Another approach
 could be to create a dynamic data structure which is simple to maintain between revisions,
-and allows extraction of type-3 clones in addition to type-1 and type-2 clones.
+and allows extraction of type-3 clones in addition to type-1 and type-2 clones. 
 
 Finding type-2 clones is also useful, but may not be of any interest for research, as
 applying an input normalization of certain token types is likely a satisfactory solution
@@ -120,18 +120,20 @@ features, such as visualization of clones in a tree-view, simultaneous editing o
 and multiple features related to tracking the evolution of a clone.
 
 Zhu et al. published a paper while this thesis was being written which shows a tool which
-implements grammar-pluggable clone detection. This is the same concept which we have
-implemented in CCDetect-LSP where we achieve language agnostic clone detection by using a
-parser generator. They are able to identify all type-2 clones and has a $61\%$ recall for
-type-3 clones. Their algorithm seems to be based on a completely different paradigm of
-clone detection than suffix trees and suffix arrays, which could be interesting to examine
-for its potential in an incremental setting.
+implements grammar-pluggable clone detection~\cite{GrammarPluggableCloneDetection}. This
+is the same concept which we have implemented in CCDetect-LSP where we achieve language
+agnostic clone detection by using a parser generator. They are able to identify all type-2
+clones and has a $61\%$ recall for type-3 clones. Their algorithm seems to be based on a
+completely different paradigm of clone detection than suffix trees and suffix arrays,
+which could be interesting to examine for its potential in an incremental setting.
+However, we should note that their evaluation shows that this type of clone detection is
+not very fast, so it is not clear if this approach is suitable in a ``real-time'' setting.
 
 For our dynamic extended suffix array implementation, we built upon the ideas of Salson et
 al.~\cite{DynamicExtendedSuffixArrays, DynamicExtendedSuffixArraysReorderings, DynamicBWT}
 There have been other attempts to improve such an algorithm, such as Amir et
 al.~\cite{AmirDynamicSuffixWithPoly}. They claim to have obtained a sub-linear time for
-queries in the suffix-array, with a data structure where symbols can be substituted in the
+queries in the suffix array, with a data structure where symbols can be substituted in the
 input string, in $O(\log^4(n))$ time. This would not be suitable for our clone detection
 algorithm, as we also require inserts and deletions. They also show a data structure with
 $O(\log^5(n))$ query-time for the inverted suffix array, which can maintain the inverted
