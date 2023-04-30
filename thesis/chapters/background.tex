@@ -379,12 +379,12 @@ The following tools have been developed as IDE tools to allow for clone-aware de
 
 \section{The Language Server Protocol}
 
-Static analysis tools that integrate with IDEs are usually tightly coupled to a specific
-IDE and its APIs, like parsing and refactoring support. This makes it difficult to utilize
-a tool in another IDE, since the API's the tool utilizes is no longer available. In order
-to make IDE-based static analysis tools more widely available, it is useful if such tools
-could be made IDE agnostic. The Language Server Protocol (LSP) is a server-client protocol
-which attempts to solve this problem~\cite{lsp}.
+Static analysis tools that integrate with IDEs are often tightly coupled to a specific IDE
+and its APIs, like parsing and refactoring support. This makes it difficult to utilize a
+tool in another IDE, since the APIs are no longer available. In order to make IDE-based
+static analysis tools more widely available, it is therefore useful for such tools to be
+made IDE agnostic. The Language Server Protocol (LSP) is a server-client protocol which
+attempts to solve this problem~\cite{lsp}.
 
 LSP is a protocol which specifies interaction between a client (IDE) and server (analysis
 tool) in order to provide language tooling for the client. The goal of the protocol is to
@@ -436,26 +436,25 @@ to perform static analysis on the program. Static analysis is an analysis which 
 performed without running the program, and is often done in interpreters or compilers in
 order to do for example type-checking or data-flow analysis. Syntax trees are in essence
 very useful to traverse or search a programs structure to look for certain properties of
-nodes or subtrees. Traversing AST's will be useful in our clone detection algorithm in the
-following chapters.
+nodes or subtrees. 
 
-In our detection algorithm we will need to be able to parse our source code into a CST
+In our detection algorithm we will need to be able to parse our source code into an AST
 representation in order to select specific syntactic regions and extract the tokens.
 Therefore, we need a parsing algorithm. For an incremental scenario, a useful observation
 is that when a small edit is applied to a program, the syntax tree will usually not change
-much. Therefore, when source code is edited it would be more efficient to use an
-incremental parsing algorithm to parse the source code when only a small region has been
-changed. Incremental parsing is the process of parsing only parts of a syntax tree
-whenever an edit is performed in a file, and reusing subtrees of the previous syntax tree
-which did not change. The motivation behind incremental parsing is to have a readily
-available syntax tree after every edit, while doing as little computing as possible to
-maintain it.
+too much. When source code is edited it would therefore be more efficient to use an
+incremental parsing algorithm which reuses parts of the old syntax tree, but updates it to
+reflect the new source code. Incremental parsing is the process of parsing only parts of a
+syntax tree whenever an edit is performed in a file, and reusing subtrees of the previous
+syntax tree which did not change. The motivation behind incremental parsing is to have a
+readily available syntax tree after every edit, while doing as little computing as
+possible to maintain it.
 
 Tree-sitter is a parser generator tool which specializes in incremental parsing. It
 supports incremental parsing, error recovery and querying for specific nodes and
-subtrees~\cite{treesitter}. These features combined allow Tree-sitter to become a powerful
-tool for editing and has been used for IDE features such as syntax-highlighting,
-refactoring and code navigation.
+subtrees~\cite{treesitter}. These features combined makes Tree-sitter a powerful tool for
+editing and has been used for IDE features such as syntax-highlighting, refactoring and
+code navigation.
 
 The incremental parsing algorithm in Tree-sitter\footnote{For a preliminary introduction
 to Tree-sitter incremental parsing, see the following conference talk:
@@ -471,9 +470,9 @@ which are not marked can be reused, and can therefore be reused. Figure
 the expression were to be changed to the expression on the right, the AST on the left
 could be incrementally parsed by parsing only the marked nodes, and reusing all the other
 nodes. Especially with the right-most difference node, we see how reusing an entire
-subtree in the AST could save time compared to parsing the entire AST from scratch. In
-larger programs we can see significantly more reusage of subtrees, since an edit to a few
-lines would likely require few nodes to be parsed compared to the number of nodes reused.
+subtree in the AST could save time compared to normal parsing. In larger programs we can
+see significantly more reusage of subtrees, since an edit to a few lines would likely
+require few nodes to be parsed compared to the number of nodes reused.
 
 \begin{figure}[t]
     \begin{center}
@@ -487,14 +486,16 @@ lines would likely require few nodes to be parsed compared to the number of node
 
 \subsection*{Suffix trees}
 
-A classic algorithm~\cite{Zibran_real_time_search, GodeIncrementalCloneDetection} for code
-clone detection traverses a suffix-tree in order to find maximal repeats in all suffixes
-of the input string T.
+A classic algorithm for code clone detection traverses a suffix-tree in order to find
+maximal repeats in all suffixes of the input string T~\cite{Zibran_real_time_search,
+GodeIncrementalCloneDetection}. This algorithm is not highly relevant to our detection
+algorithm, however it is related, and this section gives some insight into the most common
+algorithm for clone detection.
 
-The suffix tree of a string $T$ is a compressed trie where all the suffixes of $T$ have been
-inserted. The tree is compressed by combining consecutive nodes in a row which has
-only one child into a single node. A common usage of a suffix tree is to determine whether
-or not a suffix exists in $T$, and where in $T$ the suffix starts.
+The suffix tree of a string $T$ is a compressed trie where all the suffixes of $T$ have
+been inserted into it. The trie is compressed by compressing consecutive nodes in a row
+which have only one child into a single node. A common usage of a suffix tree is to
+determine whether or not a suffix exists in $T$, and where in $T$ the suffix starts.
 
 Figure \ref{fig:suffixtree} shows the suffix-tree for $T=\text{BANANA\$}$. In order to
 determine where the suffix $\text{ANANA\$}$ exists in $T$, one can start from the root,
@@ -668,26 +669,28 @@ the LCP value at position 3 is 3.
 
 Suffix arrays can be constructed in linear time in terms of the length of T. Many suffix
 array construction algorithms (SACA) have been discovered in the last
-decade~\cite{SuffixArrayConstruction}, many of which run in linear-time. An algorithm which
-has been shown to be very efficient in practice is Nong and Chan's algorithm based on
-recursive suffix sorting of smaller strings~\cite{LinearTimeSuffixArraySAIS}. 
+decade~\cite{SuffixArrayConstruction}, many of which run in linear time. An algorithm
+which has been shown to be very efficient in practice is Nong and Chan's algorithm based
+on recursive suffix sorting of smaller constructed strings, which will be used in our
+detection algorithm~\cite{LinearTimeSuffixArraySAIS}. 
 
-The enhanced (extended) suffix array is the suffix array and the additional LCP array,
+The extended (enhanced) suffix array is the suffix array and the additional LCP array,
 which has been shown to be as powerful as a suffix tree, in terms of what can be computed
-with it with the same time complexity, but uses a smaller amount of
-memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}.
+with it with the same time complexity. The advantage of using a suffix array is that it
+uses a smaller amount of memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}.
 
  \subsection*{Dynamic bitsets}
 
 A bitset is an array of bits, each bit representing either the value true or false. A bit
 with the value of 1 is usually referred to as a set bit, and a value of 0 is referred to
-as an unset or cleared bit. Bitsets have at least operations for setting the value at a
-position, and looking up the value at a position. Bitsets are useful for many problems,
-especially as a ``succinct data structure''. A succinct data structure is a data structure
-which attempts to use an amount of memory close to the theoretic lower bound, while still
-allowing effective queries on it. For example for a string of length $n$, we could store
-up to $O(n \log_{}\sigma)$ bits before the bit vector exceeds the size of the string
-itself, where $\sigma$ is the size of the string's alphabet.
+as an unset or cleared bit. Operations on bitsets normally include at least an operation
+for setting the value at a position, and an operation for looking up the value at a
+position. Bitsets are useful for many problems, especially as a ``succinct data
+structure''. A succinct data structure is a data structure which attempts to use an amount
+of memory close to the theoretic lower bound, while still allowing effective queries on
+it. For example for a string of length $n$, we could store up to $O(n \log_{}\sigma)$ bits
+before the bit vector exceeds the size of the string itself, where $\sigma$ is the size of
+the string's alphabet.
 
 The most well known query to do on bitsets is the rank/select queries.
 
