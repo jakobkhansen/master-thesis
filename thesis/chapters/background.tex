@@ -672,12 +672,14 @@ array construction algorithms (SACA) have been discovered in the last
 decade~\cite{SuffixArrayConstruction}, many of which run in linear time. An algorithm
 which has been shown to be very efficient in practice is Nong and Chan's algorithm based
 on recursive suffix sorting of smaller constructed strings, which will be used in our
-detection algorithm~\cite{LinearTimeSuffixArraySAIS}. 
+initial detection algorithm~\cite{LinearTimeSuffixArraySAIS}. 
 
-The extended (enhanced) suffix array is the suffix array and the additional LCP array,
+The extended or enhanced suffix array is the suffix array and the additional LCP array,
 which has been shown to be as powerful as a suffix tree, in terms of what can be computed
 with it with the same time complexity. The advantage of using a suffix array is that it
-uses a smaller amount of memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}.
+uses a smaller amount of memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. The
+extended suffix array is the major data structure which will be used in our detection
+algorithm to find duplicate code, as explained in the upcoming implementation chapters.
 
  \subsection*{Dynamic bitsets}
 
@@ -692,25 +694,27 @@ it. For example for a string of length $n$, we could store up to $O(n \log_{}\si
 before the bit vector exceeds the size of the string itself, where $\sigma$ is the size of
 the string's alphabet.
 
-The most well known query to do on bitsets is the rank/select queries.
+The most well known queries to perform on bitsets is the rank/select queries.
 
 \begin{definition}[Rank query on bitset]
 
-    A rank query $rank_1(i)$ on a bitset B, computes the number of set bits
-    up to, but not including position $i$. Conversely, $rank_0(B)$ returns the number of
-    unset bits up to $i$.
+    A rank query $rank_1(i)$ on a bitset B, computes the number of set bits up to, but not
+    including position $i$. Conversely, $rank_0(B)$ returns the number of unset bits up to
+    position $i$.
 
 \end{definition}
 \begin{definition}[Select query on bitset]
     
-    A select query $select_1(i)$ on a bitset B, computes the position of the ith
-    set bit in B. Conversely, $select_0(i)$ returns the position of the ith unset bit in
-    B.
+    A select query $select_1(i)$ on a bitset B, computes the position of the ith set bit
+    in B. Conversely, $select_0(i)$ returns the position of the ith unset bit in B.
 
 \end{definition}
 
-Jacobson's rank can calculate rank and select on static bitsets in $O(1)$ time by
-pre-calculating all answers in a space efficient table~\cite{JacobsonsRank}.
+Jacobson's rank can perform rank/select queries on static bitsets in $O(1)$ time by
+pre-computing all answers in a space efficient table~\cite{JacobsonsRank}.
+
+In some cases it is also useful to have a dynamic bitset, a bitset where
+insertions/deletions are supported as well.
 
 \begin{definition}[Dynamic bitset]
 
@@ -725,15 +729,15 @@ pre-calculating all answers in a space efficient table~\cite{JacobsonsRank}.
 
 \end{definition}
 
-The standard implementation of a dynamic bitset would implement the whole bitset as a
-single array of bytes $B$, which allows for accessing values in $O(1)$ time, but inserting
-and deleting takes $O(n)$ time, where $n$ is the number of bits in $B$.
+A simple implementation of a dynamic bitset could implement the whole bitset as a single
+array of bytes $B$, which allows for accessing values in $O(1)$ time, but insertions and
+deletions take $O(n)$ time, where $n$ is the number of bits in $B$.
 
-One way to speed up the insertions/deletions would be to represent the bitset as a
+Another implementation which speeds up the insertions/deletions represents the bitset as a
 balanced tree containing multiple smaller bitsets. To represent a bitset of $n$ bits, we
 can divide the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each
-contains $O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, inserting and
-deleting takes only $O(log(n))$ time. The bitsets reside at the leaves of our balanced
+contains $O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, insertions and
+deletions take only $O(log(n))$ time. The bitsets reside at the leaves of our balanced
 tree, and internal nodes contain only two integers, storing the number of bits in the left
 subtree ($N$), and the number of set bits in the left subtree ($S$). To access, insert or
 delete on index $i$, the tree is traversed to find the correct bitset where the ith bit is
@@ -741,18 +745,16 @@ located, where the operation is done at that position. Finding the correct bitse
 position is done by utilizing $N$ and $S$ in each node which is traversed. All operations
 now run in $O(\log(n))$ time, since traversing the tree to the correct bitset takes
 $O(\log(\frac{n}{\log(n)}))$ and performing the operation takes $O(\log(n))$ time. Keeping
-the bitset balanced is done by splitting a leaf-node bitset to two nodes when the
-leaf-node bitset has reached a certain size (such as $2 \times \log(n)$) and rebalancing
-the tree after the split. Similarly, when considering deletions, two leaf-node bitsets can
-be merged to their parent node when their combined number of bits has decreased to
-$\log(n)$.
+the tree balanced is done by splitting a leaf-node bitset to two nodes when the leaf-node
+bitset has reached a certain size (such as $2 \times \log(n)$) and rebalancing the tree
+after the split. Similarly, when considering deletions, two leaf-node bitsets can be
+merged to their parent node when their combined number of bits has decreased to $\log(n)$.
 
-
-Figure \ref{fig:DynamicBitset} shows how a dynamic bitset tree is structured, and Algorithm
-\ref{alg:dynbitaccess} shows how to access a value in the tree. Traversing the
-tree to calculate rank and select queries can be done similarly by summing set
-bits in left-subtrees (rank) or selecting which subtree to descend based on the number of
-set bits (select).
+Figure \ref{fig:DynamicBitset} shows how a dynamic bitset tree is structured, and
+Algorithm \ref{alg:dynbitaccess} shows how to access a value in the tree. Traversing the
+tree to calculate rank and select queries can be done similarly by summing set bits in
+left-subtrees (rank) or selecting which subtree to descend based on the number of set bits
+(select).
 
 \begin{figure}[t]
 	\begin{center}
@@ -807,14 +809,14 @@ We can extend the notion of rank and select queries to strings as well.
 
 \begin{definition}[Rank query on string]
 
-    A rank query $rank_c(i)$ on a string $S$ computes the number of occurrences of $c$
-    in $S$ up to, but not including position $i$.
+    A rank query $rank_c(i)$ on a string $S$ computes the number of occurrences of a
+    character $c$ in $S$ up to, but not including position $i$.
 
 \end{definition}
 \begin{definition}[Select query on string]
 
-    A select query $select_a(i)$ on a string $S$, computes the position of the ith
-    occurrence of $a$ in $S$. 
+    A select query $select_c(i)$ on a string $S$, computes the position of the ith
+    occurrence of a character $c$ in $S$. 
 
 \end{definition}
 
@@ -885,7 +887,7 @@ be implemented as a dynamic bitset to allow insertions/deletions on a wavelet tr
                 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 0 & 0
             \end{tabular} \\
             \begin{tabular}{c c c c c c c c|c c c}
-                0 & 1 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 1
+                0 & 0 & 0 & 0 & 1 & 0 & 1 & 1 & 0 & 0 & 1
             \end{tabular} \\
             \begin{tabular}{c c c c c|c c c|c c|c}
                 0 & 1 & 1 & 1 & 0 & 0 & 1 & 1 & 0 & 1 & 0
@@ -914,7 +916,7 @@ position $i$.
 $rank_c(i)$ traverses the tree similarly to $access(i)$, but we use the bits of $c$ to
 guide us to the correct subtree. When a leaf-node is reached, the value of $i$ is
 returned, since when a leaf is reached, $i$ will be pointing to the correct rank in the
-fictitious bitset of only $a$ characters
+fictitious bitset of only $c$ characters
 
 The wavelet tree can be traversed in $O(\log \sigma)$ time where $\sigma$ is the size of
 the alphabet. However, the $access$, $rank$ and $select$ operations also depend on how
@@ -925,7 +927,7 @@ insertion/deletions, the time complexity increases to $O(\log n \log \sigma)$ be
 bitset operation which takes $O(\log n)$ time is required in each level of the tree.
 
 The wavelet tree can also be implemented without pointers, known as a levelwise or
-pointerless wavelet tree\cite{LevelwiseWaveletTree}. Table \ref{table:levelwisewavelettree}
+pointerless wavelet tree~\cite{LevelwiseWaveletTree}. Table \ref{table:levelwisewavelettree}
 shows the levelwise wavelet tree, which can be traversed level by level, but determining
 which interval of the bitset the node you are in occupies requires two calls to $rank$.
 The details of the levelwise wavelet trees are out of scope for this thesis, but leads us
@@ -972,7 +974,7 @@ is the same as for wavelet trees.
 
 
 \begin{figure}
-\begin{minipage}{0.46\textwidth}
+\begin{minipage}{0.49\textwidth}
     \begin{algorithm}[H]
         \SetAlgoLined\DontPrintSemicolon
         \algo{\access{WM, i}}{
@@ -988,13 +990,14 @@ is the same as for wavelet trees.
                 }
                 $\Var{l} \gets \Var{l} + 1$
             }
-            \Return $\Var{bits}$ \;
+            \Return $\Var{bits}$ \;\;
         }
+
         \caption{Wavelet matrix access}
         \label{alg:waveletmatrixaccess}
     \end{algorithm}
 \end{minipage}
-\begin{minipage}{0.46\textwidth}
+\begin{minipage}{0.49\textwidth}
     \begin{algorithm}[H]
         \SetAlgoLined\DontPrintSemicolon
         \algo{\RankC{WM, i}}{
@@ -1075,7 +1078,8 @@ compression and searching~\cite{BWT}. The transform is computed by sorting all
 last column of the cyclic-shift'' matrix. \$ is added to the string as a unique
 terminating character, this makes some of the algorithms on the BWT simpler. \$ is always
 the smallest character lexicographically. Table \ref{table:bwt} shows the BWT for the
-string S = BANANA\$.
+string S = BANANA\$. There is a very tight correlation between the BWT of a string and its
+suffix array, which is why this transform will be relevant for our detection algorithm.
 
 \begin{definition}{Cyclic-shift}
 
@@ -1092,17 +1096,18 @@ string S = BANANA\$.
 
 \end{definition}
 
-There is a direct correlation between the suffix array of S and the BWT of S. Table
-\ref{table:bwt} also shows that the indices of the sorted cyclic-shifts correspond to
-exactly the SA of S. This coincides because when sorting cyclic-shifts, everything that
+As mentioned, there is a tight correlation between the suffix array of S and the BWT of S.
+Table \ref{table:bwt} also shows that the indices of the sorted cyclic-shifts correspond
+to exactly the SA of S. This coincides because when sorting cyclic-shifts, everything that
 occurs after the \$ of the cyclic-shift will not affect its lexicographical ordering. This
 is because no cyclic-shift will have a \$ in the same position, so comparing two cyclic
 shifts lexicographically will always terminate whenever a \$ is found. This means that the
 ordering of cyclic shifts is essentially the same as sorting all suffixes of S. Algorithm
 \ref{alg:bwt} shows how the BWT of S can be calculated directly from the SA of S in linear
-time. Since this is a one to one correlation between the SA and BWT, dynamic updates to a BWT
-would correspond to similar dynamic updates in the SA (and ISA). This will be useful in
-the following implementation chapter for the dynamic code clone detection algorithm.
+time. Since this is a one to one correlation between the SA and BWT, dynamic updates to a
+BWT would correspond to similar dynamic updates in the SA (and ISA). This will be useful
+in the upcoming implementation chapters for the incremental code clone detection
+algorithm.
 
 \begin{algorithm}[htp]
   \SetAlgoLined\DontPrintSemicolon
@@ -1130,9 +1135,10 @@ the following implementation chapter for the dynamic code clone detection algori
 An essential property of the BWT is that the transformation is reversible. By examining
 the BWT of a string T, we see that the BWT is a permutation of S. We will also see that
 there is a correlation between the characters in the first column of the cyclic-shift
-matrix and the last column (the BWT).
+matrix and the last column, which allows us to compute the original string, given only the
+BWT.
 
-S can be calculated from the BWT as long as there is a unique terminating character (\$),
+$S$ can be computed from the BWT as long as there is a unique terminating character (\$),
 or the position of the final character is stored. S is computed backwards by starting at
 the final character ($S[n - 1]$) and then finding the cyclic-shift where that character
 occurs in the first column (the previous cyclic-shift). The character in the last column
@@ -1152,7 +1158,10 @@ cyclic-shift. This function is called the Last-to-first function (LF function).
 Calculating the LF function can be done efficiently by using a rank/select data structure
 such as a wavelet tree~\cite{WaveletTree} or wavelet matrix~\cite{WaveletMatrix} to
 calculate the rank of all the characters in the BWT, and an array $C$ which contains the
-number of occurrences of each letter in the BWT.
+number of occurrences of each letter in the BWT. In table \ref{table:bwt}, we can compute
+the original $S$ from the BWT by starting at position $4$, because that is the position of
+the \$, then use the LF-function, $LF(4) = 0$, which means the second to last character is
+$BWT[0] = A$. $LF(0) = 1$, which means the next character is $BWT[1] = N$, and so on.
 
-The LF function will also be useful in the detection algorithm when dynamically updating
-the suffix array.
+The LF function will also be useful in the detection algorithm where we dynamically update
+the suffix array of $S$, given the changes of the BWT of $S$.

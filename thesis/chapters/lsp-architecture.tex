@@ -2,17 +2,17 @@
 \label{lspimplementation}
 
 The following chapters will discuss how CCDetect-LSP is implemented, and especially
-focuses on our novel algorithm based on dynamic suffix arrays. The current chapter will
-look at the LSP integration and how source code is initially indexed, while the two next
-chapters will discuss first how clones are initially detected by CCDetect-LSP and then how
-this analysis in incrementally updated, faster than running the initial detection again.
+focuses on our novel algorithm based on dynamic extended suffix arrays. The current
+chapter will look at the LSP integration and how source code is initially indexed, while
+the following two chapters will discuss first how clones are initially detected and then
+how this analysis in incrementally updated as source code changes.
 
-CCDetect-LSP is integrated into IDEs via the Language server protocol. The tool starts up
-as an LSP server, which an IDE client can connect to and send/receive messages from. The
-goal of the LSP client-server interaction is to give users of the tool an overview of all
-clones as they appear in source code, and allow them to navigate between matching clones.
-The LSP server is implemented in Java with the LSP4J library which provides an abstraction
-layer on top of the protocol which is easier to work with programmatically.
+CCDetect-LSP is integrated into IDEs via LSP. The tool starts up as an LSP server, which
+an IDE client can connect to and send/receive messages from. The goal of the LSP
+client-server interaction is to give users of the tool an overview of all clones as they
+appear in source code, and allow them to navigate between matching clones. CCDetect-LSP is
+implemented in Java with the LSP4J library which provides an abstraction layer on top of
+the protocol which is easier to work with programmatically.
 
 \begin{figure}[t]
 	\includegraphics[width=\textwidth]{figures/vscodecodeclone.png}
@@ -26,9 +26,9 @@ files. Code clones are displayed inline in the file as an ``Information'' diagno
 when hovered over, the client shows the \verb|DiagnosticRelatedInformation| information of
 the diagnostic where all the matching clones are displayed and can be clicked to navigate
 to the corresponding match. For a client which may not implement the
-\verb|DiagnosticRelatedInformation| message\footnote{This feature was added to LSP version
-3.16, released in 2020}, invoking the code-action to navigate to the matching clone is
-another option.
+\verb|DiagnosticRelatedInformation| message\footnote{Added to LSP in version 3.16,
+released in 2020. In our experience, some IDEs do not implement this feature.}, invoking a
+code-action to navigate to the matching clone is another option.
 
 The following user-stories shows how interaction with the LSP server works.
 
@@ -51,10 +51,10 @@ The following user-stories shows how interaction with the LSP server works.
         code-action can be invoked to navigate, if the client does not implement the
         \verb|DiagnosticRelatedInformation| interface.
 
-      \item A programmer wants to remove a set of clones by applying the
+      \item A programmer wants to refactor a set of clones by applying the
           ``extract-method'' refactoring (not implemented by CCDetect-LSP). The programmer
-          performs the necessary refactorings, and will see that all the previously
-          detected clones are gone when the LSP server updates its analysis.
+          performs the necessary refactorings, and will see that the refactored clones are
+          no longer detected when the LSP server incrementally updates its analysis.
 
 \end{itemize}
 
@@ -72,14 +72,13 @@ code-actions which is finally sent to the client.
 
 \section{Document index}
 
-Upon starting, the LSP server requires indexing of the project for conducting analysis.
-This involves creating an index and inserting all the relevant documents in the code base.
-A document contains the content of a file along with extra information such as the file's
-URI and some information which is useful for the later clone detection. We define the
-following record for our documents:
+Upon starting, the LSP server needs to index the project. This involves creating an index
+and inserting all the relevant documents in the code base. A document contains the content
+of a file along with extra information such as the file's URI and some information which
+is useful for the later clone detection. We define the following record for our documents:
 
 \begin{lstlisting}
-    record Document {
+    Document {
         String uri,
         String content,
         AST ast,
@@ -113,7 +112,7 @@ supports adding all files in a folder, or all files checked into Git.
 When a document is first indexed by the server, the file contents is read from the disk.
 However, as soon as the programmer opens this file in their IDE, the source of truth for
 the files content is no longer on the disk, as the programmer is changing the file
-continuously before writing to the disk. The LSP protocol defines multiple RPC
+continuously before writing to the disk. The LSP protocol defines multiple JSON-RPC
 messages which the client sends to the server in order for the server to keep track of
 which files are opened, and the state of the content of opened files.
 
@@ -135,10 +134,10 @@ information about the clone. The diagnostic displays an error in the client whic
 information for each matching clone. This is achieved this by attaching
 \verb|DiagnosticRelatedInformation| to a diagnostic which is defined in the protocol. When
 all the code clones have been converted to diagnostics, the server sends a
-\verb|textDocument/publishDiagnostics| which sends all the diagnostics in JSON-RPC format.
-For code-actions, the process is similar, for each clone pair, we create a code-action
-which navigates from one to the other, using the \verb|window/showDocument| message. These
-code-actions are similarly sent to the client via the \verb|textDocument/codeAction|
-message, but this message is only invoked when the client specifically requests code
-actions at a certain location.
+\verb|textDocument/publishDiagnostics| message which sends all the diagnostics to the
+client in JSON-RPC format. For code-actions, the process is similar, for each clone pair,
+we create a code-action which navigates from one to the other, using the
+\verb|window/showDocument| message. These code-actions are similarly sent to the client
+via the \verb|textDocument/codeAction| message, but this message is only invoked when the
+client specifically requests code actions at a certain location.
 
