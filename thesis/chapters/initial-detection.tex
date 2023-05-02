@@ -14,13 +14,14 @@ algorithm finds code clones. It consists of the detection algorithm which takes 
 document index as input, and outputs a list of code clones. The initial input to the
 algorithm will be the raw source code of each document in the index, in text format.
 Figure \ref{fig:allphases} shows all the phases of the detection algorithm and in each
-section a figure will be shown to illustrate which part of the pipeline is being
+section a figure will be shown to illustrate which part of the pipeline is currently being
 discussed. The previous chapter has already detailed the first two phases, how a document
 index is built for each file of the source code.
 
-The algorithm detects syntactical type-1 code clones, based on a token-threshold. Clones
-detected are therefore snippets of source-code which has at least $N$ equal tokens, where
-$N$ is a configurable parameter. There are also two types of clones which are filtered:
+The algorithm of CCDetect-LSP detects syntactical type-1 code clones, based on a
+token-threshold. Clones detected are therefore snippets of source-code which has at least
+$N$ equal tokens, where $N$ is a configurable parameter. There are also two types of
+clones which are filtered:
 
 \begin{itemize}
     \item Clones which are completely contained within another larger clone are filtered.
@@ -30,11 +31,11 @@ $N$ is a configurable parameter. There are also two types of clones which are fi
 
 In broad strokes, the algorithm first selects the relevant parts of source code to detect
 code clones in (fragment selection), then transforms the selected fragments into a smaller
-representation (fingerprinting). For the matching, an extended suffix array for the fingerprint
-is constructed, where the LCP array is used to find long matching instances of source code.
-Finally, clones are filtered and aggregated into clone classes before they are
-source-mapped back to the original source-code locations, which the LSP server can display
-as diagnostics.
+representation (fingerprinting). For the matching, an extended suffix array for the
+fingerprint is constructed, where the LCP array is used to find long matching instances of
+source code. Finally, clones are filtered and aggregated into clone classes before they
+are source-mapped back to the original source-code locations, which the LSP server can
+send to the IDE in the form of diagnostics.
 
 \section{Fragment selection}
 
@@ -51,11 +52,11 @@ tokens it encompasses should be extracted. Since the algorithm is language agnos
 not feasible to have a single algorithm for fragment extraction or to define a separate
 fragment extraction algorithm for every possible language. Therefore, a parser generator
 tool is used, which can generate the code for parsing any programming language given a
-grammar. We use Tree-sitter, a parser generator with incremental parsing and
-error-recovery capabilities, as well as a query language for finding any type of node in
-the AST~\cite{treesitter}. Tree-sitter queries are flexible queries to extract specific
-nodes or subtrees. For example, in Java it would be natural to consider only methods. The
-Tree-sitter query for selecting only the method nodes in a Java programs AST would be:
+grammar. We use Tree-sitter, a parser generator with incremental parsing capabilities, as
+well as a query language for finding any type of node in the AST~\cite{treesitter}.
+Tree-sitter queries are flexible queries to select specific nodes or subtrees. For
+example, in Java it would be natural to consider only methods. The Tree-sitter query for
+selecting only the method nodes in a Java programs AST would be:
 
 \begin{equation}
     (\mathrm{method\_declaration\ } \text{@method})
@@ -70,10 +71,9 @@ Using a tree-sitter query, the algorithm parses the program into an AST and quer
 tree for a list of all nodes which matches the query. For each node, all the tokens in the
 subtree of the node are extracted and sent to the next phase.
 
-\Todo{Algorithm?}
-
-Implementing something similar for another parser/AST could be as simple as traversing
-the tree until a node of a specific type is found, using the visitor pattern~\cite[366]{GangOfFour}.
+Implementing something similar for another parser/AST could be as simple as traversing the
+tree until a node of a specific type is found, using the visitor
+pattern~\cite[366]{GangOfFour}.
 
 
 \section{Fingerprinting}
@@ -150,13 +150,16 @@ The algorithm utilizes fingerprinting in order to reduce the size of the represe
 Fingerprinting is a technique which involves taking some part of the input and mapping it
 to a smaller bit string, which uniquely identifiers that part. In this case, the algorithm
 takes each token of the source-code, and maps it to the bit string of an integer. Each
-unique token value is mapped to unique integer values. Figure \ref{fig:fingerprint} shows
-how a sample Java program could theoretically be fingerprinted. The fingerprint mapping
-starts its ``count'' at 2 to make space for some terminating characters. Each fragment is
-terminated by a $1$ and the fingerprint is ultimately terminated by a $0$. Having these
-values in the fingerprint will be useful for the matching algorithm where the suffix array
-is constructed and utilized for detection. The fingerprint of each fragment is stored in
-the relevant document object.
+unique token value is mapped to unique integer values. The algorithm keeps a counter,
+which is used to fingerprint a token value whenever a new unique token is found. The
+algorithm also stores a map from the token value, to the fingerprint value, which is used
+to map multiple occurrences of the same token value to the same fingerprint value. Figure
+\ref{fig:fingerprint} shows how a sample Java program would be fingerprinted. The
+fingerprint mapping initializes its counter at 2 to make space for some terminating
+characters. Each fragment is terminated by a $1$ and the fingerprint is ultimately
+terminated by a $0$. Having these values in the fingerprint will be useful for the
+matching algorithm where the suffix array is constructed and utilized for detection. The
+fingerprint of each fragment is stored in the relevant document object.
 
 \section{Suffix array construction}
 
@@ -201,17 +204,6 @@ suffix in S starting at position i.
 \end{definition}
 
 
-\begin{table}
-    \begin{center}
-        \begin{tabular}[c]{l l l l l l l}
-            B & A & N & A & N & A & \$ \\ 
-            L & \underline{S} & L & \underline{S} & L & L & \underline{S} \\ 
-            0 & 1 & 2 & 3 & 4 & 5 & 6 \\ 
-        \end{tabular}
-    \end{center}
-    \caption{Suffix types of S = BANANA\$, LMS characters underlined}
-    \label{tab:suffixtypesbanana}
-\end{table}
 
 \begin{figure}[t]
     \begin{center}
@@ -232,8 +224,20 @@ suffix in S starting at position i.
     \end{center}
 \end{figure}
 
+\begin{table}[t]
+    \begin{center}
+        \begin{tabular}[c]{l l l l l l l}
+            B & A & N & A & N & A & \$ \\ 
+            L & \underline{S} & L & \underline{S} & L & L & \underline{S} \\ 
+            0 & 1 & 2 & 3 & 4 & 5 & 6 \\ 
+        \end{tabular}
+    \end{center}
+    \caption{Suffix types of S = BANANA\$, LMS characters underlined}
+    \label{tab:suffixtypesbanana}
+\end{table}
 
-\begin{table}
+
+\begin{table}[t]
     \begin{center}
         \begin{tabular}[c]{r|cccc}
             Buckets & \$ & A & B & N\\
@@ -267,17 +271,18 @@ suffix in S starting at position i.
 Note that two suffixes in the same string cannot be lexicographically equal, therefore all
 cases are handled by this definition. Determining the type of each suffix can be done in
 $O(n)$ time by scanning $S$ from right-to-left and observing the following properties:
-$\mathrm{suffix}(S, i)$ is L-type if $\ArrayAccess{S}{i} > \ArrayAccess{S}{i + 1}$. Similarly,
-$\mathrm{suffix}(S, i)$ is S-type if $\ArrayAccess{S}{i} < \ArrayAccess{S}{i + 1}$. If
-$\ArrayAccess{S}{i} = \ArrayAccess{S}{i + 1}$, then $\mathrm{suffix}(S, i)$ is the same value as
-$\mathrm{suffix}(S, i + 1)$. This is true because if the first character of the current
-suffix is not equal to first character of the next suffix, we already know the type based
-on the first character. If the first character is equal, we have effectively
-transformed the problem to finding the type of the next suffix, since we are now comparing
-the second character of the current suffix, with the second character of the second
-suffix. Since we have already computed the type of the next suffix, we can reuse the value.
-Figure \ref{eq:suffixtypesrecurrence} shows a recurrence which determines the type of each suffix
-in a string in $O(n)$ time and \ref{tab:suffixtypesbanana} shows an example.
+$\mathrm{suffix}(S, i)$ is L-type if $\ArrayAccess{S}{i} > \ArrayAccess{S}{i + 1}$.
+Similarly, $\mathrm{suffix}(S, i)$ is S-type if $\ArrayAccess{S}{i} < \ArrayAccess{S}{i +
+1}$. If $\ArrayAccess{S}{i} = \ArrayAccess{S}{i + 1}$, then $\mathrm{suffix}(S, i)$ has
+the same type as $\mathrm{suffix}(S, i + 1)$. This is true because if the first character
+of the current suffix is not equal to first character of the next suffix, we already know
+the type based on the first character. If the first character is equal, we have
+effectively transformed the problem to finding the type of the next suffix, since we are
+now comparing the second character of the current suffix, with the second character of the
+second suffix. Since we have already computed the type of the next suffix, we can reuse
+the value. Figure \ref{eq:suffixtypesrecurrence} shows a recurrence which determines the
+type of each suffix in a string in $O(n)$ time and table \ref{tab:suffixtypesbanana} shows
+an example.
 
 \begin{definition}[LMS character]
 
@@ -300,7 +305,7 @@ in a string in $O(n)$ time and \ref{tab:suffixtypesbanana} shows an example.
 LMS-substrings form "basic-blocks" in the string $S$. Each LMS-substring is mostly
 lexicographically decreasing or increasing, which is easier to sort. Table
 \ref{tab:bucketinglms} shows that in the string BANANA\$ there are 3 S-type suffixes
-and all of them form LMS-substrings (AN, ANA, \$). Using this notion, we can sort all
+and all of them form LMS-substrings (ANA, ANA\$, \$). Using this notion, we can sort all
 suffixes recursively using the following theorems:
 
 \begin{theorem}
@@ -314,16 +319,18 @@ suffixes recursively using the following theorems:
     There are at most $n / 2$ LMS-substrings in a string $S$ of length n.
 \end{theorem}
 
-We can construct a smaller string $S_1$ by first sorting the LMS-substrings. Sorting
-LMS-substrings can be done by first bucket-sorting each LMS-substring by its first
-character. The buckets are represented by arrays and each LMS-substring is inserted at the
-end of the correct bucket. Afterwards, L-type suffixes are bucketed by iterating over the
-buckets, and for each suffix in the bucket, insert the suffix to the left, if it is
-L-type. Meaning that if we encounter the suffix at position 6, the suffix at position 5 is
-bucketed if it is L-type. Finally, S-type suffixes are bucketed similarly in the same
-fashion, but the buckets are scanned from right-to-left and suffixes are inserted at the
-end of the bucket. This final step could possibly change the ordering of the
-LMS-substrings.
+These theorems are proven in the original paper, we will now use these theorems to show
+how we can compute the suffix array in linear time. Table \ref{tab:bucketinglms} shows a
+running example of the algorithm. We can construct a smaller string $S_1$ by first sorting
+the LMS-substrings. Sorting LMS-substrings can be done by first bucket-sorting each
+LMS-substring by its first character. The buckets are implemented as arrays and each
+LMS-substring is inserted at the end of the correct bucket. Afterwards, L-type suffixes
+are bucketed by iterating over the buckets, and for each suffix in the bucket, insert the
+suffix to the left, if it is L-type. Meaning that if we encounter the suffix at position
+6, the suffix at position 5 is bucketed if it is L-type. Finally, S-type suffixes are
+bucketed similarly in the same fashion, but the buckets are scanned from right-to-left and
+suffixes are inserted at the end of the bucket. This final step could possibly change the
+ordering of the LMS-substrings.
 
 After sorting, each equal LMS-substring is given a unique increasing integer value. Two
 LMS-substrings are considered equal if they are equal in terms of length, characters and
@@ -347,14 +354,13 @@ therefore the suffix array of $S_1$ is computed by simply bucketing each suffix 
 returning the array.
 
 When the recursive call returns, the SA of $S_1$ is used to determine the order which the
-LMS-substrings should be slotted into the bigger SA. By scanning the smaller SA and
-mapping those indices back to the indices of the original LMS-substrings, we get a sorted
-ordering of the LMS-substrings. We then scan the sorted LMS-substrings from right-to-left
-and slot each LMS-substring at the end of its bucket, the rest of the L-type and S-type
-suffixes will be slotted correctly afterwards. For BANANA\$ this will be the exact same
-process as in table \ref{tab:bucketinglms}, since the LMS-substrings were already inserted
-in reverse ordering.
-
+LMS-suffixes should be slotted into the bigger SA. By scanning the smaller SA and mapping
+those indices back to the indices of the original LMS-substrings, we get a sorted ordering
+of the LMS-suffixes. We then scan the sorted LMS-suffixes from right-to-left and slot each
+LMS-suffix at the end of its bucket, the rest of the L-type and S-type suffixes will be
+slotted correctly afterwards. For BANANA\$ this will be the exact same process as in table
+\ref{tab:bucketinglms}, since the LMS-substrings were already inserted in reverse
+ordering.
 
 There will be $O(\log_2(n))$ recursive call, where each recursive call takes $O(n)$ time,
 with $n$ halving in each call. Therefore, the recurrence will have the complexity of:
@@ -374,10 +380,10 @@ Computing the ISA after constructing the SA is simple. Since the ISA is simply t
 of SA, it can be constructed in linear time with a single loop as seen in Algorithm
 \ref{alg:isa}.
 
-\begin{algorithm}[htp]
+\begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\ComputeISA{SA}}{
-    $\Var{n} \gets \Access{\Var{SA}}{\Var{len}}$ \\
+    $\Var{n} \gets \Len{$\Var{SA}$}$ \\
     $\Var{ISA} \gets \mathrm{array\ of\ size\ n}$
 
         \For{$\Var{i} \From 0 \To \Var{n}$}{
@@ -400,15 +406,15 @@ fragments. This restriction will be useful when we want to extract clones using 
 array. The algorithm to compute the LCP is shown in Algorithm \ref{alg:lcp}. The intuition
 for this algorithm is that if a suffix at position $i$ has an LCP value $l$ describing the
 common-prefix between it and some other suffix at position $j$, then the LCP value of the
-suffix at position $i + 1$ is at least $l - 1$, since the suffix at $i + 1$ and $j + 1$ is
-the same suffix as the suffixes at position $i$ and $j$, with the first character cut off.
-Therefore, they share at least $l - 1$ characters, and the algorithm can start comparing
-the characters at that offset.
+suffix at position $i + 1$ is at least $l - 1$, since there exists suffixes at position $i
++ 1$ and $j + 1$ which shares at minimum $l$ characters, except for the first character
+which is cut off. Therefore, they share at least $l - 1$ characters, and the algorithm can
+start comparing the characters at that offset.
 
-\begin{algorithm}[htp]
+\begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\ComputeLCP{S, SA, ISA}}{
-        $\Var{n} \gets \Access{\Var{SA}}{len}$
+        $\Var{n} \gets \Len{$\Var{SA}$}$
 
         $\Var{LCP} \gets \mathrm{array\ of\ size\ n}$
 
@@ -438,7 +444,7 @@ the characters at that offset.
   \label{alg:lcp}
 \end{algorithm}
 
-\begin{table}
+\begin{table}[t]
     \begin{center}
         \begin{tabular}[c]{c|cccccc|c}
             Index & \multicolumn{6}{c}{Suffix} & Minimum LCP \\
@@ -454,7 +460,8 @@ the characters at that offset.
     \label{tab:}
 \end{table}
 
-
+Now that we have computed the extended suffix array in linear time, we are ready to detect
+clones in our code base using this data structure.
 
 \section{Clone extraction}
 
@@ -558,12 +565,12 @@ extend our clone extraction algorithm to account for this, by using the followin
 Algorithm \ref{alg:cloneextraction} adds a while-loop to the clone extraction algorithm
 which skips over suffixes which are contained according to the theorem. Note that this
 algorithm doesn't disallow contained clones entirely, but any clone which is a shorter
-version of another clone pointing to the same match, will be skipped. Also note that
+version of another clone pointing to the same match, will be filtered. Also note that
 overlapping clones, meaning two clones which share tokens, but where neither contains the
-other, will not be skipped.
+other, will not be filtered.
 
-Finally, we have a list of indices in the fingerprint which is considered to be code
-clones.
+At the end of this phase we now have a list of indices in the fingerprint which is
+considered to be code clones.
 
 \section{Source-mapping}
 
@@ -629,8 +636,9 @@ Once the correct document has been found, we simply have to look up the correct 
 which the document stores. The index of this range is $i -
 \Access{D}{start}$.
 
-Algorithm \ref{alg:sourcemap} shows this algorithm which outputs the URI for the document and
-the source code range of the token at position $i$.
+Algorithm \ref{alg:sourcemap} returns the source-map of a given position $i$ in the
+fingerprint, which includes the URI for the document and the source code range of the
+token at position $i$.
 
 This algorithm only shows how to look up the position of a single token. Since a code
 clone is a range between two tokens, we have to look up the position at index $i$
