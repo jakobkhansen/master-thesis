@@ -20,24 +20,24 @@ single file, which will be useful for our algorithm.
 We cannot afford to iterate over the entire code base, meaning the contents of all files
 in the code base. The initial detection takes linear time in the size of the code base,
 therefore, iterating over the entire code base will likely make the algorithm as slow as
-the initial detection.
+the initial detection. The same goes for the iterating over the entire fingerprint.
 
 As mentioned, we can afford to iterate over the contents of a single file. Iterating over
 the contents of a file with up to a few thousands lines is not a very expensive operation
 to perform and will not take a significant amount of time. The whole string of the file
 contents will be needed for Tree-sitter to incrementally parse the file.
 
-However, parsing an entire file can be too expensive. While the runtime of parsing a
-single file is still linear in the size of file content, parsing a large file from scratch
-can take a significant amount of time in practice, and for small code bases with large
-files, parsing will take a significant portion of the total runtime of a dynamic update.
-This is why incremental parsing with Tree-sitter is used, which lowers the runtime
+Parsing an entire file however, can be too expensive in some cases. While the runtime of
+parsing a single file is still linear in the size of file content, parsing a large file
+from scratch can take a significant amount of time in practice, and for small code bases
+with large files, parsing can take a significant portion of the total runtime of a dynamic
+update. This is why incremental parsing with Tree-sitter is used, which lowers the runtime
 closer to $O(\vert\text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
 
 We can also afford two more useful operations, iterating over the documents in the index
 (not their contents), and iterating over the clone objects. We can afford to do these
 operations because the number of documents and the number of clones is likely multiple
-magnitudes smaller than the size of the entire code base. Iterating over the documents
+magnitudes lower than the size of the entire code base. Iterating over the documents
 will be useful when we are updating the document index, and iterating over the clones is
 necessary to do when the clones are mapped back to their original source code locations.
 
@@ -54,35 +54,35 @@ compared to updating the suffix array.
 \end{figure}
 
 The first step of an incremental update is to update the document index. We will also look
-at how we can reduce memory usage of the index without a loss in terms of the time
+at how we can reduce the memory usage of the index without a loss in terms of the time
 complexity of the updates.
 
-As shown in the document interface, each document stores its own content, AST and
-fingerprint. It is not strictly necessary to store either the content or the AST in memory
-all the time, as it is likely that only a handful of files are open in the IDE at once.
-Therefore, in the initial detection, we can free the memory of the file content and AST
-for each document after the fingerprint has been computed. However, if a file is opened in
-the IDE, the file can now be changed, so we should facilitate efficient updates for these
-files only. When a file is opened, the file content should be read from the disk and
-updated via the \verb|textDocument/didChange| messages sent from the client. It is also
-important to keep the AST of the opened file in memory in order to facilitate incremental
-reparsing of the opened files. 
+As previously shown, each document stores its own content, AST and fingerprint. It is not
+strictly necessary to store either the content or the AST in memory all the time, as it is
+likely that only a handful of files are open in the IDE at once. Therefore, in the initial
+detection, we can free the memory of the file content and AST for each document after the
+fingerprint has been computed. However, if a file is opened in the IDE, the file can now
+be changed, so we should facilitate efficient updates for these files at least. When a
+file is opened, the file content should be read from the disk and updated via the
+\verb|textDocument/didChange| messages sent from the client. It is also important to keep
+the AST of the opened file in memory in order to facilitate incremental parsing of the
+opened files. 
 
 When a file is opened, the LSP client sends a \verb|textDocument/didOpen| message to the
 server, which finds the relevant document $D$ in the index, and sets the following fields:
 
 \begin{flalign*}
-&\Access{D}{open} = \True \\
-&\Access{D}{AST} = \Parse{D} \\
-&\Access{D}{content} = \Read{$\Access{D}{uri}$}
+&\Access{D}{\Var{open}} = \True \\
+&\Access{D}{\Var{content}} = \Read{$\Access{D}{\Var{uri}}$} \\
+&\Access{D}{\Var{AST}} = \Parse{$\Access{D}{\Var{content}}$}
 \end{flalign*}
 
 After the document fields have been set, the document is ready to receive updates. When
 the LSP client sends a \verb|textDocument/didChange| message, the message consists of the
 URI of the edited file, the range of the content which has changed, and the content which
-has potentially been inserted. This range is then used in a tree-sitter incremental
-reparse of the file content. After this reparse, we have efficiently updated a documents
-content and AST. After this update, we also set $\Access{D}{changed} = \True$
+has potentially been inserted. This range is then used in a tree-sitter incremental parse
+of the file content. After this parse, we have efficiently updated a documents content and
+AST. After this update, we also set $\Access{D}{\Var{changed}} = \True$
 
 \section{Updating fingerprints}
 
@@ -93,29 +93,39 @@ content and AST. After this update, we also set $\Access{D}{changed} = \True$
 \end{figure}
 
 With the updated AST for all documents, we can update the fingerprint of all documents
-which have been changed. For each document $D$ where $\Access{D}{changed} = \True$, the
-fingerprint for D may have changed. Calculating the fingerprint is the same process as in
-the initial detection, where we first query the AST for all nodes of a certain type, then
-for each matched node $N$, we extract and fingerprint all the tokens which $N$ covers,
-using the same fingerprint mapping as was used for the initial detection.
+which have been changed. For each document $D$ where $\Access{D}{\Var{changed}} = \True$,
+the fingerprint for $D$ may have changed. Computing the new fingerprint is the same
+process as in the initial detection, where we first query the AST for all nodes of a
+certain type, then for each matched node $N$, we extract and fingerprint all the tokens
+which $N$ covers, using the same fingerprint mapping as was used for the initial
+detection.
 
 An additional change we have to consider when incrementally updating fingerprints is that
 for a document $D$, $\Access{D}{start}$ and $\Access{D}{end}$ which corresponds to the
-range which $D$ covers in the fingerprint, may have changed. Also, any document $D_1$
-where $\Access{D_1}{start} > \Access{D}{start}$ could also have its range changed. This is
-solved while updating each documents fingerprint by counting the number of tokens in each
-document after updating, and setting the appropriate \verb|start| and \verb|end| fields.
+range which $D$ covers in the fingerprint, may have changed.  Also, any document $D_1$
+where $\Access{D_1}{start} > \Access{D}{start}$ could also have its range changed. This
+range needs to be updated in order for the source-mapping to work. This is solved while
+updating each documents fingerprint by counting the number of tokens in each document
+after updating, and setting the appropriate \verb|start| and \verb|end| fields.
 
-\Todo{Algorithm for updating document index here}
+Figure \ref{fig:fingerprintupdate} shows how an index of three documents is updated when
+two tokens are inserted. Note that each document stores its own fingerprint, we do not
+need to concatenate them to one large array as in the initial detection.
 
-\Todo{Figure which displays three documents, with old and new fingerprint}
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[width=0.95\textwidth]{figures/indexupdate.drawio.pdf}
+    \end{center}
+    \caption{Old (above) and new (below) fingerprints and ranges when two tokens are inserted}
+    \label{fig:fingerprintupdate}
+\end{figure}
 
 \section{Computing edit operations}
 
 Now that the fingerprint has been updated, we could build the suffix array from scratch
-and already see a substantial improvement in performance. The major bottleneck of the initial
-detection is to parse and fingerprint the entire code base. However, the updating of the
-suffix array can and should also be updated incrementally to further improve efficiency.
+and already see a substantial improvement in performance. The major bottleneck of the
+initial detection is to parse and fingerprint the entire code base. Instead, we want to
+further improve the efficiency by dynamically updating the suffix array.
 
 The input to the dynamic suffix array algorithm is a set of edit operations. An edit
 operation can be either deleting, inserting or substituting a set of consecutive
@@ -127,12 +137,12 @@ fingerprint.
 There are a couple of approaches we could take to determine the edit operations. The
 simplest is that whenever a file has changed, regard the entire file as changed, and
 perform a delete operation which removes the entire fingerprint of that file, and then an
-insertion, which inserts the new fingerprint of that file. This is a very simple approach,
-but leads to an unnecessary size for the edit operations. The fingerprint of the file is
-likely to be very similar to the previous version, therefore deleting and then inserting
-the entire files fingerprint could be a lot more work than it needs to be. However, this
-idea that we can always reduce the number of operations to only two, a deletion and an
-insertion, will be useful in our final algorithm.
+insertion which inserts the new fingerprint of that file. This is a very simple approach,
+but can lead to an unnecessary size for the edit operations. The fingerprint of the file
+is likely to be very similar to the previous version, therefore deleting and then
+inserting the entire files fingerprint could be a lot more work than it needs to be.
+However, this idea that we can always reduce the number of operations to only two, a
+deletion and an insertion, will be useful in our final algorithm.
 
 Another possible approach is to look at the ranges that the LSP client provides with each
 \verb|textDocument/didChange| message and determine which tokens in the fingerprint have
@@ -142,11 +152,11 @@ might do unnecessary amounts of operations if we do multiple edits, since some o
 could cancel each other out, for example by inserting and then deleting the same text.
 
 A better approach is to determine the changes of the fingerprint using an edit distance
-algorithm. An edit distance algorithm is an algorithm which calculates the distance
-between two strings $S_1$ and $S_2$. Distance between two strings is the minimum number of
-edit operations (insert, delete, substitute) which is required to transform $S_1$ into
-$S_2$. Many of the algorithms which calculates the edit distance, also allows computing
-what the operations are.
+algorithm. An edit distance algorithm is an algorithm which computes the distance between
+two strings $S_1$ and $S_2$. Distance between two strings is the minimum number of edit
+operations (insert, delete, substitute) which is required to transform $S_1$ into $S_2$.
+Many of the algorithms which computes the edit distance, also allows computing what the
+operations are.
 
 The classic algorithm for calculating edit distance operations is attributed to Wagner and
 Fischer~\cite{WagnerFischer}. The input to the algorithm is two strings $S_1$ and $S_2$ of
@@ -169,7 +179,7 @@ top to bottom and then the operations are inferred from $M$. The recurrence in e
 		M[i][j] =
 		\begin{cases}
 			M[i-1][j-1] & \mathrm{if\ } S_1[i] = S_2[j] \\
-            1 + \Min{$M[i-1][j-1], M[i][j-1], M[i-1][j-1]$}
+            1 + \Min{$M[i-1][j-1], M[i][j-1], M[i-1][j]$}
 		\end{cases}
 	\end{gather*}
 	\caption{Edit distance recurrence}
@@ -234,7 +244,7 @@ therefore want a way to combine these operations to ``larger'' operations.
 We define an EditOperation with the following record:
 
 \begin{lstlisting}
-record EditOperation {
+EditOperation {
     OperationType type,
     char[] chars,
     int position
@@ -267,8 +277,7 @@ Note that this algorithm is not an optimal algorithm, as this is a trade-off bet
 processing many characters in few operations, versus processing many operations with few
 characters. As mentioned earlier, one could always reduce the solution to be only two
 operations, deleting the whole string, and inserting the new string. This is only two
-operations, but likely processes more characters in total compared to our algorithm. This
-trade-off will become apparent when discussing the dynamic suffix array updates.
+operations, but likely processes more characters in total compared to our algorithm. 
 
 \subsection*{Optimizing memory usage and operations}
 
@@ -290,7 +299,7 @@ added to the position of each edit operation to correct this.
 Another optimization we can do to reduce the size of the matrix is to remove the
 ``trivial'' part at each end of our matrix. If we compare two strings which have many
 similar characters at the beginning or end of our string, we know that these will not
-equate to any edit operations in the matrix, as they will simply be diagonal moves
+produce any edit operations in the matrix, as they will simply be diagonal moves
 (substitutes) where the characters are already equal. In table
 \ref{tab:minimizededitmatrix} we see the edit matrix for the input \verb|FASCINATING| and
 \verb|FINISHING|. The two words share the common prefix \verb|F| and the common suffix
@@ -326,7 +335,7 @@ account for the offset of the minimized matrix.
 	\label{tab:minimizededitmatrix}
 \end{table}
 
-\begin{algorithm}[htp]
+\begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\EditDistanceMinimizeStrings{$S_1$, $S_2$}}{
 
@@ -367,8 +376,8 @@ growth in terms of the fingerprint size. This is because the old fingerprint is 
 $n$ and the new fingerprint is of size $m$, where $n \approx m$, which requires an $n
 \times m$ size matrix to calculate the edit operations. For example if a Java file
 contains $3000$ lines, the number of tokens can exceed $10000$, which would require
-approximately a $10000 \times 10000$ size matrix, which is approaching a memory usage
-which too large.
+approximately a $10000^2$ size matrix, which is approaching a memory usage which too
+large.
 
 A solution to this problem is to reduce the required memory from the polinomial $O(n \times m)$
 memory usage, to a linear $O(n)$ memory usage. A stepping stone towards such a solution is
@@ -383,7 +392,7 @@ recurrence, shown in equation \ref{eq:editdistancerecurrence}. This is possible 
 always know the above, left, and top-left elements of the current index. This can be
 implemented as two arrays, which holds the previous and current row. 
 
-\begin{table}
+\begin{table}[t]
 	\begin{center}
 		\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|}
 			  &   & D & E & M & O & C & R & A & T \\\hline
@@ -549,29 +558,29 @@ this optimization can often avoid large spikes in the running time of the next p
 \end{figure}
 
 Now that we know how the fingerprint has changed after an edit, the next phase is to input
-the edit operations into an algorithm which dynamically updates the suffix array. The
-algorithm discussed in this section will be run once for each edit operation.
+the edit operations into an algorithm which dynamically updates the extended suffix array.
+The algorithm discussed in this section will be run once for each edit operation.
 
 Constructing/updating the suffix array is the most time-consuming phase of the algorithm,
 so the goal for the dynamic update is to take the previous suffix array and an edit
-operation, and compute the new suffix array faster than it would take to build the suffix
-array from scratch. We will also in the following section convert the suffix array into a
-dynamic structure, which allows insertions, deletions and increments without requiring
-linear time.
+operation, and compute the new suffix array faster building the suffix array from scratch.
+We will also in the following section convert the suffix array into a dynamic structure,
+which allows insertions, deletions and increments faster than linear time.
 
-The algorithm used is the algorithm by Salson et al.~\cite{DynamicExtendedSuffixArrays}.
-This algorithm is based on the 4-stage algorithm for updating a Burrows-Wheeler transform
-(BWT), also by Salson et al.~\cite{DynamicBWT}. Recall that the BWT is a transform on an
-input string which is often used for compression and text-search purposes. The BWT is also
-reversible by using the LF function to compute the original string in reverse. The
-LF function is computed for a position $i$ such that $LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$
-where the array $C$ contains for any character $c$, how many characters are
-lexicographically smaller than $c$. This function can intuitively be used in the context
-of the BWT to allow us to move from $CS_i$ to $CS_{i-1}$. Also recall that the suffix
-array and the BWT of a string is tightly related to the point where one can compute the
-BWT from the suffix array. Any updates to the BWT will therefore lead to similar updates
-to the suffix array, so the algorithm which updates the BWT can be used to determine how
-the suffix array changes as well.
+The algorithm used is the algorithm presented by Salson et
+al.~\cite{DynamicExtendedSuffixArrays}. This algorithm is based on the 4-stage algorithm
+for updating a Burrows-Wheeler transform (BWT), also presented by Salson et
+al.~\cite{DynamicBWT}. Recall that the BWT is a transform on an input string which is
+often used for compression and text-search purposes. The BWT is also reversible by using
+the LF function to compute the original string in reverse. The LF function is computed for
+a position $i$ such that $LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where the array $C$
+contains for any character $c$, how many characters are lexicographically smaller than
+$c$. This function can intuitively be used in the context of the BWT to allow us to move
+from $CS_i$ to $CS_{i-1}$. Also recall that the suffix array and the BWT of a string is
+tightly related to the point where one can compute the BWT from the suffix array. Any
+updates to the BWT will also correspond to similar updates to the suffix array, so the
+algorithm which updates the BWT can be used to determine how the suffix array changes as
+well.
 
 \subsection*{Updating BWT on insertion}
 
@@ -694,14 +703,12 @@ observation is that only $CS_j$ where $j \leq i$ will have their lexicographical
 changed. This is because only in these cyclic-shifts the inserted \verb|B| comes before
 the \verb|$|. Since the \verb|$| is the smallest lexicographical character, and no two
 cyclic-shifts will have \verb|$| in the same location, we know that the lexicographical
-comparison of two cyclic-shifts will never go past the \verb|$|. Therefore, only the
-cyclic-shifts where the inserted character comes before the \verb|$|, have the possibility
-of being moved.
+comparison of two cyclic-shifts will never go past the \verb|$|.
 
 We know that only $CS_j$ where $j \leq i$ can have their ordering changed, and we have
 already inserted $CS_i$ at the correct position (the new cyclic-shift). We will store two
 positions, $pos$ and $expected$, where $pos$ is initially the position of $CS_{i - 1}$,
-which was found before any changes were made to the BWT. $pos$ is therefore the actual
+which was stored before any changes were made to the BWT. $pos$ is therefore the actual
 position of $CS_{i - 1}$, $expected$ is the expected position of $CS_{i - 1}$, which is
 computed by computing $LF(insertionPoint)$ where $insertionPoint$ is the position where
 the new $CS_i$ was inserted. With the knowledge of where the cyclic-shift of order $i - 1$
@@ -821,9 +828,10 @@ the reordering phase.
 
 \subsection*{Substitution}
 
-Substitution operations are also possible and covered in the original paper, but due to
-time constraints, these were implemented as a deletion followed by an insertion, which is
-less efficient than a single operation, since the reordering stage is done twice.
+Substitution operations are also possible and covered in the original paper, but in
+CCDetect-LSP these were simply implemented as a deletion followed by an insertion. This is
+less efficient than a single operation, since the reordering stage is done twice, but we
+do not suspect that this will worsen the performance in any significant way.
 
 \subsection*{LF function}
 
