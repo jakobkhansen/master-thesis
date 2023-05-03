@@ -295,13 +295,11 @@ The benchmarks will be run on a computer with 16GB RAM, and an Intel i7-2600K CP
 representative of today's modern CPUs}. The computer is running Manjaro Linux with kernel
 version 6.1.25-1. The SACA detection, incremental detection and iClones will be run with a
 token threshold of $100$, and the processing time of each revision will be timed using a
-simple clock mechanism programmed in Java. Type-3 clone detection will be disabled for
-iClones.
-
-\Todo{Average results over multiple runs}
-
-\Todo{A single run over a large code base showing what happens when number of edit
-operations increase}
+simple clock mechanism programmed in Java. Type-3 clone detection was disabled for iClones
+with the \verb|-minclone 100| parameter. Each test was run three times, and the results
+have been averaged. Only three runs of all tests were performed because running all the
+tests takes a significant amount of time (multiple hours), and the results seems to be
+very stable from these three runs only.
 
 Figure \ref{fig:WorldWind}, \ref{fig:neo4j}, \ref{fig:graal}, \ref{fig:flink},
 \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark results on the
