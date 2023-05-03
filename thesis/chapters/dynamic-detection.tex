@@ -2,9 +2,9 @@
 \label{dynamicdetection}
 
 The following chapter will present the algorithm which efficiently updates the list of
-clones, without having to rebuild the different structures from scratch. Given an edit
-to a file in the project, we will be able to update the document index, fingerprints,
-suffix array and list of clones faster than the initial detection.
+clones, without having to rebuild the extended suffix array from scratch. Given an edit to
+a file in the project, we will be able to update the document index, fingerprints, suffix
+array and list of clones faster than the initial detection.
 
 An incremental update is run whenever a document is changed. The document index is
 signalized of a change either when a file is saved, or on any keystroke. This is
@@ -13,9 +13,9 @@ the clones is run, and the clone-list is updated.
 
 \section{Affordable operations}
 
-Before looking at the approach, it is useful to determine the time cost associated with
-different operations. We can for example afford to iterate over the contents of a
-single file, which will be useful for our algorithm. 
+Before discussing the algorithm, it is useful to determine the time cost associated with
+different operations and discuss what operations we can afford. We can for example afford
+to iterate over the contents of a single file, which will be useful for our algorithm. 
 
 We cannot afford to iterate over the entire code base, meaning the contents of all files
 in the code base. The initial detection takes linear time in the size of the code base,
@@ -27,12 +27,12 @@ the contents of a file with up to a few thousands lines is not a very expensive 
 to perform and will not take a significant amount of time. The whole string of the file
 contents will be needed for Tree-sitter to incrementally parse the file.
 
-Parsing an entire file however, can be too expensive in some cases. While the runtime of
-parsing a single file is still linear in the size of file content, parsing a large file
+Parsing an entire file however, can be too expensive in some cases. While the running time
+of parsing a single file is still linear in the size of file content, parsing a large file
 from scratch can take a significant amount of time in practice, and for small code bases
-with large files, parsing can take a significant portion of the total runtime of a dynamic
-update. This is why incremental parsing with Tree-sitter is used, which lowers the runtime
-closer to $O(\vert\text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
+with large files, parsing can take a significant portion of the total running time of an
+incremental update. This is why incremental parsing with Tree-sitter is used, which lowers
+the runtime closer to $O(\vert\text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
 
 We can also afford two more useful operations, iterating over the documents in the index
 (not their contents), and iterating over the clone objects. We can afford to do these
@@ -53,9 +53,9 @@ compared to updating the suffix array.
     \end{center}
 \end{figure}
 
-The first step of an incremental update is to update the document index. We will also look
-at how we can reduce the memory usage of the index without a loss in terms of the time
-complexity of the updates.
+The first step of the incremental algorithm is to update the document index. We will also
+look at how we can reduce the memory usage of the index without a loss in terms of the
+time complexity of the updates.
 
 As previously shown, each document stores its own content, AST and fingerprint. It is not
 strictly necessary to store either the content or the AST in memory all the time, as it is
@@ -80,7 +80,7 @@ server, which finds the relevant document $D$ in the index, and sets the followi
 After the document fields have been set, the document is ready to receive updates. When
 the LSP client sends a \verb|textDocument/didChange| message, the message consists of the
 URI of the edited file, the range of the content which has changed, and the content which
-has potentially been inserted. This range is then used in a tree-sitter incremental parse
+has potentially been inserted. This range is then used in a Tree-sitter incremental parse
 of the file content. After this parse, we have efficiently updated a documents content and
 AST. After this update, we also set $\Access{D}{\Var{changed}} = \True$
 
