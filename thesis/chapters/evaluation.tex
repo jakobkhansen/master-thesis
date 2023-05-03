@@ -290,26 +290,27 @@ edit, but could occur in large-scale automatic refactoring operations. Therefore
 data shows that the algorithm can process these types of edits in ``real-time'', we believe
 that the algorithm can process most realistic editing scenarios.
 
-The benchmarks will be run on a computer with 16GB RAM, and an Intel i7-2600K CPU with a
+The benchmarks were run on a computer with 16GB RAM, and an Intel i7-2600K CPU with a
 3.4GHz clock speed and 4 cores\footnote{Note that this CPU is quite old, and may not be
 representative of today's modern CPUs}. The computer is running Manjaro Linux with kernel
-version 6.1.25-1. The SACA detection, incremental detection and iClones will be run with a
-token threshold of $100$, and the processing time of each revision will be timed using a
+version 6.1.25-1. The SACA detection, incremental detection and iClones was run with a
+token threshold of $100$, and the processing time of each revision was timed using a
 simple clock mechanism programmed in Java. Type-3 clone detection was disabled for iClones
 with the \verb|-minclone 100| parameter. Each test was run three times, and the results
-have been averaged. Only three runs of all tests were performed because running all the
-tests takes a significant amount of time (multiple hours), and the results seems to be
-very stable from these three runs only.
+were averaged. Only three runs of all tests were performed because running all the tests
+takes a significant amount of time (multiple hours), and the results seem to be very
+stable from these three runs only.
 
 Figure \ref{fig:WorldWind}, \ref{fig:neo4j}, \ref{fig:graal}, \ref{fig:flink},
 \ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark results on the
 different code bases. Each graph shows the running time of the SACA detection, the
-incremental detection and iClones. The running time is shown on a log scale, as the
-initial detection is extremely slow compared to the subsequent detections. iClones was not
-able to run on the intellij-community code base, as the memory usage exceeded 16GB,
-therefore only the CCDetect-LSP algorithms is shown on those graphs. The elasticsearch
-code base with a size of $3.2\text{MLOC}$ was approximately the maximum size code base
-iClones could run on before the computer ran out of available memory.
+incremental detection and iClones when run on a certain code base and edit operation size.
+The running time is shown on a log scale, as the initial detection is extremely slow
+compared to the subsequent detections. iClones was not able to run on the
+intellij-community code base, as the memory usage exceeded 16GB, therefore only the
+CCDetect-LSP algorithms is shown on those graphs. The elasticsearch code base with a size
+of $3.2\text{MLOC}$ was approximately the maximum size code base iClones could run on
+before the computer ran out of available memory.
 
 
 \begin{figure}[H]
