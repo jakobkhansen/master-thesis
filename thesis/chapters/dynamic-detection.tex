@@ -562,15 +562,17 @@ this optimization can often avoid large spikes in the running time of the next p
     \end{center}
 \end{figure}
 
-Now that we know how the fingerprint has changed after an edit, the next phase is to input
-the edit operations into an algorithm which dynamically updates the extended suffix array.
-The algorithm discussed in this section will be run once for each edit operation.
+With the edit operations which describes how the fingerprint has changed, the next phase
+is to input the edit operations into an algorithm which dynamically updates the extended
+suffix array. The algorithm discussed in this section will be run once for each edit
+operation.
 
 Constructing/updating the suffix array is the most time-consuming phase of the algorithm,
 so the goal for the dynamic update is to take the previous suffix array and an edit
-operation, and compute the new suffix array faster building the suffix array from scratch.
-We will also in the following section convert the suffix array into a dynamic structure,
-which allows insertions, deletions and increments faster than linear time.
+operation, and compute the new suffix array faster than building the suffix array from
+scratch. We will also in a following section convert the suffix array into a dynamic
+structure, which allows insertions, deletions and increments multiple elements faster than
+linear time.
 
 The algorithm used is the algorithm presented by Salson et
 al.~\cite{DynamicExtendedSuffixArrays}. This algorithm is based on the 4-stage algorithm
@@ -582,22 +584,24 @@ a position $i$ such that $LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where the array 
 contains for any character $c$, how many characters are lexicographically smaller than
 $c$. This function can intuitively be used in the context of the BWT to allow us to move
 from $CS_i$ to $CS_{i-1}$. Also recall that the suffix array and the BWT of a string is
-tightly related to the point where one can compute the BWT from the suffix array. Any
+highly correlated to the point where one can compute the BWT from the suffix array. Any
 updates to the BWT will also correspond to similar updates to the suffix array, so the
 algorithm which updates the BWT can be used to determine how the suffix array changes as
 well.
 
 \subsection*{Updating BWT on insertion}
 
-First we will observe which parts of a BWT changes when we insert a single character. Note
-that we will only consider changes to the BWT, meaning the final character in each shift,
-not the whole cyclic-shift. We will consider an insertion of a character $c$, inserted at
-position $i$. We know that we will have exactly one more $CS$ for the string, which starts
+We will observe which parts of a BWT changes when we insert a single character. The
+approach for deletions and substitutions are similar, and this approach can easily be
+extended to edit operations of more than one character. Note that we will only consider
+changes to the BWT, meaning the final character in each shift, not the whole cyclic-shift.
+We will consider an insertion of a character $c$, inserted at position $i$. When $c$ is
+inserted, we know that we will have exactly one more $CS$ for the string, which starts
 with the inserted character $c$, at position $i$. This $CS$ ends with the character at
 position $i - 1$. We also know that exactly one $CS$ will change its last character, which
 is the cyclic-shift previously starting at position $i$, but is now at position $i + 1$
-after the insertion. This new cyclic-shift will now end with the new inserted character,
-$c$. These are the only changes that happen to the characters in the BWT, but the ordering
+after the insertion. This new $CS$ will now end with the new inserted character, $c$.
+These are the only changes that happen to the characters in the BWT, but the ordering
 might not be correct anymore.
 
 \begin{table}[t]
@@ -851,42 +855,91 @@ a data structure which stores the number of smaller characters of each character
 BWT. 
 
 For the $rank$ queries, recall that the wavelet matrix was a data structure which could
-efficiently compute $rank/select$ queries for strings. We will use the wavelet matrix to
-store the BWT and perform efficient $access$ and $rank$ queries on it as needed. With the
-wavelet matrix, we do not need to store the BWT itself, as we can simply query the wavelet
-matrix to access characters of the BWT. We also do not need to store the full fingerprint,
-since we can access characters in the wavelet matrix and if we need to access the
-characters in a sorted order, we can use the LF function. We decided to use the wavelet
-matrix instead of a wavelet tree as it has been shown to have faster $rank$ queries, and
-is more memory efficient for larger alphabets. Our alphabet can be quite large compared
-the standard applications of $rank/select$ data structures (such as DNA analysis). The
-wavelet matrix is also generally simpler to implement, and can be dynamically updated in a
-simple manner. Each bitset in the wavelet matrix is a dynamic bitset where we can
-efficiently insert and delete characters as needed when the size of the BWT grows/shrinks.
+efficiently compute $rank/select$ queries for strings. The data structure is implemented
+as a matrix of dynamic bitsets, where we also stored the number of 0 bits in each level.
+Traversing this matrix from top to bottom and performing rank queries on the dynamic
+bitsets in each level allows us to perform access, rank and select queries efficiently for
+a string input. We will use the wavelet matrix to store the BWT and perform efficient
+$access$ and $rank$ queries on it as needed. With the wavelet matrix, we do not need to
+store the BWT itself, as we can simply query the wavelet matrix to access characters of
+the BWT. We also do not need to store the full fingerprint, since we can access characters
+in the wavelet matrix and if we need to access the characters in a sorted order, we can
+use the LF function. We decided to use the wavelet matrix instead of a wavelet tree as it
+has been shown to have faster $rank$ queries, and is more memory efficient for larger
+alphabets. Our alphabet can be quite large compared the standard applications of
+$rank/select$ data structures (such as DNA analysis). The wavelet matrix is also generally
+simpler to implement, and can be dynamically updated in a simple manner. Each bitset in
+the wavelet matrix is a dynamic bitset where we can efficiently insert and delete
+characters as needed when the size of the BWT grows/shrinks.
 
 When inserting a character $c$ into the wavelet matrix at position $i$, we insert the
 first bit of $c$ in level $0$ in the matrix at position $i$. The next bit of $c$ is then
 inserted in level $1$ in the matrix at position $rank_x(WM[0], i)$ where $x$ is the value
-of the previous bit.
+of the previous bit. We continue this process, updating the position by performing a rank
+query, and then inserting the bit at that position, until we reach the bottom of the
+matrix. Similarly, for a deletion, we find each bit which was inserted for that position
+in each level, and remove them. Algorithm \ref{alg:waveletmatrixinsert} shows how an
+element can be dynamically inserted into the wavelet matrix. Algorithms for deletions and
+substitutions are left out, but follow the same idea. Substitutions are simply implemented
+as a deletion followed by an insertion.
 
 A complication with the wavelet data structures is to update the data structure as the
 alphabet increases in size. In our case the alphabet size will at some point increase to a
 size where elements need an additional bit. For the wavelet matrix, this can be solved by
 simply inserting a new row at the beginning of the matrix (level $0$), where the bitset
-consists of all zeroes. Afterwards, the new element is inserted in the normal fashion,
-which should be the only element with a $1$ bit in the first position.
+consists of all zeroes. Afterwards, the new element is inserted in the normal fashion.
 
-\Todo{Algorithm to insert/delete in wavelet matrix}
+\begin{algorithm}[t]
+  \SetAlgoLined\DontPrintSemicolon
+    \algo{\WaveletMatrixInsert{wm, index, value}}{
+        $\Var{numBits} \gets \textrm{Number of bits in value}$ \;\;
+
+        \While{$\Var{numBits} > \Len{$\Access{\Var{wm}}{\Var{levels}}$}$}{
+            \textrm{Insert new row at level 0 in wm}
+        } \;
+
+        $\Var{level} \gets 0$ \;
+        $\Var{currIndex} \gets \Var{index}$ \;\;
+
+        \While{$\Var{level} < \Len{$\Access{\Var{wm}}{\Var{levels}}$}$}{
+            $\Var{currentBit} \gets
+            \Len{$\ArrayAccess{\Access{\Var{wm}}{\Var{levels}}}{\Var{level}}$} -
+            \Var{level} - 1$ \;\;
+
+            \Comment{Get the bit value at position currentBit in value}
+            $\Var{bit} \gets \GetBit{$\Var{value}, \Var{currentBit}$}$ \;\;
+
+            \Comment{Insert the bit into the bitset at position currIndex}
+            \Insert{$\Access{\Var{wm}}{\Var{level}}, \Var{currIndex}, \Var{bit}$} \;\;
+
+
+            \Comment{Update currIndex to the position to insert in the next level}
+            $\Var{currIndex} \gets \RankBit{$\Access{\Var{wm}}{\Var{level}}, \Var{currIndex}$}$ \;\;
+
+            \Comment{If the bit we inserted is 1, add the number of zeroes in the level}
+            \If{$\Var{bit} = 1$}{
+                $\Var{currIndex} \gets \Var{currIndex} + \Access{\Access{\Var{wm}}{\Var{level}}}{z_l}$
+            }
+            $\Var{level} \gets \Var{level} + 1$
+
+
+        }
+    }
+
+  \vspace{0.5cm}
+  \caption{Dynamically insert an element into the wavelet matrix}
+  \label{alg:waveletmatrixinsert}
+\end{algorithm}
 
 The $C$ array can be implemented in two ways. Either $C[c]$ holds the number of smaller
 character than $c$ in the input, or $C[c]$ holds the number of occurrences of $c$. There
 are trade-offs with either implementation, as storing the number of smaller characters
 requires a linear scan whenever a character is inserted/deleted, while storing the number
-of occurrences requires computing the number of characters whenever the LF function is
-called. We have chosen the approach of storing the number of occurrences, as updating the
-array is simpler in cases where the alphabet size increases. When we later update LCP
-values, we will see that there is a possibility that choosing the option of storing the
-number of smaller characters in $C$ is faster. 
+of occurrences requires a linear scan to compute the number of smaller characters whenever
+the LF function is called. We have chosen the approach of storing the number of
+occurrences, as updating the array is simpler in cases where the alphabet size increases.
+When we later update LCP values, we will see that there is a possibility that choosing the
+option of storing the number of smaller characters in $C$ is faster. 
 
 \section{Dynamic extended suffix arrays}
 
