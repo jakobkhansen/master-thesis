@@ -247,14 +247,13 @@ neo4j\footnote{neo4j: \url{https://github.com/neo4j/neo4j}}, graal\footnote{graa
 \url{https://github.com/apache/flink}}, elasticsearch\footnote{elasticsearch:
 \url{https://github.com/elastic/elasticsearch}} and
 intellij-community\footnote{intellij-community:
-\url{https://github.com/JetBrains/intellij-community}}. The code bases chosen were
-different size Java code bases, with different amounts of duplication. Table
-\ref{tab:codebases} shows some properties of the code bases, including its number of
-lines, the number of clones detected by CCDetect-LSP for a token threshold of $100$, the
-average LCP value and the number of LCP values above $100$. An interesting aspect of the
-graal and flink code bases is that they both contain ${\sim}2.2\text{MLOC}$, but graal has
-a higher $\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array
-update.
+\url{https://github.com/JetBrains/intellij-community}}. The code bases are all Java code
+bases of different size, with different amounts of duplication. Table \ref{tab:codebases}
+shows some properties of the code bases, including its number of lines, the number of
+clones detected by CCDetect-LSP for a token threshold of $100$, the average LCP value and
+the number of LCP values above $100$. An interesting aspect of the graal and flink code
+bases is that they both contain ${\sim}2.2\text{MLOC}$, but graal has a higher
+$\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array update.
 
 \begin{table}[t]
     \begin{center}
@@ -346,7 +345,6 @@ before the computer ran out of available memory.
     \caption{graal performance benchmark}
     \label{fig:graal}
 \end{figure}
-
 
 \begin{figure}[H]
     \begin{center}

@@ -2,10 +2,12 @@
 \label{lspimplementation}
 
 The following chapters will discuss how CCDetect-LSP is implemented, and especially
-focuses on our novel algorithm based on dynamic extended suffix arrays. The current
-chapter will look at the LSP integration and how source code is initially indexed, while
-the following two chapters will discuss first how clones are initially detected and then
-how this analysis in incrementally updated as source code changes.
+focuses on our novel algorithm based on dynamic extended suffix
+arrays\footnote{CCDetect-LSP source code is available here:
+\url{https://github.com/jakobkhansen/CCDetect-lsp}}. The current chapter will look at the
+LSP integration and how source code is initially indexed, while the following two chapters
+will discuss first how clones are initially detected and then how this analysis in
+incrementally updated as source code changes.
 
 CCDetect-LSP is integrated into IDEs via LSP. The tool starts up as an LSP server, which
 an IDE client can connect to and send/receive messages from. The goal of the LSP

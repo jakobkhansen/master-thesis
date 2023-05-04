@@ -1175,7 +1175,7 @@ the positions of these suffix into the bitset, we will iterate over the suffixes
 could possibly have their LCP value changed. Iteration over every suffix and recomputing
 the LCP value takes linear time in the size of the fingerprint and is therefore too slow
 for this algorithm. However, we can reduce the number of suffixes we need to update by
-using a series of observations.
+applying a series of observations.
 
 The first observation is that we only need to consider suffixes where the
 insertion/deletion of a character at position $i$ has changed the suffix. Those are the
@@ -1264,6 +1264,8 @@ comparing the characters at those positions in the BWT.
 \Todo{Algorithm for iterating over suffixes which need to update their LCP value}
 
 \Todo{Algorithm for updating a single LCP value}
+
+\Todo{We need to visualize this somehow}
 
 \section{Dynamic clone extraction and source-mapping}
 
