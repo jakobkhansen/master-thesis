@@ -676,10 +676,11 @@ initial detection algorithm~\cite{LinearTimeSuffixArraySAIS}.
 
 The extended or enhanced suffix array is the suffix array and the additional LCP array,
 which has been shown to be as powerful as a suffix tree, in terms of what can be computed
-with it with the same time complexity. The advantage of using a suffix array is that it
-uses a smaller amount of memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. The
-extended suffix array is the major data structure which will be used in our detection
-algorithm to find duplicate code, as explained in the upcoming implementation chapters.
+with it with the same time complexity. The advantage of using a suffix array over a suffix
+tree is that it uses a smaller amount of memory, as suffix trees needs to store a lot of
+pointers.~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. The extended suffix array is
+the major data structure which will be used in our detection algorithm to find duplicate
+code, as explained in the upcoming implementation chapters.
 
  \subsection*{Dynamic bitsets}
 

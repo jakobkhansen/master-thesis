@@ -116,19 +116,20 @@ need to concatenate them to one large array as in the initial detection.
     \begin{center}
         \includegraphics[width=0.95\textwidth]{figures/indexupdate.drawio.pdf}
     \end{center}
-    \caption{Old (above) and new (below) fingerprints and ranges when two tokens are inserted}
+    \caption{Old (above) and new (below) fingerprints and ranges when two tokens are
+    inserted.}
     \label{fig:fingerprintupdate}
 \end{figure}
 
 \section{Computing edit operations}
 
-Now that the fingerprint has been updated, we could build the suffix array from scratch
-and already see a substantial improvement in performance. The major bottleneck of the
-initial detection is to parse and fingerprint the entire code base. Instead, we want to
-further improve the efficiency by dynamically updating the suffix array.
+With the updated fingerprint, we could build the suffix array from scratch and already see
+a substantial improvement in performance. The major bottleneck of the initial detection is
+to parse and fingerprint the entire code base. Instead, we want to further improve the
+efficiency by dynamically updating the suffix array.
 
 The input to the dynamic suffix array algorithm is a set of edit operations. An edit
-operation can be either deleting, inserting or substituting a set of consecutive
+operation can either be deleting, inserting or substituting a set of consecutive
 characters in the fingerprint. The dynamic suffix array algorithm will take each edit
 operation, and update its suffix array to reflect the new state of the fingerprint.
 Therefore, the first problem to solve is to determine what exactly has changed in the
@@ -137,12 +138,12 @@ fingerprint.
 There are a couple of approaches we could take to determine the edit operations. The
 simplest is that whenever a file has changed, regard the entire file as changed, and
 perform a delete operation which removes the entire fingerprint of that file, and then an
-insertion which inserts the new fingerprint of that file. This is a very simple approach,
-but can lead to an unnecessary size for the edit operations. The fingerprint of the file
-is likely to be very similar to the previous version, therefore deleting and then
-inserting the entire files fingerprint could be a lot more work than it needs to be.
-However, this idea that we can always reduce the number of operations to only two, a
-deletion and an insertion, will be useful in our final algorithm.
+insertion which inserts the new fingerprint of that file. This is a simple approach which
+can have decent performance if the file is small, but can also lead to unnecessarily large
+edit operations. The fingerprint of the file is likely to be very similar to the previous
+version, therefore deleting and inserting the entire fingerprint could be a lot more work
+than it needs to be. However, this idea that we can always reduce the number of operations
+to only two, a deletion and an insertion, will be useful in our final algorithm.
 
 Another possible approach is to look at the ranges that the LSP client provides with each
 \verb|textDocument/didChange| message and determine which tokens in the fingerprint have
@@ -163,7 +164,7 @@ Fischer~\cite{WagnerFischer}. The input to the algorithm is two strings $S_1$ an
 length $n$ and $m$. The output will be the set of operations needed to turn $S_1$ into
 $S_2$. This algorithm is based on dynamic programming where a matrix $M$ is filled from
 top to bottom and then the operations are inferred from $M$. The recurrence in equation
-\ref{eq:editdistancerecurrence} shows how the edit distance matrix is filled and
+\ref{eq:editdistancerecurrence} shows how the edit distance matrix is filled and table
 \ref{tab:wagnerfischermatrix} shows an example matrix.
 
 \begin{figure}[t]
@@ -188,8 +189,8 @@ top to bottom and then the operations are inferred from $M$. The recurrence in e
 \end{figure}
 
 Each index $i, j$ in $M$ contains the edit distance value between the substrings
-$\ArrayAccess{S_1}{0..i}$ and $\ArrayAccess{S_2}{0..j}$ The values in $M$ is calculated by
-determining what is the cheapest operation to do at a certain location to make the
+$\ArrayAccess{S_1}{0..i}$ and $\ArrayAccess{S_2}{0..j}$ The values in $M$ are calculated
+by determining what is the cheapest operation to do at a certain location to make the
 substrings equal. This can be determined by looking at the three surrounding indices in
 $M$: $\MatrixAccess{M}{i - 1}{j - 1}$, $\MatrixAccess{M}{i - 1}{j}$ and
 $\MatrixAccess{M}{i}{j - 1}$. Each of these indices equate to deleting, inserting or
@@ -277,7 +278,9 @@ Note that this algorithm is not an optimal algorithm, as this is a trade-off bet
 processing many characters in few operations, versus processing many operations with few
 characters. As mentioned earlier, one could always reduce the solution to be only two
 operations, deleting the whole string, and inserting the new string. This is only two
-operations, but likely processes more characters in total compared to our algorithm. 
+operations, but likely processes more characters in total compared to our algorithm. See
+appendix \ref{alg:wagnerfischeroperations} for detailed pseudocode of the algorithm
+explained in this section.
 
 \subsection*{Optimizing memory usage and operations}
 
@@ -292,15 +295,17 @@ The first technique is to not input the whole fingerprint. We can drastically re
 size of the input by only comparing the old and new fingerprint of the document $D$ which
 has been edited. $D$ stores its previous and current fingerprint, and whenever it is
 edited, we can compute the edit operations of $D$, with its previous and current
-fingerprint as input. However, the position of each edit operation of $D$ will not have
-the correct position relative to the entire fingerprint, so $\Access{D}{start}$ is
-added to the position of each edit operation to correct this.
+fingerprint as input. This also avoids having to construct the full fingerprint by
+concatenating each documents fingerprint, which we had to do in the initial detection.
+With this approach however, the position of each edit operation of $D$ will not have the
+correct position relative to the entire fingerprint, so $\Access{D}{\Var{start}}$ is added
+to the position of each edit operation to correct this.
 
 Another optimization we can do to reduce the size of the matrix is to remove the
 ``trivial'' part at each end of our matrix. If we compare two strings which have many
 similar characters at the beginning or end of our string, we know that these will not
 produce any edit operations in the matrix, as they will simply be diagonal moves
-(substitutes) where the characters are already equal. In table
+(substitutes) where the characters are already the same. In table
 \ref{tab:minimizededitmatrix} we see the edit matrix for the input \verb|FASCINATING| and
 \verb|FINISHING|. The two words share the common prefix \verb|F| and the common suffix
 \verb|ING|. If we examine the edit distance values, we see that the highlighted green
@@ -376,8 +381,8 @@ growth in terms of the fingerprint size. This is because the old fingerprint is 
 $n$ and the new fingerprint is of size $m$, where $n \approx m$, which requires an $n
 \times m$ size matrix to calculate the edit operations. For example if a Java file
 contains $3000$ lines, the number of tokens can exceed $10000$, which would require
-approximately a $10000^2$ size matrix, which is approaching a memory usage which too
-large.
+approximately a $10000^2$ size matrix, which is approaching a memory usage which is too
+much for an IDE scenario.
 
 A solution to this problem is to reduce the required memory from the polinomial $O(n \times m)$
 memory usage, to a linear $O(n)$ memory usage. A stepping stone towards such a solution is
@@ -540,7 +545,8 @@ Using Hirschberg's algorithm, we are now able to compute the edit operations for
 large files without memory usage issues.
 
 A final problem we should be aware of is that in some instances, the number of edit
-operations can be very large. As mentioned, our algorithm which aggregates edit operations
+operations can explode. This happens in cases where there are no long stretches of similar
+operations in the matrix. As mentioned, our algorithm which aggregates edit operations
 together is not optimal, and could likely be improved to reduce the number of edit
 operations when we allow more than one character in each operation. Therefore, in
 instances where the edit distance algorithm returns so many edit operations that it is
@@ -549,7 +555,6 @@ only two operations, deletion and insertion of the entire minimized string. In p
 this optimization can often avoid large spikes in the running time of the next phase.
 
 \section{Dynamic suffix array updates}
-
 
 \begin{figure}[H]
     \begin{center}

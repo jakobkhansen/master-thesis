@@ -37,6 +37,12 @@ source code. Finally, clones are filtered and aggregated into clone classes befo
 are source-mapped back to the original source-code locations, which the LSP server can
 send to the IDE in the form of diagnostics.
 
+The decision to go with suffix arrays were based on the fact that suffix arrays use less
+memory than the traditional suffix tree approach, which is important in an IDE scenario.
+We also wanted to explore dynamic suffix arrays to determine if it could be a better
+approach to clone detection performance wise as well, as we are not aware of any work
+which compares a dynamic suffix tree with a dynamic suffix array.
+
 \section{Fragment selection}
 
 \begin{figure}[H]
