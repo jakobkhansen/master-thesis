@@ -11,13 +11,15 @@ quality is often measured in other metrics, including metrics which are not dire
 related to functionality~\cite[29]{MetricsAndModelsInSoftwareQuality}. Whenever duplicated
 code needs to be changed, it might require changes in multiple locations, which leads to
 metrics such as maintainability, analyzability and changeability being negatively
-affected. Multiple studies have shown that software projects typically contains $10-15\%$
-duplicated code~\cite{CloningByAccident}. Therefore, research into tools and techniques
-which can assist in reducing duplicated code will be of benefit to almost all software.
+affected. Studies generally report that software projects contain $10-15\%$ duplicated
+code, but some studies also report lower and higher percentages~\cite{CloningByAccident}.
+Even so, the percentage of duplication is generally considered to be of non-trivial size
+in many large code bases. Therefore, research into tools and techniques which can assist
+in reducing duplicated code will be of benefit to almost all software.
 
-Duplicated code can lead to a plethora of anti-patterns. Anti-patterns are bad design
-decisions for software which can lead to technical debt. Technical debt occurs when
-developers make technical compromises that are expedient in the short term, but increases
+Duplicated code can lead to a plethora of anti-patterns in software. Anti-patterns are bad
+design decisions for software which can lead to technical debt. Technical debt occurs when
+developers make technical compromises that are beneficial in the short term, but increases
 complexity in the long-term~\cite[111]{TechnicalDebt}. An example of this, in the context
 of duplicated code, is the ``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} anti-pattern.
 This anti-pattern occurs when a developer wants to implement a change, but needs to change
@@ -676,11 +678,11 @@ initial detection algorithm~\cite{LinearTimeSuffixArraySAIS}.
 
 The extended or enhanced suffix array is the suffix array and the additional LCP array,
 which has been shown to be as powerful as a suffix tree, in terms of what can be computed
-with it with the same time complexity. The advantage of using a suffix array over a suffix
-tree is that it uses a smaller amount of memory, as suffix trees needs to store a lot of
-pointers.~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. The extended suffix array is
-the major data structure which will be used in our detection algorithm to find duplicate
-code, as explained in the upcoming implementation chapters.
+with it in the same time complexity~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. An
+advantage of using a suffix array over a suffix tree is that it uses a smaller amount of
+memory, as suffix trees needs to store a lot of pointers. The extended suffix array is the
+major data structure which will be used in our detection algorithm to find duplicate code,
+as explained in the upcoming implementation chapters.
 
  \subsection*{Dynamic bitsets}
 
