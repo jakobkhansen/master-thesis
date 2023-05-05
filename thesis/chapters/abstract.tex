@@ -1,14 +1,14 @@
 \chapter*{Abstract}
 
-Duplicated code is present in almost all software today. This can negatively affect the
-maintainability and extensibility of the software, as multiple changes often need to occur
-when a duplicated snippet needs to be modified. Algorithms and tools which facilitates
-detection, management and refactoring of duplicated code is therefore an important
-resource for software engineers and researchers. Clone detection can be expensive in terms
-of time and memory, and this cost grows with the size of the code base. Incremental
-detection algorithms, algorithms which do not need to run the entire analysis from scratch
-for consecutive revisions of the code base, is especially interesting for use cases such
-as when running the detection tool in an IDE. In this thesis we present CCDetect-LSP, a
-duplicate code detection tool which targets the IDE scenario and implements a novel
-incremental clone detection algorithm, which aims to be faster than rerunning the analysis
-entirely, when small edits are applied to a code base.
+Duplicate code is present in almost all software today. The presence of duplicate code can
+negatively affect the maintainability and extensibility of the software, as multiple
+changes often need to occur when a duplicated section of code needs to be modified.
+Algorithms and tools which facilitates detection, management and refactoring of duplicated
+code is therefore an important resource for software engineers and researchers. Clone
+detection can be expensive in terms of time and memory, and this cost grows with the size
+of the code base. Incremental detection algorithms, algorithms which do not need to run
+the entire analysis from scratch for consecutive revisions of the code base, is especially
+interesting for use cases such as when running the detection tool in an IDE. In this
+thesis we present CCDetect-LSP, a duplicate code detection tool which targets the IDE
+scenario and implements a novel incremental clone detection algorithm, which aims to be
+faster than rerunning the analysis entirely, when edits are applied to a code base.

@@ -8,18 +8,20 @@ quality, otherwise known as code smells.
 A study conducted by Diego Cedrim et al. has shown that while programmers tend to refactor
 smelly code, they are rarely successful at eliminating the smells they are
 targeting~\cite{Rohit_Gheyi_Impact}. Most refactorings performed were either
-``smell-neutral'', meaning that the code smell is not eliminated, or ``stinky'',
-meaning that they introduced more code smells than they eliminated. Automated tools that
-help programmers make better refactorings and perform code analysis could be a solution to
-this problem.
+``smell-neutral'', meaning that the targeted code smell is not eliminated, or ``stinky'',
+meaning that the refactoring introduced more code smells than they eliminated. Automated
+tools that help programmers make better refactorings and perform code analysis could be a
+solution to this problem. 
 
 Duplicated code, code which is more or less copied to different locations in a code base,
 is a code smell which occurs in practically every large software project. Code clone
-analysis (duplicate code analysis) has therefore in the last decade become a highly active
-field of research and many tools have been developed to detect duplicated
-code~\cite[6]{Inoue_introduction_to_cc}. This thesis will focus on this type of code
-analysis and implement a novel algorithm and tool for detecting code clones, which targets
-the IDE scenario.
+analysis (duplicate code analysis) has therefore become a highly active field of research
+in the last decade and many tools have been developed to detect duplicated
+code~\cite[6]{Inoue_introduction_to_cc}. Duplicate code detection in large software can be
+a time-consuming process, a consequence of this is that few existing tools are highly
+integrated into the workflow of software developers. This thesis will therefore focus on
+efficient duplicate code analysis and describes a novel algorithm and tool for detecting
+duplicate code, which targets the IDE scenario.
 
 \section{Motivation and problem statement}
 
