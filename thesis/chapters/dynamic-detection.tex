@@ -1133,9 +1133,9 @@ decomposed into a deletion at position $i$ followed by an insertion at position 
 updating the LCP array we therefore need to consider how insertion of a value and deletion
 of a value in SA affects the LCP values.
 
-The idea for this algorithm is to keep track of all positions which could possibly have
-its LCP value changed, and update the LCP values after the SA is fully updated. There are
-four different cases where an LCP value at a position $i$ could be changed:
+The idea for this algorithm is to keep track of all positions which could have its LCP
+value changed, and update the LCP values after the SA is fully updated. There are four
+different cases where an LCP value at a position $i$ could be changed:
 
 \begin{enumerate}
     \item A suffix was inserted at position $i - 1$ in SA, which is the new suffix that
@@ -1265,7 +1265,7 @@ comparing the characters at those positions in the BWT.
 
 \Todo{Algorithm for updating a single LCP value}
 
-\Todo{We need to visualize this somehow}
+\Todo{Visualize this somehow?}
 
 \section{Dynamic clone extraction and source-mapping}
 
@@ -1275,39 +1275,41 @@ comparing the characters at those positions in the BWT.
     \end{center}
 \end{figure}
 
-The LCP is no longer represented as an array, but as a a balanced tree. As trees are more
-costly to traverse linearly compared to arrays, we also want to improve how we extract
-clones in this phase. The goal of this phase is still to find the indices in the
-fingerprint which corresponds to the start of code clones, which will later be mapped back
-to the original source code again.
+The LCP array is no longer implemented as an array, but as a balanced tree. As trees are
+more costly to traverse linearly compared to arrays, we also want to improve how we
+extract clones in this phase. The goal of the clone extraction phase is still to find the
+indices in the fingerprint which corresponds to the beginning of a code clone in the
+original source code. These indices will be mapped back to the original source code in the
+source-mapping phase.
 
-Recall that the algorithm in the initial detection in \cref{initialdetection} traversed
-the suffixes from beginning to end, and extracts indices of suffixes where the LCP value
-is above the token threshold parameter. Also recall that some clones were filtered, those
-being clones which extend past a single fragment, or clones which are contained inside a
-larger clone. This algorithm will now be converted to run on the balanced tree which
-contains the LCP values, which also optimizes the algorithm to reduce the amount of LCP
-values we need to examine.
+Recall that the initial detection clone extraction algorithm in \cref{initialdetection}
+traversed the suffixes from beginning to end, and extracts indices of suffixes where the
+LCP value is above the token threshold parameter. Also recall that some clones were
+filtered, those being clones which extend past a single fragment, or clones which are
+contained inside a larger clone. This algorithm will now be converted to run on the
+balanced tree which contains the LCP values, which also optimizes the algorithm to reduce
+the amount of LCP values we need to examine.
 
-When updating a value in the LCP array, we can check to see if the new value is above the
-token threshold. If the previous value was below the treshold, and the new value is above
-the treshold, we know that this is a node which could potentially be a code clone, so
-storing these nodes can reduce the amount of nodes we need to examine. Since potentially
-multiple updates to an LCP value happens as potentially multiple edit operations are
-performed before extracting clone indices, we can reduce the amount of insertions/removals
-from this set by filtering nodes with a too low LCP value after we have done all LCP value
-updates.
+The idea for this algorithm is to always store a list of all the nodes in the tree which
+have an LCP value above the token threshold. These are afterall the only nodes which could
+possibly be the beginning of a code clone, even if some of them will be filtered out
+later. When a value is updated, we can check to see if the new value is above the token
+threshold. If the previous value was below the threshold, and the new value is above the
+threshold, we know that this is a node which could potentially be a code clone, so storing
+these nodes can reduce the amount of nodes we need to examine. When all LCP values have
+been updated, we can filter out nodes which have had their LCP value updated to be below
+the threshold.
 
-After all LCP values are updated and we have filtered out nodes, we are left with a set of
-all the nodes with an LCP value above the token threshold parameter. In order to filter
-out clones which are contained within other clones, we need to add a similar check to the
-loop which was added in algorithm \ref{alg:cloneextraction}, however since the set only
-contains nodes with an LCP values above the token threshold, the algorithm will be
-slightly different. Instead of adding a loop which skips past indices which are contained
-clones, we can instead check if the last index added contains the current clone we are
-looking at. Doing the process in this fashion allows us to skip over many checks if there
-are long stretches of suffixes in the fingerprint with LCP values below the token
-treshold. Algorithm \ref{alg:dynamiccloneextraction} shows how this algorithm is
+After all LCP values are updated, we are left with a set of all the nodes with an LCP
+value above the token threshold parameter. In order to filter out clones which are
+contained within other clones, we need to add a similar check to the loop which was added
+in algorithm \ref{alg:cloneextraction}, however since the set only contains nodes with an
+LCP values above the token threshold, the algorithm will be slightly different. Instead of
+adding a loop which skips past indices which are contained clones, we can instead check if
+the last node which was deemed the start of a code clone contains the current clone we are
+looking at. Doing the process in this fashion allows us to skip checking many nodes if
+there are long stretches of suffixes in the fingerprint with LCP values below the token
+threshold. Algorithm \ref{alg:dynamiccloneextraction} shows how this algorithm is
 implemented.
 
 \begin{algorithm}[t]
@@ -1343,12 +1345,12 @@ implemented.
 \end{algorithm}
 
 After applying this algorithm we are left with the nodes with inorder ranks which
-correspond to the same indices as in the initial detection, and for the final phase,
-mapping the clone indices back to the original source code, we can do almost the same
-procedure as in the initial detection. The algorithm for this is almost the same as
-algorithm \ref{alg:buildclonemap}, but some parts are changed to avoid traversing through
-the trees many times to find the second index, which we would have to do if we used
-algorithm \ref{alg:buildclonemap} without any modifications. The problem with algorithm
+correspond to the same indices as in the initial detection, and for the final phase, which
+is mapping the clone indices back to the original source code, we can do almost the same
+procedure as in the initial detection. This algorithm is almost the same as algorithm
+\ref{alg:buildclonemap}, but some parts are changed to avoid traversing through the trees
+many times to find the second index, which we would have to do if we used algorithm
+\ref{alg:buildclonemap} without any modifications. The problem with algorithm
 \ref{alg:buildclonemap} is that it computes the expression $\SA{\ISA{\Var{firstIndex}} -
 1}$ to find the index of the matching clone. This is not a problem in the initial
 detection, because SA and ISA are arrays, which give $O(1)$ time access. This is not the
@@ -1363,8 +1365,9 @@ $\Var{firstNode}$ and $\Var{secondNode}$, we can get their fingerprint indices b
 the inorder rank of their pointer, with algorithm \ref{alg:getrankofnode}. Afterwards, the
 algorithm continues as previously. While this still requires traversing the tree in
 $O(\log n)$ time, we have reduced the number of traversals needed from $5$ with a direct
-translation of \ref{alg:buildclonemap} to $2$ with the smarter traversal of nodes
-described here.
+translation of algorithm \ref{alg:buildclonemap} to $2$ with the smarter traversal of
+nodes described here.
 
 Now that we have successfully source-mapped from our dynamic extended suffix arrays to
-code clones, we are finished, and clones are sent to be displayed to the client.
+code clones, we are finished, and we have the set of clones ready to be sent to the
+client.
