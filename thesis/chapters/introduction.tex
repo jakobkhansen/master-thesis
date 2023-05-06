@@ -26,12 +26,12 @@ detecting code clones in a real-time programming environment.
 \section{Motivation and problem statement}
 
 Many tools and algorithms exist for code clone detection. However, few of these have the
-capability of efficiently detecting clones in a real-time programming environment. A problem
-with existing algorithms is that most of them need to rerun the entire analysis whenever a
-change to any file happens. Incremental algorithms that do not recompute all clones from
-scratch are therefore interesting for use-cases such as in IDEs while programming and for
-analyzing different revisions of the same source code, but this type of algorithm has not
-been thoroughly explored for code clone analysis.
+capability of efficiently detecting clones in a real-time programming environment. A
+problem with existing algorithms is that most of them need to rerun the entire analysis
+whenever a change to a file happens. Incremental algorithms that do not recompute all
+clones from scratch are therefore interesting for use-cases such as in IDEs while
+programming and for analyzing different revisions of the same source code, but this type
+of algorithm has not been thoroughly explored for code clone analysis.
 
 Our proposed solution and tool addresses this issue by introducing a new algorithm that is
 capable of detecting and updating existing code clones as source code changes, which aims
@@ -57,9 +57,11 @@ efficient in terms of incrementally updating the analysis whenever edits are per
 the IDE. Most clone detection algorithms either only list clones of a specific code
 snippet, or calculates clones from scratch in a manner which is too slow for an IDE
 scenario. Our algorithm is based on a novel application and extension of dynamic suffix
-arrays for clone detection to quickly update and add/remove clones, faster than calculating the clones from
-scratch. With this implementation, CCDetect-LSP can show all clones in the entire code
-base at once, and efficiently update them whenever a file is edited.
+arrays for clone detection, which can be efficiently updated and find clones. While suffix
+arrays have been used for clone detection before~\cite{SHINOBI}, we are not aware of any
+other attempts to use suffix arrays in an incremental setting. With this algorithm,
+CCDetect-LSP can display all clones in the entire code base at once, and efficiently
+update the displayed clones whenever a file is edited.
 
 \textbf{IDE and language agnostic clone detection:} CCDetect-LSP gives programmers the
 ability to view clones in their IDE. Utilizing features of the language server protocol
@@ -67,7 +69,7 @@ ability to view clones in their IDE. Utilizing features of the language server p
 which implements the LSP protocol. As far as we are aware there are no other clone
 detection tools which utilizes LSP to provide clone analysis. In addition, the tool is
 also language agnostic in the sense that it only needs a grammar for a language to analyze
-it.
+it. 
 
 \section{Structure}
 

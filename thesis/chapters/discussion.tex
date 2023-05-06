@@ -122,11 +122,14 @@ CCDetect-LSP incremental detection. JProfiler reports that it is the suffix tree
 structure which is the memory bottleneck in iClones. 
 
 While our incremental detection manages to lower its memory usage compared to iClones, the
-memory usage is still quite high for an IDE tool. For a larger code base such as
-elasticsearch and intellij-community, one would likely require a computer with at least
-16GB RAM in order to justify running CCDetect-LSP incremental detection in the IDE. Again,
-it seems like CCDetect-LSP incremental detection is a good fit for code bases up to
-${\sim}2.2MLOC$ (graal, flink), where the memory usage is lower than 4GB.
+memory usage is still quite high for an IDE tool. While the dynamic structure for storing
+the extended suffix array gave us a large performance gain in terms of time, it is clear
+that it is not nearly as memory efficient as the normal suffix array in array form. For a
+larger code base such as elasticsearch and intellij-community, one would likely require a
+computer with at least 16GB RAM in order to justify running CCDetect-LSP incremental
+detection in the IDE. Again, it seems like CCDetect-LSP incremental detection is a good
+fit for code bases up to ${\sim}2.2MLOC$ (graal, flink), where the memory usage is lower
+than 4GB.
 
 \section{Clones detected}
 
