@@ -18,10 +18,10 @@ section a figure will be shown to illustrate which part of the pipeline is curre
 discussed. The previous chapter has already detailed the first two phases, how a document
 index is built for each file of the source code.
 
-The algorithm of CCDetect-LSP detects syntactical type-1 code clones, based on a
-token-threshold. Clones detected are therefore snippets of source-code which has at least
-$N$ equal tokens, where $N$ is a configurable parameter. There are also two types of
-clones which are filtered:
+The algorithm of CCDetect-LSP detects syntactical type-1 code clones, based on a token
+threshold. Clones detected are therefore snippets of source-code which has at least $N$
+equal tokens, where $N$ is a configurable parameter. There are also two types of clones
+which are filtered:
 
 \begin{itemize}
     \item Clones which are completely contained within another larger clone are filtered.

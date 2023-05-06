@@ -189,30 +189,48 @@ be interesting to explore further.
 
 \section{IDE and language agnostic clone detection}
 
+In this section we will briefly discuss how well CCDetect-LSP works in both an IDE and
+language agnostic setting.
+
+\subsection*{IDE agnostic}
+
 CCDetect-LSP was implemented as a standalone program, which communicates with an IDE
-client via LSP. This means that the tool is IDE agnostic in the sense that any IDE which
-implements LSP can communicate with CCDetect-LSP and receive code clone information. With
-our implementation we are able to list clones in the form of diagnostics, and allows the
-programmer to navigate between all the matches of a clone via code-actions and/or
+client via LSP. As mentioned, this means that the tool is IDE agnostic in the sense that
+any IDE which implements LSP can communicate with CCDetect-LSP and receive code clone
+information from it. With our implementation we are able to list clones in the form of
+diagnostics, and navigate between all the matches of a clone via code-actions and/or
 information embedded in the diagnostic. This shows that LSP is capable of supporting the
 bare-minimum needed functionality of a clone detection tool. 
+
+In the previous chapter, we showed that CCDetect-LSP is able to run in at least two IDEs
+which can act as LSP clients, but we also saw that some LSP clients require more setup
+than others, and some LSP clients implement fewer features. This is the reality of working
+with a protocol which tries to unify multiple tools which do things differently. There
+will always be some IDEs which do not implement the full LSP protocol, but we believe that
+the features we have decided to use (diagnostics and code-actions) are good candidates to
+be implemented in most IDEs. Barros et al.~\cite{LSPPractices} performed a study on LSP
+servers, which showed that out of 30 LSP servers, 28 of them implemented diagnostics, and
+15 of them implemented code-actions. While this is not necessarily an indication of what
+the LSP clients implement, there is likely a correlation between what is generally offered
+by LSP servers, and what is therefore supported by LSP clients.
 
 One downside to reporting code clones as diagnostics is that code clones are listed
 together with all other diagnostics reported by other LSP servers. If the project contains
 hundreds of clones this could make the diagnostics list hard to use for any other usage
 than to list clones. A nice addition to the LSP protocol in this regard would be the
 possibility of categorizing diagnostics, and letting the client filter or show only
-diagnostics of a certain category. Another possibility is to let LSP clients know which
-LSP server has sent which diagnostics, so that the LSP client can filter or show only
-diagnostics of a certain LSP server at a time. For CCDetect-LSP it would be nice to be
-able to have a separate view of only code clone diagnostics, which can be opened or closed
-as needed, and allow another LSP server to be the ``main'' source of diagnostics. Ano
+diagnostics of a certain category. For CCDetect-LSP it would be nice to be able to have a
+separate view of only code clone diagnostics, which can be opened or closed as needed, and
+allow another LSP server to be the ``main'' source of diagnostics.
 
 Another interesting feature which could be implemented with LSP is the concept of linked
 editing. Linked editing means being able to edit two or more locations at the same time,
 which could be used as an automatic way to apply an edit to all clones at once. LSP has
 since version 3.16 had such a feature, but we are not sure how fitting this feature is for
-code clone linked editing.
+code clone linked editing, as it seems targeted towards smaller refactoring operations
+such as renaming variables.
+
+\subsection*{Language agnostic}
 
 The algorithm of CCDetect-LSP is also language agnostic. We have shown that as long as
 there exists a Tree-sitter grammar for a language\footnote{Tree-sitter can parse most
@@ -221,13 +239,20 @@ parsed and fingerprinted. When the source code has been fingerprinted, there is 
 any difference between detection for different languages. Therefore, CCDetect-LSP should
 work for any language, and in our testing, there is nothing which hinders CCDetect-LSP
 from working for any language we have tested, other than grammars not working correctly.
-It is possible to forego parsing the source code, and only use a tokenizer to get the
-tokens. From there one could use a language agnostic tokenization algorithm to avoid
-needing a grammar at all, and makes the algorithm truly language agnostic. However, this
-would not allow any sort of fragment selection, which likely leads to a lot of unnecessary
-code being analyzed for clones, which both slows down the detection process, but can also
-lead to a lot of noise in the clone list. For example in Java, a sorted list of imports at
-the beginning of the file could easily be cloned in multiple files, without any real
-possibility of being refactored to avoid this duplication. For this reason, we believe a
-``grammar-pluggable'' approach with a parser generator such as Tree-sitter is a better
-approach than a completely language agnostic one for the IDE scenario.
+We have tested CCDetect-LSP for multiple languages, and shown that there is very little
+configuration required to change the desired language. Therefore, we claim that
+CCDetect-LSP works very well as a language agnostic code analysis tool.
+
+In the case of the C language, which did not work correctly because of a quirk of its
+grammar, this is a downside to going with the parser-generator strategy. You cannot
+completely rely on every grammar to always work as you expect. It could be possible to
+forego parsing the source code, and only use a tokenizer to get the tokens. One could then
+use a language agnostic tokenization algorithm to avoid needing a grammar at all, and
+makes the algorithm truly language agnostic. However, this would not allow any sort of
+fragment selection, which likely leads to a lot of unnecessary code being analyzed for
+clones. This both slows down the detection process, but can also lead to a lot of noise in
+the clone list. For example in Java, a sorted list of imports at the beginning of the file
+could easily be cloned in multiple files, without any real possibility of being refactored
+to avoid this duplication. For this reason, we believe a ``grammar-pluggable'' approach
+with a parser generator such as Tree-sitter is a better approach than a completely
+language agnostic one, for the IDE scenario.

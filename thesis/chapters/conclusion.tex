@@ -26,7 +26,7 @@ challenging in terms of normalizing inputs and therefore detection of type-2 clo
 In this section we list future work and research in order of what we consider
 most interesting to do more research on, to least.
 
-\subsection*{Type-2 and type-3 clones}
+\subsection*{Type-3 clones}
 
 An interesting topic which would benefit from further research is the topic of detecting
 type-3 clones incrementally. A classic algorithm to detect type-3 algorithms is to use
@@ -48,12 +48,16 @@ operations is not optimal. The problem was to find an optimal amount of edit ope
 turn one string into another, but we also preferred edit operations of more than one
 character, over many edit operations of one character. We implemented a simple algorithm
 which would aggregate edit operations of the same type which were consecutive in the edit
-matrix, but this could likely be optimized. There is a trade-off where one could always
-reduce the problem to only two operations, delete the original string, and then insert the
-new string, but this might be more expensive than performing more edit operations, with a
-fewer number of characters. A possible approach is to assign a higher weight to starting a
-new edit operation than extending the previous operation, and build the edit matrix with
-these weights in mind.
+matrix, but this could likely be optimized to output fewer operations with multiple
+characters in each. There is a trade-off where one could always reduce the problem to only
+two operations, delete the original string, and then insert the new string, but this might
+be more expensive than performing more edit operations, with a fewer number of characters.
+A possible approach is to assign a higher weight to starting a new edit operation than
+extending the previous operation, and build the edit matrix with these weights in mind,
+and using our algorithm to aggregate the edit operations afterwards with these weights.
+This could be difficult if Hirschberg's algorithm is still used, but the regular
+Wagner-Fischer algorithm could be used in a majority of cases if the memory usage of the
+regular Wagner-Fischer matrix is not too big.
 
 \subsection*{Refactoring of clones}
 

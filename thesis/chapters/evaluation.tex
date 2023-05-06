@@ -4,25 +4,27 @@
 In this chapter, CCDetect-LSP will be evaluated based on different criteria, which combined
 will provide a basis for evaluating the tool as a whole.
 
-First, we will verify that CCDetect-LSP correctly identifies type-1 clones. We will use
-the BigCloneBench~\cite{BigCloneBench} database and BigCloneEval~\cite{BigCloneEval} tool,
-which is the standard tools used to test clone detection accuracy.
-
-Since the tool is focused on efficient detection of code clones, real-time performance of
-the tool will be a high priority in its evaluation. We will compare the time of the
-initial detection with the incremental updates. Note that we will also distinguish between
+The most important aspect of CCDetect-LSP to evaluate is the real-time performance. We
+will compare the time of the initial detection with the incremental updates, as well as
+compare its performance with another incremental clone detector,
+iClones~\Cite{GodeIncrementalCloneDetection}. Note that we will also distinguish between
 the initial detection where parsing the entire code base is necessary, and subsequent
 detections which still constructs the suffix array from scratch, but does not require
 parsing the entire code base. We will call this type of detection the SACA detection,
 while the detection which uses the dynamic extended suffix arrays will be called the
 incremental detection. This is done to compare the dynamic extended suffix array against
-building the suffix array from scratch. Performance will be evaluated in two ways:
+building the suffix array from scratch.
+
+This chapter will evaluate CCDetect-LSP in the following ways:
 
 \begin{itemize}
     \item Informal complexity analysis of phases in initial, SACA and incremental detection
-    \item Performance benchmark of initial, SACA and incremental detection
-    \item Performance benchmark comparison with iClones~\cite{GodeIncrementalCloneDetection}
+    \item Performance benchmark of SACA detection, incremental detection and iClones
+    \item Memory usage benchmark of SACA detection, incremental detection and iClones
+    \item Language and IDE support
 \end{itemize}
+
+
 
 \section{Verifying clones with BigCloneBench}
 
@@ -404,3 +406,70 @@ test. iClones is again left out for the intellij code base, as the memory usage 
     \caption{Memory usage of each tool when running the DEL10 test for each code base.}
     \label{fig:memoryusage}
 \end{figure}
+
+\section{Languages and IDEs}
+
+CCDetect-LSP attempts to achieve the goals of being IDE agnostic by utilizing LSP, and
+programming language agnostic by utilizing Tree-sitter. In this section we will quickly go
+over our experience with using these tools, and what we have implemented and tested to
+determine if these goals are met.
+
+\subsection*{Language agnostic}
+
+For the goal of being language agnostic, we have tried CCDetect-LSP with multiple
+languages, including Java, Python, C, Rust, JavaScript, and Go. To add a new language to
+CCDetect-LSP all that is needed to be done is to download the correct grammar into the
+\verb|grammars/| directory of the CCDetect-LSP source code, and add one case to a
+match-statement in order for CCDetect-LSP to tie that grammar to a certain file-type. From
+there, the client needs to change its configuration to the new language. This involves
+only changing two configuration parameters, the file-type to analyze, and the Tree-sitter
+query to be used in the fragment selection phase. Determining the Tree-sitter query may
+not be trivial in some languages, but we suspect that the most common choices would be
+either selecting the root node of the AST, or all methods or
+functions\footnote{Tree-sitter queries for multiple languages are shown in the README file
+of the CCDetect-LSP source code.}.
+
+In our experience, CCDetect-LSP seems to work flawlessly on most languages. While we
+cannot objectively tell if all clones are detected without having a tool like the
+BigCloneBench for each language, the experience of browsing and navigating clones seems to
+be similar when switching between different languages. For example, we explored the source
+code of both the Rust and Go compilers in their respective languages, and we were able to
+locate thousands of clones in each code base (token threshold 100).
+
+While our testing of multiple languages was not extensive, only one language we tested did
+not work flawlessly out of the box. The Tree-sitter grammar for C had a weird quirk where
+not every tokens had its own leaf-node in the AST. For example, the string literal token
+did not have a distinct AST node for the string value. Therefore, functions which had
+completely different string literals in them could be considered clones. In a positive
+light, this actually resulted in some type-2 clones being detected, but it also resulted
+in some clones being detected which were not clones at all. Even if this issue was
+preventable by treating some AST nodes differently, we consider this to be an instance
+where CCDetect-LSP did not have perfect language support.
+
+\subsection*{IDE agnostic}
+
+CCDetect-LSP can in theory communicate with any IDE which can act as an LSP client. We
+have tested CCDetect-LSP on two editors which have great LSP support,
+Neovim\footnote{Neovim: \url{https://neovim.io/}} and VSCode\footnote{VSCode:
+\url{https://code.visualstudio.com/}}. 
+
+For Neovim, only a configuration file needs to be setup, where we specify the command
+which launches the LSP server, which file-type the LSP server should be launched on, and
+the rest of the configuration which CCDetect-LSP needs. Diagnostics and code-actions works
+out of the box, but a diagnostic view which shows all code clones requires an extra plugin
+such as Telescope\footnote{Telescope:
+\url{https://github.com/nvim-telescope/telescope.nvim}}. Neovim does not support the
+\verb|DiagnosticRelatedInformation| information which can be attached to diagnostics,
+therefore listing matches and navigating to them is achieved with code-actions.
+
+For VSCode, a small extension (plugin) had to be created, which simply uses the built-in
+APIs of VSCode to launch the LSP server on the correct file-type with the correct
+configuration options. Once launched, VSCode has full LSP support, including diagnostics
+with match information, code-actions and a nice diagnostic view which displays all code
+clones. VSCode running this plugin was shown in figure \ref{fig:vscodeclones} in
+\cref{lspimplementation}. While the configuration settings such as token threshold and
+language is currently hard-coded into the extension, we imagine it would be simple to
+create a GUI configurator for CCDetect-LSP in VSCode. It could also be possible to use the
+\verb|didChangeConfiguration| message defined by LSP to change the configuration as the
+LSP server is running, which would allow changing for example the clone token threshold
+without restarting the LSP server. 
