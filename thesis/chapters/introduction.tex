@@ -18,10 +18,11 @@ different locations in a code base. Code clones occur in practically every large
 project, and code clone analysis has therefore become a highly active field of research in
 the last decade. Many tools and algorithms have been developed to detect, manage and
 refactor code clones~\cite[6]{Inoue_introduction_to_cc}. Code clone detection in large
-software can be a time-consuming process, a consequence of this is that few existing tools
-are highly integrated into the workflow of software developers. This thesis will therefore
-focus on efficient code clone detection and describes a novel algorithm and tool for
-detecting code clones in a real-time programming environment.
+software can be a time-consuming process. A consequence of this is that few existing tools
+are highly integrated into the workflow of software developers and are not designed to be
+run on a code base every time the code base changes. This thesis will therefore focus
+on efficient code clone detection and presents a novel algorithm and tool for detecting
+code clones in a real-time programming environment.
 
 \section{Motivation and problem statement}
 
@@ -29,23 +30,24 @@ Many tools and algorithms exist for code clone detection. However, few of these 
 capability of efficiently detecting clones in a real-time programming environment. A
 problem with existing algorithms is that most of them need to rerun the entire analysis
 whenever a change to a file happens. Incremental algorithms that do not recompute all
-clones from scratch are therefore interesting for use-cases such as in IDEs while
-programming and for analyzing different revisions of the same source code, but this type
-of algorithm has not been thoroughly explored for code clone analysis.
+clones from scratch are therefore interesting for use-cases such as while programming in
+integrated development environments (IDEs) and for analyzing different revisions of the
+same source code, but this type of algorithm has not been thoroughly explored for code
+clone analysis.
 
 Our proposed solution and tool addresses this issue by introducing a new algorithm that is
 capable of detecting and updating existing code clones as source code changes, which aims
 to be faster than redoing the analysis from scratch. CCDetect-LSP, the tool which
-implements this algorithm is also programming language and IDE agnostic, which allows
+implements this algorithm, is also programming language- and IDE agnostic, allowing
 programmers to seamlessly incorporate the detection of duplicated code into their existing
 development environment.
 
 \section{Our contribution}
 
-CCDetect-LSP provides code clone detection capabilities in a real-time IDE environment.
-The tool allows the user to list and interact with all the clones in the code base, jump
-between matching clones, and get quick feedback while editing code in order to determine
-which clones are introduced/eliminated.
+CCDetect-LSP provides exact code clone detection capabilities in a real-time IDE
+environment. The tool allows the user to list and interact with all the clones in the code
+base, jump between matching clones, and get fast feedback while editing code in order to
+determine which clones are introduced or eliminated.
 
 Existing incremental clone detection tools either do not fit into an IDE scenario, are
 limited in terms of what clones they display, or have not been shown to scale well in
@@ -65,17 +67,17 @@ update the displayed clones whenever a file is edited.
 
 \textbf{IDE and language agnostic clone detection:} CCDetect-LSP gives programmers the
 ability to view clones in their IDE. Utilizing features of the language server protocol
-(LSP) such as diagnostics and code-actions, the tool provides clone analysis to any editor
-which implements the LSP protocol. As far as we are aware there are no other clone
-detection tools which utilizes LSP to provide clone analysis. In addition, the tool is
-also language agnostic in the sense that it only needs a grammar for a language to analyze
-it. 
+(LSP) such as diagnostics and code-actions~\cite{lsp}, the tool provides clone analysis to
+any editor which implements the LSP protocol. As far as we are aware there are no other
+clone detection tools which utilizes LSP to provide clone analysis. In addition, the tool
+is also language agnostic in the sense that it only needs a grammar for the parser
+generator Tree-sitter, for it to be analyzed~\cite{treesitter}. 
 
 \section{Structure}
 
-Chapter 2 provides some background on code clone analysis, some existing tools and some
-preliminary algorithms and data structures used in the implementation. Chapter 3-5
-describes the implementation of CCDetect-LSP and the algorithms used for initial and
-incremental clone detection. In chapter 6, the tool is evaluated based on multiple
-criteria, and compared to other existing solutions. Chapter 7 discusses the results of the
-evaluation. Chapter 8 concludes the thesis and lists future and related work.
+Chapter 2 provides background on code clone analysis, existing tools and preliminary
+algorithms and data structures used in the implementation. Chapter 3-5 describes the
+implementation of CCDetect-LSP and the algorithms used for initial and incremental clone
+detection. In chapter 6, the tool is evaluated based on multiple criteria, and compared to
+other existing solutions. Chapter 7 discusses the results of the evaluation. Chapter 8
+lists related and future work, and concludes the thesis.
