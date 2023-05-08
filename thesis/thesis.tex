@@ -34,14 +34,7 @@
 \setstackTAB{ }
 \fixTABwidth{T}
 
-
-
-% \definecolor{pblue}{rgb}{0.2,0.2,0.7}
 \definecolor{pgreen}{rgb}{0,0.5,0}
-% \definecolor{pred}{rgb}{0.7,0.2,0.2}
-% \definecolor{pgrey}{rgb}{0.46,0.45,0.48}
-
-\definecolor{brightmaroon}{rgb}{0.76, 0.13, 0.28}
 
 \lstset{
   language=Java,
@@ -59,8 +52,6 @@
   escapeinside={(*}{*)}
 }
 
-
-
 \addbibresource{refs.bib}
 
 \newtheorem{definition}{Definition}
@@ -69,9 +60,9 @@
 \def\addsquare#1{\tikz\node[draw]{#1};}
 \def\addcircle#1{\tikz\node[draw,circle]{#1};}
 
+
 \title{Incremental clone detection for IDEs using dynamic suffix arrays}
 \subtitle{CCDetect-LSP: Detecting duplicate code incrementally in IDEs}
-
 
 \author{Jakob Konrad Hansen}
 
@@ -80,9 +71,6 @@
 \include{pseudocode}
 \include{macros}
 
-% \duoforside[dept={Department of Informatics},
-% program={Informatics: Programming and System Architecture},
-% long]
 \uiomasterfp[color=blue]
 
 
@@ -100,7 +88,8 @@
 \include{chapters/evaluation}
 \include{chapters/discussion}
 \include{chapters/conclusion}
-\include{chapters/appendix}
 
 \printbibliography
+
+\include{chapters/appendix}
 \end{document}
