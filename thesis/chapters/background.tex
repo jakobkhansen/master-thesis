@@ -491,17 +491,21 @@ require few nodes to be parsed compared to the number of nodes reused.
 \subsection*{Suffix trees}
 
 A classic algorithm for code clone detection traverses a suffix-tree in order to find
-maximal repeats in all suffixes of the input string T~\cite{Zibran_real_time_search,
+maximal repeats in all suffixes of the input string $S$~\cite{Zibran_real_time_search,
 GodeIncrementalCloneDetection}. While our algorithm is only related to suffix trees, this
 section gives some insight into the most common algorithm for clone detection.
 
-The suffix tree of a string $T$ is a compressed trie where all the suffixes of $T$ have
-been inserted into it. The trie is compressed by compressing consecutive nodes in a row
-which have only one child into a single node. A common usage of a suffix tree is to
-determine whether or not a suffix exists in $T$, and where in $T$ the suffix starts.
+A suffix of a string $S$ is a substring $S[i..N]$ where $N$ is the length of $S$. A suffix
+of $S$ is therefore any nonempty substring which reaches the end of $S$.
 
-Figure \ref{fig:suffixtree} shows the suffix-tree for $T=\text{BANANA\$}$. In order to
-determine where the suffix $\text{ANANA\$}$ exists in $T$, one can start from the root,
+The suffix tree of a string $S$ is a compressed trie where all the suffixes of $S$ have
+been inserted into it. Consecutive nodes of the trie that only have one child are
+compressed into a single node. A common usage of a suffix tree is to determine whether a
+suffix exists in $S$, and where in $S$ the suffix starts.
+
+Figure \ref{fig:suffixtree} shows the suffix-tree for $S=\text{BANANA\$}$. \$ is often
+added as a unique terminal character, which simplifies some string problems. In order to
+determine where the suffix $\text{ANANA\$}$ exists in $S$, one can start from the root,
 and traverse the tree, choosing the child node which correspond to the next character of
 the suffix which has not been ``matched'' yet.
 
@@ -509,15 +513,15 @@ $$
 \text{root} \xrightarrow{A} \text{node} \xrightarrow{\text{NA}} node \xrightarrow{\text{NA\$}} 1
 $$
 
-Following this path, we see that the suffix $\text{ANANA\$}$ exists in $T$ at index $1$.
+Following this path, we see that the suffix $\text{ANANA\$}$ exists in $S$ at index $1$.
 
 Suffix trees can be constructed in linear time with Ukkonen's algorithm which builds a
 larger and larger suffix tree by inserting characters one by one and utilizing some tricks
 to avoid inserting suffixes before it needs to, lowering the complexity~\cite{Ukkonen}.
 
 This data structure also facilitates solving the maximal repeat problem. A repeat in a
-string T is a substring that occurs at least twice in T. A maximal repeat in T is a repeat
-which is not a substring of another repeat in T, meaning that the maximal repeat cannot be
+string $S$ is a substring that occurs at least twice in $S$. A maximal repeat in $S$ is a repeat
+which is not a substring of another repeat in $S$, meaning that the maximal repeat cannot be
 extended in any direction to form a bigger repeat. The problem of finding all maximal
 repeats can be solved with a suffix tree using the following theorem:
 
@@ -542,7 +546,7 @@ which represent a string of length $\geq k$. Every internal node which represent
 which is $\geq k$ would correspond to a substring of the source code which occurs at least
 twice. Finding where the duplication occurs can be done by finding all the leaves of the
 subtree rooted in the internal node, which each hold the position where the suffix starts in
-T. Since a substring can have multiple repeats of different lengths longer than $k$,
+$S$. Since a substring can have multiple repeats of different lengths longer than $k$,
 different strategies can be used to select which substrings are selected or not, such as
 filtering out repeats which are not maximal or repeats which contain or overlap each other.
 
@@ -582,30 +586,37 @@ repeat would be ANA, since A and NA are not maximal.
 			    ]
 			]
 		\end{tikzpicture}
-		\caption{Suffix tree for $T=\text{BANANA\$}$}
+		\caption{Suffix tree for $S=\text{BANANA\$}$}
         \label{fig:suffixtree}
 	\end{center}
 \end{figure}
 
 \subsection*{Suffix arrays}
 
-The suffix array (SA) of a string T contains a lexicographical sorting of all suffixes in
-T. The suffix array does not contain the actual suffixes, but it contains integers
-pointing to the index where the suffix starts in T. Conversely, the inverse suffix array
-(ISA) contains integers describing which rank the suffix at a given position has. The rank
-of a suffix is its lexicographical ordering in $T$. ISA is therefore the inverse array
-of SA, such that if $\text{SA}[i] = n$, then $\text{ISA}[n] = i$.
+A problem with the suffix tree data structure is that the pointers and nodes require a lot
+of memory. The suffix array (SA) is a data structure which can achieve the same
+functionality, but with a memory efficient array instead. The suffix array of a string $S$
+contains a lexicographical sorting of all suffixes in $S$. The suffix array does not contain
+the actual suffixes, but it contains integers pointing to the index where the suffix
+starts in $S$. Conversely, the inverse suffix array (ISA) contains integers describing which
+rank the suffix at a given position has. The rank of a suffix is its lexicographical
+ordering in $S$. ISA is therefore the inverse array of SA, such that if $\text{SA}[i] =
+n$, then $\text{ISA}[n] = i$.
 
 \begin{definition}[Suffix array] 
-    Let T be a text of length N.
-    The suffix array \texttt{SA} of T is an array of length N where $\text{SA}[i] = n$ if the
-    suffix at $T[n..N-1]$ is the ith lexicographically smallest suffix in T.
+
+    Let $S$ be a text of length N. The suffix array SA of $S$ is an array of length N where
+    $\text{SA}[i] = n$ if the suffix at $S[n..N]$ is the ith lexicographically smallest
+    suffix in $S$.
+
 \end{definition}
 
 \begin{definition}[Inverse suffix array] 
-    Let T be a text of length N.
-    The inverse suffix array ISA of T is an array of length N where $ISA[i] = n$ if the
-    suffix at $T[i..N-1]$ is the nth smallest suffix in T lexicographically.
+
+    Let $S$ be a text of length N. The inverse suffix array ISA of $S$ is an array of length N
+    where $ISA[i] = n$ if the suffix at $S[i..N]$ is the nth lexicographically smallest
+    suffix in $S$.
+
 \end{definition}
 
 The Longest-common prefix (LCP) array describes how many common characters there are in a
@@ -677,15 +688,23 @@ which has been shown to be very efficient in practice is Nong and Chan's algorit
 on recursive suffix sorting of smaller constructed strings, which will be used in our
 initial detection algorithm~\cite{LinearTimeSuffixArraySAIS}. 
 
-The extended or enhanced suffix array is the suffix array and the additional LCP array,
-which has been shown to be as powerful as a suffix tree, in terms of what can be computed
-with it in the same time complexity~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. An
-advantage of using a suffix array over a suffix tree is that it uses a smaller amount of
-memory, as suffix trees needs to store a lot of pointers. The extended suffix array is the
-major data structure which will be used in our detection algorithm to find duplicate code,
-as explained in the upcoming implementation chapters.
+The extended or enhanced suffix array is a data structure storing both the suffix array
+and the additional LCP array, which has been shown to be as powerful as a suffix tree, in
+terms of what can be computed with it in the same time
+complexity~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. An advantage of using an
+extended suffix array over a suffix tree is that it uses a smaller amount of memory, as
+suffix trees needs to store a lot of pointers and nodes, while the extended suffix array
+only need to store arrays of integers. The extended suffix array is the major data
+structure which will be used in our detection algorithm to find duplicate code, as
+explained in the upcoming implementation chapters.
 
- \subsection*{Dynamic bitsets}
+
+
+\subsection*{Dynamic bitsets}
+
+For our detection algorithm, we need to utilize rank/select queries on strings in order to
+determine how the suffix array has changed. We will first discuss rank/select queries on
+bitsets, which will be used in the next section to extend this notion to strings as well.
 
 A bitset is an array of bits, each bit representing either the value true or false. A bit
 with the value of 1 is usually referred to as a set bit, and a value of 0 is referred to
@@ -737,9 +756,9 @@ A simple implementation of a dynamic bitset could implement the whole bitset as 
 array of bytes $B$, which allows for accessing values in $O(1)$ time, but insertions and
 deletions take $O(n)$ time, where $n$ is the number of bits in $B$.
 
-Another implementation which speeds up the insertions/deletions represents the bitset as a
-balanced tree containing multiple smaller bitsets. To represent a bitset of $n$ bits, we
-can divide the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each
+Another implementation which speeds up the insertions and deletions represents the bitset
+as a balanced tree containing multiple smaller bitsets. To represent a bitset of $n$ bits,
+we can divide the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each
 contains $O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, insertions and
 deletions take only $O(log(n))$ time. The bitsets reside at the leaves of our balanced
 tree, and internal nodes contain only two integers, storing the number of bits in the left
@@ -749,14 +768,15 @@ located, where the operation is done at that position. Finding the correct bitse
 position is done by utilizing $N$ and $S$ in each node which is traversed. All operations
 now run in $O(\log(n))$ time, since traversing the tree to the correct bitset takes
 $O(\log(\frac{n}{\log(n)}))$ and performing the operation takes $O(\log(n))$ time. Keeping
-the tree balanced is done by splitting a leaf-node bitset to two nodes when the leaf-node
-bitset has reached a certain size (such as $2 \times \log(n)$) and rebalancing the tree
-after the split. Similarly, when considering deletions, two leaf-node bitsets can be
-merged to their parent node when their combined number of bits has decreased to $\log(n)$.
+the tree balanced is done by splitting a leaf-node bitset into two nodes when the
+leaf-node bitset has reached a certain size (such as $2 \times \log(n)$) and rebalancing
+the tree after the split. Similarly, when considering deletions, two leaf-node bitsets can
+be merged to their parent node when their combined number of bits has decreased to
+$\log(n)$.
 
 Figure \ref{fig:DynamicBitset} shows how a dynamic bitset tree is structured, and
 Algorithm \ref{alg:dynbitaccess} shows how to access a value in the tree. Traversing the
-tree to calculate rank and select queries can be done similarly by summing set bits in
+tree to compute rank/select queries can be done similarly by summing set bits in
 left-subtrees (rank) or selecting which subtree to descend based on the number of set bits
 (select).
 
@@ -809,7 +829,7 @@ left-subtrees (rank) or selecting which subtree to descend based on the number o
 
 \subsection*{Wavelet tree and wavelet matrix}
 
-We can extend the notion of rank and select queries to strings as well. 
+We can extend the notion of rank/select queries to strings as well. 
 
 \begin{definition}[Rank query on string]
 
@@ -952,10 +972,10 @@ For $access$ operations, we traverse each level similarly to a levelwise wavelet
 instead of traversing a smaller and smaller interval in each level, we simply look at the
 current bit at position $i$, if it is a zero, the bit to examine in the next level is
 $rank_0(i)$, if the bit is a $1$, the bit to examine in the next level is $z_l +
-rank_1(i)$. $rank_c(i)$ operation is carried out similarly, but we also keep track of a
-preceding position to the final $i$, which we subtract from $i$, to count only the number
-of proceeding number of $a$ characters. Table \ref{table:waveletmatrix} shows an example
-wavelet matrix, and algorithm \ref{alg:waveletmatrixaccess} and
+rank_1(i)$. The $rank_c(i)$ operation is carried out similarly, but we also keep track of
+a preceding position to the final $i$, which we subtract from $i$, to count only the
+number of proceeding number of $a$ characters. Table \ref{table:waveletmatrix} shows an
+example wavelet matrix, and algorithm \ref{alg:waveletmatrixaccess} and
 \ref{alg:waveletmatrixrank} shows how $access$ and $rank$ operations can be carried out
 for a wavelet matrix. The time complexities for $access$, $rank$ and $select$ operations
 is the same as for wavelet trees.
@@ -1031,13 +1051,39 @@ each character is inserted. Before constructing the next level, each character i
 by the current bit, so that all the characters with $0$ bits at position $i$ occupies the
 left side of level $i + 1$, and vice versa for $1$ bits.
 
+
 \subsection*{Burrows-Wheeler transform}
+
+The Burrows-Wheeler transform (BWT) is a transform on strings, often performed to improve
+compression and searching~\cite{BWT}. The transform is computed by sorting all
+``cyclic-shifts'' of the string lexicographically and extracting a new string from the
+last column of the cyclic-shift'' matrix. The terminating symbol \$ is added to the
+string, which makes some algorithms on the BWT simpler. \$ is always the lexicographically
+smallest character. Table \ref{table:bwt} shows the BWT for the string S = BANANA\$. There
+is a strong correlation between the BWT of a string and its suffix array, which is why this
+transform will be relevant for our detection algorithm.
+
+\begin{definition}{Cyclic-shift}
+
+    The cyclic-shift of order $i$ for a string $S$ is the cyclic-shift of $S$ such that
+    all characters in $S$ are rotated $i$ characters to the left. The cyclic-shift of
+    order $i$ is denoted $CS_i$
+
+\end{definition}
+
+\begin{definition}{Burrows-Wheeler transform}
+
+The Burrows-Wheeler transform of a string $S$ is a transformation on $S$ where the
+cyclic-shifts of $S$ are sorted, and the final character in each shift is concatenated.
+
+\end{definition}
+
 
 \begin{table}[t]
 	\begin{center}
         \subfloat[Cyclic shifts]{
 		\begin{tabular}{c | l }
-			Index & Cyclic-shift   \\
+			Index & CS   \\
 			\hline
 			0     & BANANA\$ \\
 			1     & ANANA\$B \\
@@ -1049,7 +1095,7 @@ left side of level $i + 1$, and vice versa for $1$ bits.
     \end{tabular}}
 		\hspace{0.5cm}
         \subfloat[Sorted cyclic shifts and BWT]{\begin{tabular}{c | l}
-			Index & Cyclic-shift   \\
+			Index & CS   \\
 			\hline
             6     & \$BANAN\textbf{A} \\
             5     & A\$BANA\textbf{N} \\
@@ -1076,44 +1122,20 @@ left side of level $i + 1$, and vice versa for $1$ bits.
 	\end{center}
 \end{table}
 
-The Burrows-Wheeler transform (BWT) is a transform on strings, often performed to improve
-compression and searching~\cite{BWT}. The transform is computed by sorting all
-``cyclic-shifts'' of the string lexicographically and extracting a new string from the
-last column of the cyclic-shift'' matrix. \$ is added to the string as a unique
-terminating character, this makes some of the algorithms on the BWT simpler. \$ is always
-the smallest character lexicographically. Table \ref{table:bwt} shows the BWT for the
-string S = BANANA\$. There is a very tight correlation between the BWT of a string and its
-suffix array, which is why this transform will be relevant for our detection algorithm.
+As mentioned, there is a strong correlation between the suffix array of S and the BWT of
+S. Table \ref{table:bwt} also shows that the indices of the sorted cyclic-shifts
+correspond to exactly the SA of S. This coincides because when sorting cyclic-shifts,
+everything that occurs after the \$ of the CS will not affect its lexicographical
+ordering. This is because no CS will have a \$ in the same position, so comparing two
+cyclic shifts lexicographically will always terminate whenever a \$ is found. This means
+that the ordering of cyclic shifts is essentially the same as sorting all suffixes of S.
+Algorithm \ref{alg:bwt} shows how the BWT of S can be calculated directly from the SA of S
+in linear time. Since there is a one to one correlation between the SA and BWT, dynamic
+updates to a BWT would correspond to similar dynamic updates in the SA (and ISA). This
+will be useful in the upcoming implementation chapters for the incremental code clone
+detection algorithm.
 
-\begin{definition}{Cyclic-shift}
-
-    The cyclic-shift of order $i$ for a string $S$ is the cyclic-shift of $S$ such that
-    all characters in $S$ are rotated $i$ characters to the left. The cyclic-shift of
-    order $i$ is denoted $CS_i$
-
-\end{definition}
-
-\begin{definition}{Burrows-Wheeler transform}
-
-    The Burrows-Wheeler transform of a string $S$ is a transformation on $S$ where the
-    cyclic-shifts of $S$ are sorted, and the final character in each shift is concatenated.
-
-\end{definition}
-
-As mentioned, there is a tight correlation between the suffix array of S and the BWT of S.
-Table \ref{table:bwt} also shows that the indices of the sorted cyclic-shifts correspond
-to exactly the SA of S. This coincides because when sorting cyclic-shifts, everything that
-occurs after the \$ of the cyclic-shift will not affect its lexicographical ordering. This
-is because no cyclic-shift will have a \$ in the same position, so comparing two cyclic
-shifts lexicographically will always terminate whenever a \$ is found. This means that the
-ordering of cyclic shifts is essentially the same as sorting all suffixes of S. Algorithm
-\ref{alg:bwt} shows how the BWT of S can be calculated directly from the SA of S in linear
-time. Since this is a one to one correlation between the SA and BWT, dynamic updates to a
-BWT would correspond to similar dynamic updates in the SA (and ISA). This will be useful
-in the upcoming implementation chapters for the incremental code clone detection
-algorithm.
-
-\begin{algorithm}[htp]
+\begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
     \algo{\ComputeBWT{S, SA}}{
         $\Var{n} \gets \Access{S}{len}$
@@ -1131,41 +1153,45 @@ algorithm.
     }
 
   \vspace{0.5cm}
-  \caption{Calculating the BWT of a string T from its suffix array}
+  \caption{Computing the BWT of a string S from its suffix array}
   \label{alg:bwt}
 \end{algorithm}
 
 
 An essential property of the BWT is that the transformation is reversible. By examining
-the BWT of a string T, we see that the BWT is a permutation of S. We will also see that
-there is a correlation between the characters in the first column of the cyclic-shift
+the BWT of a string $S$, we see that the BWT is a permutation of $S$. We will also see
+that there is a correlation between the characters in the first column of the cyclic-shift
 matrix and the last column, which allows us to compute the original string, given only the
 BWT.
 
-$S$ can be computed from the BWT as long as there is a unique terminating character (\$),
-or the position of the final character is stored. S is computed backwards by starting at
-the final character ($S[n - 1]$) and then finding the cyclic-shift where that character
-occurs in the first column (the previous cyclic-shift). The character in the last column
-of that cyclic-shift is $S[n - 2]$. If there are multiple of the same character, the nth
-occurrence of a certain symbol in the last column will map to the nth occurrence of the
-same symbol in the first column. This process is repeated until we finish the cycle,
-returning to the final character in the last column. Essentially, this process consists of
-traversing cyclic-shifts backwards and looking at the final character, which will give us
-S, since the final character of the cyclic-shift is continually shifting one position.
+$S$ can be computed from only the BWT as long as there is a unique terminating character
+(\$), or the position of the final character is stored. Note that we only store the BWT
+here, which is the final column of the sorted cyclic-shifts. $S$ is computed backwards by
+finding the final character (\$) in the BWT and then finding the CS where that character
+occurs in the first column (the previous CS). The character in the last column of that CS
+is $S[n - 2]$. If there are multiple of the same character, the nth occurrence of a
+certain symbol in the last column will map to the nth occurrence of the same symbol in the
+first column. This process is repeated until we finish the cycle, returning to the final
+character (\$). Essentially, this process consists of traversing cyclic-shifts backwards
+and looking at the final character, which will give us $S$, since the final character of
+the current CS is continually shifting one position. We will use this technique in our
+detection algorithm not to compute the original input, but to be able to traverse our
+input string backwards.
 
-We can use the fact that the first column consists of the letters of S in sorted order to
-determine the previous cyclic-shift with only the last column. We can calculate the
-previous cyclic-shift from only the last column by determining how many characters are
+Without storing the first column, it might seem hard to determine which CS to move to when
+traversing backwards. We can use the fact that the first column consists of the letters of
+$S$ in sorted order to determine the previous CS with only the BWT. We can calculate the
+previous CS from only the last column by determining how many characters are
 lexicographically smaller than the current character, and also the rank of the current
 character at this position. The sum of these two values is the location of the previous
-cyclic-shift. This function is called the Last-to-first function (LF function).
-Calculating the LF function can be done efficiently by using a rank/select data structure
-such as a wavelet tree~\cite{WaveletTree} or wavelet matrix~\cite{WaveletMatrix} to
-calculate the rank of all the characters in the BWT, and an array $C$ which contains the
-number of occurrences of each letter in the BWT. In table \ref{table:bwt}, we can compute
-the original $S$ from the BWT by starting at position $4$, because that is the position of
-the \$, then use the LF-function, $LF(4) = 0$, which means the second to last character is
-$BWT[0] = A$. $LF(0) = 1$, which means the next character is $BWT[1] = N$, and so on.
+CS. This function is called the Last-to-first function (LF function). Calculating the LF
+function can be done efficiently by using a rank/select data structure such as a wavelet
+tree~\cite{WaveletTree} or wavelet matrix~\cite{WaveletMatrix} to calculate the rank of
+all the characters in the BWT, and an array $C$ which contains the number of occurrences
+of each letter in the BWT. In table \ref{table:bwt}, we can compute the original $S$ from
+the BWT by starting at position $4$, because that is the position of the \$, then use the
+LF-function, $LF(4) = 0$, which means the second to last character is $BWT[0] = A$. $LF(0)
+= 1$, which means the next character is $BWT[1] = N$, and so on.
 
 The LF function will also be useful in the detection algorithm where we dynamically update
 the suffix array of $S$, given the changes of the BWT of $S$.
