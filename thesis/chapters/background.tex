@@ -1,6 +1,5 @@
 \chapter{Background}
 
-
 \section{Software quality and duplicated code}
 
 Software quality is hard to define. The term ``quality'' is ambiguous and is in the case
@@ -21,7 +20,7 @@ Duplicated code can lead to a plethora of anti-patterns in software. Anti-patter
 design decisions for software which can lead to technical debt. Technical debt occurs when
 developers make technical compromises that are beneficial in the short term, but increases
 complexity in the long-term~\cite[111]{TechnicalDebt}. An example of this, in the context
-of duplicated code, is the ``Shotgun-Surgery''~\cite[66]{fowlerrefactoring} anti-pattern.
+of duplicated code, is the ``Shotgun-Surgery'' anti-pattern~\cite[66]{fowlerrefactoring}.
 This anti-pattern occurs when a developer wants to implement a change, but needs to change
 code at multiple locations for the change to take effect. This is a typical situation
 which slows down development and reduces maintainability when the amount of duplicated
@@ -59,7 +58,7 @@ where $a,b,c$ are code snippets and $\xleftrightarrow{clone}$ gives the clone re
 $a$ and $c$ are both clones of $b$, but not necessarily similar enough to be clones of
 each other, depending on the threshold for similarity. If the threshold for similarity is
 defined such that only equal clones are considered clones, the relation becomes
-transitive, and equivalence classes form clone classes.
+transitive, and clone classes are equal to the equivalence classes of the relation.
 
 Code clones are generally classified into four types~\cite{Inoue_introduction_to_cc}. The
 types would classify two code snippets as code clones with an increasing amount of
@@ -70,10 +69,10 @@ classified by a code clone type is also a subset of the next type, meaning all t
 clones are also type-2 clones, but not vice versa.
 
 \textbf{Type-1} clones are syntactically identical. The only differences for a pair of
-type-1 clones are elements without meaning, like comments and white-space, which is
-usually ignored when source code is lexed and parsed anyway. Figure \ref{fig:type1clone}
-shows an example of a type-1 clone pair where only a comment and white-space is added to
-the snippet on the right.
+type-1 clones are elements without meaning, like comments and white-space, which is often
+already ignored when source code is lexed and parsed. Figure \ref{fig:type1clone} shows an
+example of a type-1 clone pair where only a comment and white-space is added to the
+snippet on the right.
 
 \begin{figure}[t]
 	\begin{center}
@@ -131,11 +130,11 @@ include statements that are added, removed or modified. This clone type relies o
 threshold $\theta$ which determines how structurally different snippets can be in order to
 be considered type-3 clones~\cite[6]{Inoue_introduction_to_cc}. The granularity for this
 difference could for example be based on the number of differing tokens or lines.
-Detecting this type of clone is generally harder and takes more computation than type-1
-and type-2 clones. Figure \ref{fig:type3clone} shows two code snippets where the code
-snippet on the right has an added statement. In this example there is a one line
-difference between the two snippets, so if the similarity is based on differing lines and
-$\theta \geq 1$, the two snippets would be considered Type-3 clones.
+Detecting this type of clone is generally computationally harder than detecting type-1 and
+type-2 clones. Figure \ref{fig:type3clone} shows two code snippets where the code snippet
+on the right has an added statement. In this example there is a one line difference
+between the two snippets, so if the similarity is based on differing lines and $\theta
+\geq 1$, the two snippets would be considered Type-3 clones.
 
 \begin{figure}[t]
 	\begin{center}
@@ -209,7 +208,7 @@ against each other and filtering. The steps are generally as follows:
 		      \item Extraction: Transform source code into the input for the comparison
 		            algorithm. Can be tokens, AST, dependency graphs, suffix tree, etc.
 		      \item Normalization: Optional step which removes superficial differences such as
-		            comments, whitespace and identifier names. Often useful for identifying type-2
+		            comments, whitespace and identifier names. Often useful for detecting type-2
 		            clones.
 	      \end{enumerate}
 	\item \textbf{Match detection}: Perform comparisons which outputs a set of
@@ -232,18 +231,19 @@ in this approach.
 
 \paragraph{Token-based} approaches transform source code into a stream of tokens, similar
 to lexical scanning in compilers. The token stream is then scanned for duplicated
-subsequences of tokens. Since lexers often filter out superficial differences
-such as whitespace, indentation and comments, this approach is more robust to such
-differences. Concrete names of identifiers and values can be abstracted away when
-comparing the token-stream, therefore type-2 clones can easily be identified. Type-3
-clones can also be identified by comparing the fragments tokens and keeping clone pairs
-with a lexical difference lower than a given threshold. This can be solved with dynamic
+subsequences of tokens. Since lexers often filter out superficial differences such as
+whitespace, indentation and comments, this approach is more robust to such differences.
+Concrete names of identifiers and values can be abstracted away when comparing the
+token-stream, therefore type-2 clones can easily be identified. Type-3 clones can also be
+identified by comparing the fragments tokens and keeping clone pairs with a lexical
+difference lower than a given threshold. This can be solved with dynamic
 programming~\cite{BakerSparseDynamicProgramming}. A common approach to detect clones using
-token-streams is with a suffix-tree~\cite{Bakerdup}. A suffix-tree can solve
-the \textit{Find all maximal repeats} problem efficiently, which in essence is the same
-problem as finding clone pairs. A similar algorithm can also be performed using a suffix-array
-instead, which requires less memory. This type of code clone detection is very fast
-compared to more intricate types of matching techniques.
+token-streams is with a suffix-tree~\cite{Bakerdup}. A suffix-tree can solve the
+\textit{Find all maximal repeats} problem efficiently, which essentially is the same
+problem as finding clone pairs~\cite[143]{AlgorithmsOnStringsTreesSequences}. A suffix
+array can also be used instead, which requires less
+memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. This type of code clone detection
+is very fast compared to more intricate types of matching techniques.
 
 \paragraph{Syntactic} approaches transform source code into either concrete syntax trees
 or abstract syntax trees and find clones using either tree matching algorithms or
@@ -274,20 +274,21 @@ is one version of a code base which has been changed from a previous revision, a
 edited, becomes the next revision.  A revision of the code base could for example be a
 certain Git commit of the code base, or one could say a new revision of the code base is
 created for each edit performed while programming. These two scenarios have respectively
-been called the evolution scenario and the IDE scenario. Incremental clone detection could
-be realized in the form of either storing clones between each revision, or by maintaining
-a data structure which is fast to update when the input updates, and also facilitates fast
+been called the evolution scenario and the IDE
+scenario~\cite{GodeIncrementalCloneDetection}. Incremental clone detection could be
+realized in the form of either storing clones between each revision, or by maintaining a
+data structure which is fast to update when the input updates, and also facilitates fast
 extraction of clones. Since in most cases, an entire code base will not change drastically
 in consecutive revisions, many code clones and the general structure of most of the source
 code will remain, and therefore a lot of processing can be avoided. However, this is not a
 simple problem, since changes in a single location can affect clone detection results
 across the entire codebase.
 
-In order to incrementally detect code clones, an algorithm is run which calculates the
-initial clones, and for successive revisions of the source code, this list is
-incrementally updated, more efficiently than the initial run. In some cases, this could be
-the same algorithm. As mentioned, different algorithms will also maintain different data
-structures to support detecting new clones faster in successive revisions.
+In order to incrementally detect code clones, an initial algorithm computes the initial
+clones, and for successive revisions of the source code, this list is incrementally
+updated by an incremental algorithm. In some cases, this could be the same algorithm, but
+in general the incremental algorithm is faster than the initial algorithm, and maintains
+dynamic structures to perform efficient updates. 
 
 Göde and Koschke proposed the first incremental clone detection
 algorithm~\cite{GodeIncrementalCloneDetection}. The algorithm employs a generalized suffix
@@ -355,27 +356,29 @@ The following tools have been developed as IDE tools to allow for clone-aware de
 \begin{itemize}
 
     \item Zibran et al. introduced a hybrid technique for performing real-time focused
-        searches, i.e. searching for code clones of a selected code snippet. This
-        technique can also detect Type-3 clones~\cite{Zibran_real_time_search}. This
-        algorithm was later implemented in the tool
-        \textit{SimEclipse}~\cite{Udding_Towards_Convenient_Management} which is a plugin
-        for the Eclipse editor. This tool is also based on a suffix tree, but it is
-        unclear if this suffix tree is updated incrementally.
+        searches, i.e. searching for code clones of a selected code
+        snippet~\cite{Zibran_real_time_search}. This technique can also detect Type-3
+        clones. This algorithm was later implemented in the tool
+        SimEclipse~\cite{Udding_Towards_Convenient_Management} which is a plugin for the
+        Eclipse editor. This tool is also based on a suffix tree, but it is unclear if
+        this suffix tree is updated incrementally.
 
     \item Another tool, SHINOBI, which is a plugin for the Visual Studio editor, can
         detect code clones in real-time without the need of the developer to select a code
-        snippet, but the clones being displayed seem to only be clones of the source-code
-        which is currently being edited. It can detect type-1 and type-2 code clones and
-        uses a token-based suffix array approach to detect clones. The paper does not
-        describe how the suffix array is updated, but as the paper was released before the
-        first paper describing dynamic suffix arrays~\cite{DynamicExtendedSuffixArrays},
-        one can assume that the suffix array is recomputed from scratch in each
-        search.~\cite{SHINOBI}.
+        snippet~\cite{SHINOBI}. However, the clones being displayed seem to only be clones
+        of the source-code which is currently being edited. This is limiting if a
+        developer is searching for locations of clones, as they cannot simply look up the
+        location of all clones. SHINOBI can detect type-1 and type-2 code clones and uses
+        a token-based suffix array approach to detect clones. The paper does not describe
+        how the suffix array is updated, but as the paper was released before the first
+        paper describing dynamic suffix arrays~\cite{DynamicExtendedSuffixArrays}, one can
+        assume that the suffix array is recomputed from scratch in each search.
 
-	\item The modern IDE IntelliJ has a built-in duplication detection and refactoring
-	      service, it is able to detect type-1 and (some) type-2 code clones at a method
-	      granularity and refactors by replacing one of the clones with a method call to the
-	      other. The service does not seem to perform incremental updates.
+    \item The modern IDE IntelliJ has a built-in duplication detection and refactoring
+        service, it is able to detect type-1 and (some) type-2 code clones at a method
+        granularity and can refactor to remove a clone-pair by replacing one of the clones
+        with a method call to the other. The service does not seem to perform incremental
+        updates.
 
 \end{itemize}
 
@@ -410,7 +413,7 @@ server sends a corresponding response, also in the form of JSON-RPC messages.
 \label{prelimalgos}
 
 Before our implementation is discussed, we will look at some preliminary algorithms and
-data structures which will be useful insight in the following chapters.
+data structures which may provide useful insights in the following chapters.
 
 \subsection*{Parsing and incremental-parsing}
 
@@ -434,11 +437,10 @@ generate parser which are more complex, which allows for more complex grammars, 
 LALR(1) or LR(1) grammars.
 
 A syntax tree is not only used for interpreting or compiling a language, it is also used
-to perform static analysis on the program. Static analysis is an analysis which is
-performed without running the program, and is often done in interpreters or compilers in
-order to do for example type-checking or data-flow analysis. Syntax trees are in essence
-very useful to traverse or search a programs structure to look for certain properties of
-nodes or subtrees. 
+to perform static analysis on the program. Static analysis is an analysis performed
+without running the program, and is often done in compilers in order to do for example
+type-checking or data-flow analysis. Syntax trees are in essence very useful to traverse
+or search a programs structure to look for certain properties of nodes or subtrees. 
 
 In our detection algorithm we will need to be able to parse our source code into an AST
 representation in order to select specific syntactic regions and extract the tokens.
@@ -459,7 +461,7 @@ editing and has been used for IDE features such as syntax-highlighting, refactor
 code navigation.
 
 The incremental parsing algorithm in Tree-sitter\footnote{For a preliminary introduction
-to Tree-sitter incremental parsing, see the following conference talk:
+to Tree-sitter incremental parsing, see the following conference talk:\\
 \url{https://www.thestrangeloop.com/2018/tree-sitter---a-new-parsing-system-for-programming-tools.html}}
 is inspired by and implemented similarly to Wagner's incremental parsing
 algorithm~\cite{PracticalAlgorithmsForIncremental}. Each node in the AST is decorated with
@@ -490,9 +492,8 @@ require few nodes to be parsed compared to the number of nodes reused.
 
 A classic algorithm for code clone detection traverses a suffix-tree in order to find
 maximal repeats in all suffixes of the input string T~\cite{Zibran_real_time_search,
-GodeIncrementalCloneDetection}. This algorithm is not highly relevant to our detection
-algorithm, however it is related, and this section gives some insight into the most common
-algorithm for clone detection.
+GodeIncrementalCloneDetection}. While our algorithm is only related to suffix trees, this
+section gives some insight into the most common algorithm for clone detection.
 
 The suffix tree of a string $T$ is a compressed trie where all the suffixes of $T$ have
 been inserted into it. The trie is compressed by compressing consecutive nodes in a row
