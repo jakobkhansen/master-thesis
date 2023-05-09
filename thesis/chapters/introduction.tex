@@ -1,28 +1,28 @@
 \chapter{Introduction}
 
-Refactoring is the process of restructuring source code in order to improve the internal
-behavior of the code, without changing the external behavior~\cite[9]{fowlerrefactoring}.
-Refactoring source code is often performed in order to eliminate instances of bad code
-quality, otherwise known as code smells.
-
-A study conducted by Diego Cedrim et al. has shown that while programmers tend to refactor
-smelly code, they are rarely successful at eliminating the smells they are
-targeting~\cite{Rohit_Gheyi_Impact}. Most refactorings performed were either
-``smell-neutral'', meaning that the targeted code smell is not eliminated, or ``stinky'',
-meaning that the refactoring introduced more code smells than they eliminated. Automated
-tools that help programmers make better refactorings and perform code analysis could be a
-solution to this problem. 
+% Refactoring is the process of restructuring source code in order to improve the internal
+% behavior of the code, without changing the external behavior~\cite[9]{fowlerrefactoring}.
+% Refactoring source code is often performed in order to eliminate instances of bad code
+% quality, otherwise known as code smells.
+%
+% A study conducted by Diego Cedrim et al. has shown that while programmers tend to refactor
+% smelly code, they are rarely successful at eliminating the smells they are
+% targeting~\cite{Rohit_Gheyi_Impact}. Most refactorings performed were either
+% ``smell-neutral'', meaning that the targeted code smell is not eliminated, or ``stinky'',
+% meaning that the refactoring introduced more code smells than they eliminated. Automated
+% tools that help programmers make better refactorings and perform code analysis could be a
+% solution to this problem. 
 
 Duplicate code, often called code clones, is code which is more or less copied to
 different locations in a code base. Code clones occur in practically every large software
 project, and code clone analysis has therefore become a highly active field of research in
 the last decade. Many tools and algorithms have been developed to detect, manage and
 refactor code clones~\cite[6]{Inoue_introduction_to_cc}. Code clone detection in large
-software can be a time-consuming process. A consequence of this is that few existing tools
-are highly integrated into the workflow of software developers and are not designed to be
-run on a code base every time the code base changes. This thesis will therefore focus
-on efficient code clone detection and presents a novel algorithm and tool for detecting
-code clones in a real-time programming environment.
+code bases can be a time-consuming process. A consequence of this is that few existing
+tools are highly integrated into the workflow of software developers and are not designed
+to be run on a code base every time the code base changes. This thesis will therefore
+focus on efficient code clone detection and presents a novel algorithm and tool for
+detecting code clones in a real-time programming environment.
 
 \section{Motivation and problem statement}
 
@@ -33,7 +33,8 @@ whenever a change to a file happens. Incremental algorithms that do not recomput
 clones from scratch are therefore interesting for use-cases such as while programming in
 integrated development environments (IDEs) and for analyzing different revisions of the
 same source code, but this type of algorithm has not been thoroughly explored for code
-clone analysis.
+clone analysis. Existing incremental algorithms either do not scale well in terms of time
+or memory, or are not designed to be run on a 
 
 Our proposed solution and tool addresses this issue by introducing a new algorithm that is
 capable of detecting and updating existing code clones as source code changes, which aims
@@ -52,26 +53,28 @@ determine which clones are introduced or eliminated.
 Existing incremental clone detection tools either do not fit into an IDE scenario, are
 limited in terms of what clones they display, or have not been shown to scale well in
 terms of processing time or memory usage for larger codebases. Therefore, this thesis will
-focus on the following areas.
+focus on the following areas of code clone analysis.
 
 \textbf{Incremental clone detection:} The main focus of this thesis is making the tool
 efficient in terms of incrementally updating the analysis whenever edits are performed in
 the IDE. Most clone detection algorithms either only list clones of a specific code
 snippet, or calculates clones from scratch in a manner which is too slow for an IDE
 scenario. Our algorithm is based on a novel application and extension of dynamic suffix
-arrays for clone detection, which can be efficiently updated and find clones. While suffix
+arrays for clone detection, which can find clones and be efficiently updated. While suffix
 arrays have been used for clone detection before~\cite{SHINOBI}, we are not aware of any
-other attempts to use suffix arrays in an incremental setting. With this algorithm,
-CCDetect-LSP can display all clones in the entire code base at once, and efficiently
-update the displayed clones whenever a file is edited.
+other attempts to use suffix arrays in an incremental setting. CCDetect-LSP can display
+all clones in the entire code base at once, and efficiently update the list of clones
+whenever a file is edited. Our results demonstrate that this algorithm scales better than
+a non-incremental suffix array algorithm and an existing incremental algorithm in terms of
+time, when small edits are applied to a code base.
 
 \textbf{IDE and language agnostic clone detection:} CCDetect-LSP gives programmers the
-ability to view clones in their IDE. Utilizing features of the language server protocol
+ability to view clones in their IDE. Utilizing features of the Language Server Protocol
 (LSP) such as diagnostics and code-actions~\cite{lsp}, the tool provides clone analysis to
-any editor which implements the LSP protocol. As far as we are aware there are no other
-clone detection tools which utilizes LSP to provide clone analysis. In addition, the tool
-is also language agnostic in the sense that it only needs a grammar for the parser
-generator Tree-sitter, for it to be analyzed~\cite{treesitter}. 
+any editor which implements LSP. As far as we are aware there are no other clone detection
+tools which utilizes LSP to provide clone analysis to IDEs. In addition, the tool is also
+language agnostic in the sense that it only needs a grammar for the parser generator
+Tree-sitter, for it to be analyzed~\cite{treesitter}. 
 
 \section{Structure}
 

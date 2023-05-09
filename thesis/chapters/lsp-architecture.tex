@@ -16,11 +16,18 @@ appear in source code, and allow them to navigate between matching clones. CCDet
 implemented in Java with the LSP4J library which provides an abstraction layer on top of
 the protocol which is easier to work with programmatically.
 
-\begin{figure}[t]
+\begin{figure}[ht!]
 	\includegraphics[width=\textwidth]{figures/vscodecodeclone.png}
 	\caption{Code clones displayed in the VSCode IDE}
 	\label{fig:vscodeclones}
 \end{figure}
+
+\begin{figure}[t]
+	\includegraphics[width=\textwidth]{figures/architecture.drawio.pdf}
+	\caption{Tool architecture}
+	\label{fig:architecture}
+\end{figure}
+
 
 Figure \ref{fig:vscodeclones} shows how clones are displayed in the VSCode IDE. The image
 shows a section of a file where a Java switch statement has been duplicated in two other
@@ -60,11 +67,6 @@ The following user-stories shows how interaction with the LSP server works.
 
 \end{itemize}
 
-\begin{figure}
-	\includegraphics[width=\textwidth]{figures/architecture.drawio.pdf}
-	\caption{Tool architecture}
-	\label{fig:architecture}
-\end{figure}
 
 Figure \ref{fig:architecture} shows the architecture of the tool. The LSP module
 communicates with the IDE and delegates the work of handling documents to the document
