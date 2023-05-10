@@ -62,8 +62,32 @@ The following user-stories shows how interaction with the LSP server works.
 
       \item A programmer wants to refactor a set of clones by applying the
           ``extract-method'' refactoring (not implemented by CCDetect-LSP). The programmer
-          performs the necessary refactorings, and will see that the refactored clones are
-          no longer detected when the LSP server incrementally updates its analysis.
+          performs the necessary refactorings, saves the file and will see that the
+          refactored clones are no longer detected when the LSP server incrementally
+          updates its analysis.
+
+      \item A programmer is editing code and has written or copy-pasted a function which
+          was already present in the source code of a large code base. As soon as the
+          programmer saves the file, CCDetect-LSP will perform an incremental update based
+          on the change, and display that the duplicated source code is a clone. The clone
+          will be displayed until it is removed or modified.
+
+      \item A programmer wants to switch to a project in a different programming language,
+          and wants to use CCDetect-LSP to analyze clones in that project. The programmer
+          edits the CCDetect-LSP configuration sent from the client to select the new
+          language, which involves changing two parameters in the configuration. The
+          configuration is explained in more detail in \cref{configuration}. If the
+          programmer wants to add a new language which has not yet been added in the
+          CCDetect-LSP source code, a grammar for the language needs to be added before
+          CCDetect-LSP can analyze that language.
+
+      \item A programmer wants to use CCDetect-LSP in a new IDE. The process of running
+          CCDetect-LSP in an IDE is different for each IDE. In general, an IDE which
+          implements LSP, will have some sort of setup for launching an LSP server with a
+          command, or on a certain event. The setup for CCDetect-LSP will be the same as
+          for any other LSP server, but if extra configuration beyond the default values
+          is wanted (such as changing language), the set of configuration options need to
+          be sent from the client, as explained in \cref{configuration}.
 
 \end{itemize}
 
@@ -145,3 +169,27 @@ we create a code-action which navigates from one to the other, using the
 via the \verb|textDocument/codeAction| message, but this message is only invoked when the
 client specifically requests code actions at a certain location.
 
+\section{Configuration}
+\label{configuration}
+
+CCDetect-LSP allows the LSP client to configure different parameters of CCDetect-LSP. The
+configuration works by utilizing the \verb|intializationOptions| section of the
+\verb|initialize| message, which is the first message sent from the client to the server.
+The client can send initialization options to the CCDetect-LSP server, with the following
+default values if none are given:
+
+\begin{lstlisting}
+{
+    language = "java",
+    fragment_query = "(method_declaration) @method",
+    clone_token_threshold = 100,
+    dynamic_detection = true,
+    update_on_save = true,
+    ignore_nodes = {},
+}
+
+
+\end{lstlisting}
+
+The fragment query option is a Tree-sitter query, which is explained in more detail in
+\cref{initialdetection}.
