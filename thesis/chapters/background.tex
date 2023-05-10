@@ -495,8 +495,9 @@ maximal repeats in all suffixes of the input string $S$~\cite{Zibran_real_time_s
 GodeIncrementalCloneDetection}. While our algorithm is only related to suffix trees, this
 section gives some insight into the most common algorithm for clone detection.
 
-A suffix of a string $S$ is a substring $S[i..N]$ where $N$ is the length of $S$. A suffix
-of $S$ is therefore any nonempty substring which reaches the end of $S$.
+A suffix of a string $S$ is a substring $S[i..N]$, denoted where $N$ is the length of $S$.
+A suffix of $S$ is therefore any nonempty substring which reaches the end of $S$. The
+suffix at position $i$ of $S$ is denoted $\text{Suffix}(S, i)$.
 
 The suffix tree of a string $S$ is a compressed trie where all the suffixes of $S$ have
 been inserted into it. Consecutive nodes of the trie that only have one child are

@@ -20,14 +20,13 @@ index is built for each file of the source code.
 
 The algorithm of CCDetect-LSP detects syntactical type-1 code clones, based on a token
 threshold. Clones detected are therefore snippets of source-code which has at least $N$
-equal tokens, where $N$ is a configurable parameter. There are also two types of clones
-which are filtered:
+equal tokens, where $N$ is a configurable parameter. There are also two rules which govern
+which clones are included in the list of reported clones.
 
 \begin{itemize}
-    \item Clones which are completely contained within another larger clone are filtered.
+    \item Clones which are completely contained within another larger clone are excluded.
     \item Clones cannot extend past the end of a fragment.
 \end{itemize}
-
 
 In broad strokes, the algorithm first selects the relevant parts of source code to detect
 code clones in (fragment selection), then transforms the selected fragments into a smaller
@@ -37,11 +36,12 @@ source code. Finally, clones are filtered and aggregated into clone classes befo
 are source-mapped back to the original source-code locations, which the LSP server can
 send to the IDE in the form of diagnostics.
 
-The decision to go with suffix arrays were based on the fact that suffix arrays use less
-memory than the traditional suffix tree approach, which is important in an IDE scenario.
-We also wanted to explore dynamic suffix arrays to determine if it could be a better
-approach to clone detection performance wise as well, as we are not aware of any work
-which compares a dynamic suffix tree with a dynamic suffix array.
+The decision to go with extended suffix arrays were based on the fact that extended suffix
+arrays use less memory than the traditional suffix tree approach, which is important in an
+IDE scenario. We also wanted to explore dynamic extended suffix arrays to determine if it
+could be a better approach to clone detection with regards to performance as well, as we
+are not aware of any related work which implements a dynamic extended suffix array and
+compares its performance with a dynamic suffix tree.
 
 \section{Fragment selection}
 
@@ -52,17 +52,18 @@ which compares a dynamic suffix tree with a dynamic suffix array.
 \end{figure}
 
 The first phase of the algorithm involves extracting the relevant fragments of source code
-which should be considered for detection. A fragment in this case is considered as a
-section of abstract syntax, meaning that a particular type of node in the AST and the
-tokens it encompasses should be extracted. Since the algorithm is language agnostic, it is
-not feasible to have a single algorithm for fragment extraction or to define a separate
-fragment extraction algorithm for every possible language. Therefore, a parser generator
-tool is used, which can generate the code for parsing any programming language given a
-grammar. We use Tree-sitter, a parser generator with incremental parsing capabilities, as
-well as a query language for finding any type of node in the AST~\cite{treesitter}.
-Tree-sitter queries are flexible queries to select specific nodes or subtrees. For
-example, in Java it would be natural to consider only methods. The Tree-sitter query for
-selecting only the method nodes in a Java programs AST would be:
+which should be considered for detection. A fragment, in this case is an instance of a
+particular type of node in the AST. The tokens the node encompasses (leaf-nodes of the
+subtree) is in this phase extracted and used in the subsequent phases. Since the algorithm
+is language agnostic, it is not feasible to have a single algorithm for fragment
+extraction or to define a separate fragment extraction algorithm for every possible
+language. Therefore, a parser generator tool is used, which can generate the code for
+parsing any programming language given a grammar. We use Tree-sitter, a parser generator
+with incremental parsing capabilities, as well as a query language for finding any type of
+node in the AST~\cite{treesitter}. Tree-sitter queries are flexible queries to select
+specific nodes or subtrees. For example, in Java it would be natural to consider only
+methods. The Tree-sitter query for selecting only the method nodes in a Java programs AST
+would be:
 
 \begin{equation}
     (\mathrm{method\_declaration\ } \text{@method})
@@ -145,27 +146,34 @@ The next phase of the algorithm is to transform the extracted tokens into a
 representation which is less computationally heavy for the matching algorithm. The goal is
 to reduce the total size of the input which needs to be processed.
 
-Since the algorithm that is used for matching is based on a suffix array, the
+Because the algorithm that is used for matching is based on an extended suffix array, the
 representation should be in a format similar to a string, which is the standard input to a
 suffix array construction algorithm. However, it is not strictly necessary to use strings.
 The essential property of the input array is that we have a sizeable alphabet where each
-element is comparable. We will use an array of integers instead of a string as it has a
-large alphabet in most programming languages.
+element is comparable. The required size of the alphabet is correlated with the number of
+unique token values in the code base. Therefore, it is safe to say that a larger code base
+requires a larger alphabet, as larger code bases will generally have more unique token
+values. We will use an array of integers instead of a string as it has a large alphabet in
+most programming languages. The size of the alphabet of \verb|int| values in Java is large
+enough that it will not be the limiting factor for how large code bases can be analyzed.
 
 The algorithm utilizes fingerprinting in order to reduce the size of the representation.
 Fingerprinting is a technique which involves taking some part of the input and mapping it
-to a smaller bit string, which uniquely identifiers that part. In this case, the algorithm
-takes each token of the source-code, and maps it to the bit string of an integer. Each
-unique token value is mapped to unique integer values. The algorithm keeps a counter,
-which is used to fingerprint a token value whenever a new unique token is found. The
-algorithm also stores a map from the token value, to the fingerprint value, which is used
-to map multiple occurrences of the same token value to the same fingerprint value. Figure
-\ref{fig:fingerprint} shows how a sample Java program would be fingerprinted. The
-fingerprint mapping initializes its counter at 2 to make space for some terminating
-characters. Each fragment is terminated by a $1$ and the fingerprint is ultimately
-terminated by a $0$. Having these values in the fingerprint will be useful for the
-matching algorithm where the suffix array is constructed and utilized for detection. The
-fingerprint of each fragment is stored in the relevant document object.
+to a smaller bitstring, which uniquely identifies that part. In this case, the algorithm
+takes each token of the source-code, and maps its token value to the bitstring of an
+integer. The algorithm stores and increments a counter, which is used to fingerprint a
+token value whenever a new unique token is found. The mapping therefore starts with small
+integers, and uses larger and larger integers as more unique token values are encountered.
+The algorithm also stores a map from the token value, to the fingerprint value, which is
+used to map multiple occurrences of the same token value to the same fingerprint value.
+
+Figure \ref{fig:fingerprint} shows how a sample Java program would be fingerprinted. Note
+that in the example only the tokens of the methods were extracted, which is why the class
+declaration is not fingerprinted. The fingerprint mapping initializes its counter at 2 to
+make space for some terminating characters. Each fragment is terminated by a $1$ and the
+fingerprint is ultimately terminated by a $0$. Having these values in the fingerprint will
+be useful for the matching algorithm where the suffix array is constructed and utilized
+for detection. The fingerprint of each fragment is stored in the relevant document object.
 
 \section{Suffix array construction}
 
@@ -178,8 +186,8 @@ fingerprint of each fragment is stored in the relevant document object.
 The next step is to input the fingerprint into a suffix array construction algorithm
 (SACA), so that the suffix array can be used to find repeating sequences. Recall that the
 suffix array of a string sorts all the suffixes of the string, as discussed in
-\cref{prelimalgos}. This makes it simple to find similar regions of text, since similar
-suffixes will be next to each other in the suffix array. All the fingerprints which are
+\cref{prelimalgos}. This makes it simple to find similar regions of text, since the most
+similar suffixes will be adjacent in the suffix array. All the fingerprints which are
 stored in each document object will now be concatenated to be stored in a single integer
 array (with terminators after each fragment), which the suffix array (SA), inverse suffix
 array (ISA) and longest-common prefix array (LCP) is computed from.
@@ -196,11 +204,11 @@ will work similarly to a string when given as input.
 
 The ``Induced sorting variable-length LMS-substrings'' algorithm (often abbreviated SA-IS)
 is an algorithm that works by divide and conquering the suffix array and inducing how to
-sort the suffixes of the string $S$ from a smaller string, $S_1$. $S_1$ consists of the
-``building blocks'' of $S$ and will make it simple to compute the rest of the suffix array
-of $S$. First, we will introduce some definitions and theorems used for the algorithm.
-Input to the algorithm is a string $S$ with length $n$. Let $\mathrm{suffix}(S, i)$ be the
-suffix in S starting at position i.
+sort the suffixes of the string $S$ from a smaller string, $S_1$. This smaller string
+consists of the ``building blocks'' of $S$ and will make it simple to compute the rest of
+the suffix array of $S$. First, we will introduce some definitions and theorems used for
+the algorithm. Input to the algorithm is a string $S$ with length $n$. Let
+$\mathrm{suffix}(S, i)$ be the suffix in S starting at position i.
 
 \begin{definition}[L-type and S-type suffixes] A suffix starting at position $i$ in a
     string $S$ is considered to be L-type if it is lexicographically larger than the next
