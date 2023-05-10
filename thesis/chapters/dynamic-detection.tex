@@ -1,21 +1,33 @@
 \chapter{Implementation: Incremental detection}
 \label{dynamicdetection}
 
-The following chapter will present the algorithm which efficiently updates the list of
-clones, without having to rebuild the extended suffix array from scratch. Given an edit to
-a file in the project, we will be able to update the document index, fingerprints, suffix
-array and list of clones faster than the initial detection.
+The following chapter will present the incremental algorithm which efficiently updates the
+list of clones, without having to rebuild the full extended suffix array. Given an edit to
+a file in the project, we will be able to update the document index, fingerprint, extended
+suffix array and list of clones faster than the initial detection.
 
-An incremental update is run whenever a document is changed. The document index is
-signalized of a change either when a file is saved, or on any keystroke. This is
-configurable by the client. When the document index is changed, an incremental update of
-the clones is run, and the clone-list is updated.
+The incremental algorithm is run whenever a document is changed. The document index is
+signalized of a change either when a file is saved, or on any keystroke, configurable by
+the client. 
+
+In broad strokes, when a file is changed, we will first update the document index, which
+involves also incrementally parsing the changes to the file. From there we want to
+determine which edits have happened to the fingerprint, which we compute with an edit
+distance algorithm. The edits are the input to the dynamic extended suffix array
+algorithm, which is updated to reflect the extended suffix array of the new fingerprint.
+Afterwards, the clones are extracted from the extended suffix array similarly to the
+initial detection, but with slight optimizations based on storing positions of potential
+clone locations between revisions.
 
 \section{Affordable operations}
 
 Before discussing the algorithm, it is useful to determine the time cost associated with
-different operations and discuss what operations we can afford. We can for example afford
-to iterate over the contents of a single file, which will be useful for our algorithm. 
+different operations and discuss what operations we can afford. The baseline we are
+comparing against is the initial detection where everything is computed from scratch,
+which runs in linear time in the size of the code base and fingerprint. We are therefore
+only looking to perform operations which are less computationally heavy than a linear scan
+over the code base. We can for example afford to iterate over the contents of a single
+file, which will be useful for our algorithm. 
 
 We cannot afford to iterate over the entire code base, meaning the contents of all files
 in the code base. The initial detection takes linear time in the size of the code base,
@@ -35,15 +47,15 @@ incremental update. This is why incremental parsing with Tree-sitter is used, wh
 the runtime closer to $O(\vert\text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
 
 We can also afford two more useful operations, iterating over the documents in the index
-(not their contents), and iterating over the clone objects. We can afford to do these
-operations because the number of documents and the number of clones is likely multiple
-magnitudes lower than the size of the entire code base. Iterating over the documents
-will be useful when we are updating the document index, and iterating over the clones is
-necessary to do when the clones are mapped back to their original source code locations.
+(not their contents), and iterating over the clones. We can afford to do these operations
+because the number of documents and the number of clones is likely multiple magnitudes
+smaller than the contents of the entire code base. Iterating over the documents will be
+useful when we are updating the document index, and iterating over the clones is necessary
+to do when the clones are mapped back to their original source code locations.
 
 Why we can afford these operations will be become clearer in \cref{evaluation}, the main
 idea is that all the operations we can afford will take an insignificant amount of time
-compared to updating the suffix array.
+compared to updating the extended suffix array.
 
 \section{Updating the document index}
 
@@ -54,16 +66,16 @@ compared to updating the suffix array.
 \end{figure}
 
 The first step of the incremental algorithm is to update the document index. We will also
-look at how we can reduce the memory usage of the index without a loss in terms of the
-time complexity of the updates.
+look at how we can reduce the memory usage of the index without a loss in terms of time
+complexity.
 
-As previously shown, each document stores its own content, AST and fingerprint. It is not
-strictly necessary to store either the content or the AST in memory all the time, as it is
-likely that only a handful of files are open in the IDE at once. Therefore, in the initial
-detection, we can free the memory of the file content and AST for each document after the
-fingerprint has been computed. However, if a file is opened in the IDE, the file can now
-be changed, so we should facilitate efficient updates for these files at least. When a
-file is opened, the file content should be read from the disk and updated via the
+Each document stores its own content, AST and fingerprint. It is not strictly necessary to
+store either the content or the AST in memory all the time, as it is likely that only a
+handful of files are open in the IDE at once. Therefore, in the initial detection, we can
+free the memory of the file content and AST for each document after the fingerprint has
+been computed. However, if a file is opened in the IDE, the file can now be changed, so we
+should facilitate efficient updates for these files at least. When a file is opened, the
+file content should be read from the disk and updated via the
 \verb|textDocument/didChange| messages sent from the client. It is also important to keep
 the AST of the opened file in memory in order to facilitate incremental parsing of the
 opened files. 
@@ -82,7 +94,7 @@ the LSP client sends a \verb|textDocument/didChange| message, the message consis
 URI of the edited file, the range of the content which has changed, and the content which
 has potentially been inserted. This range is then used in a Tree-sitter incremental parse
 of the file content. After this parse, we have efficiently updated a documents content and
-AST. After this update, we also set $\Access{D}{\Var{changed}} = \True$
+AST. After this update, we also set $\Access{D}{\Var{changed}} = \True$.
 
 \section{Updating fingerprints}
 
@@ -124,16 +136,16 @@ need to concatenate them to one large array as in the initial detection.
 \section{Computing edit operations}
 
 With the updated fingerprint, we could build the suffix array from scratch and already see
-a substantial improvement in performance. The major bottleneck of the initial detection is
-to parse and fingerprint the entire code base. Instead, we want to further improve the
-efficiency by dynamically updating the suffix array.
+a substantial improvement in performance, as is shown in \cref{evaluation}. The major
+bottleneck of the initial detection is to parse and fingerprint the entire code base. In
+order to improve the algorithm even further, we will dynamically update the extended
+suffix array to avoid recomputing it fully.
 
-The input to the dynamic suffix array algorithm is a set of edit operations. An edit
-operation can either be deleting, inserting or substituting a set of consecutive
-characters in the fingerprint. The dynamic suffix array algorithm will take each edit
-operation, and update its suffix array to reflect the new state of the fingerprint.
-Therefore, the first problem to solve is to determine what exactly has changed in the
-fingerprint. 
+The input to the dynamic extended suffix array algorithm is a set of edit operations. An
+edit operation can either be deleting, inserting or substituting a set of consecutive
+characters in the fingerprint. The dynamic extended suffix array algorithm will take each
+edit operation, and update its state to reflect the new fingerprint. Therefore, the first
+problem to solve is to determine what exactly has changed in the fingerprint. 
 
 There are a couple of approaches we could take to determine the edit operations. The
 simplest is that whenever a file has changed, regard the entire file as changed, and
@@ -279,10 +291,10 @@ processing many characters in few operations, versus processing many operations 
 characters. As mentioned earlier, one could always reduce the solution to be only two
 operations, deleting the whole string, and inserting the new string. This is only two
 operations, but likely processes more characters in total compared to our algorithm. See
-appendix \ref{alg:wagnerfischeroperations} for detailed pseudocode of the algorithm
+Appendix \ref{alg:wagnerfischeroperations} for detailed pseudocode of the algorithm
 explained in this section.
 
-\subsection*{Optimizing memory usage and operations}
+\subsection*{Optimizing memory usage}
 
 A problem with the above solution is the memory usage of the matrix. It is not feasible to
 input the entire old and new fingerprint into an edit distance algorithm, as the full
@@ -425,6 +437,7 @@ Hirschberg's algorithm~\cite{HirschbergsAlgorithm}. Hirschberg's algorithm is an
 which can compute the edit operations of two strings in the same time complexity as the
 Wagner-Fischer algorithm, but uses only linear space in the size of either of the input
 strings.
+\subsection*{Hirschberg's algorithm}
 
 The first insight we need for this algorithm is that there is at minimum one edit
 operation on each row/column of the edit distance matrix. This is intuitive, because in
@@ -554,7 +567,7 @@ likely very slow to use them in the next phase, we will instead reduce the solut
 only two operations, deletion and insertion of the entire minimized string. In practice
 this optimization can often avoid large spikes in the running time of the next phase.
 
-\section{Dynamic suffix array updates}
+\section{Suffix array incremental updates}
 
 \begin{figure}[H]
     \begin{center}
@@ -567,42 +580,48 @@ is to input the edit operations into an algorithm which dynamically updates the 
 suffix array. The algorithm discussed in this section will be run once for each edit
 operation.
 
-Constructing/updating the suffix array is the most time-consuming phase of the algorithm,
-so the goal for the dynamic update is to take the previous suffix array and an edit
-operation, and compute the new suffix array faster than building the suffix array from
-scratch. We will also in a following section convert the suffix array into a dynamic
+Constructing/updating the extended suffix array is the most time-consuming phase of the
+algorithm, so the goal for the dynamic update is to take the previous suffix array and an
+edit operation, and compute the new suffix array faster than building the suffix array
+from scratch. We will also in a following section convert the suffix array into a dynamic
 structure, which allows insertions, deletions and increments multiple elements faster than
 linear time.
 
-The algorithm used is the algorithm presented by Salson et
-al.~\cite{DynamicExtendedSuffixArrays}. This algorithm is based on the 4-stage algorithm
-for updating a Burrows-Wheeler transform (BWT), also presented by Salson et
-al.~\cite{DynamicBWT}. Recall that the BWT is a transform on an input string which is
-often used for compression and text-search purposes. The BWT is also reversible by using
-the LF function to compute the original string in reverse. The LF function is computed for
-a position $i$ such that $LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where the array $C$
-contains for any character $c$, how many characters are lexicographically smaller than
-$c$. This function can intuitively be used in the context of the BWT to allow us to move
-from $CS_i$ to $CS_{i-1}$. Also recall that the suffix array and the BWT of a string is
-highly correlated to the point where one can compute the BWT from the suffix array. Any
-updates to the BWT will also correspond to similar updates to the suffix array, so the
-algorithm which updates the BWT can be used to determine how the suffix array changes as
-well.
+The algorithm used is the algorithm presented by Salson et al.~\cite{DynamicBWT,
+DynamicExtendedSuffixArrays}. This algorithm is presented as two algorithms, one which
+dynamically updates the BWT and one which dynamically updates an extended suffix array
+based on the BWT changes. We will first discuss how the BWT is updated and how that
+relates to updates in the suffix array. In the next section, we will present a new data
+structure which is more efficient for representing the suffix array in a dynamic setting,
+and then explain how the LCP array can be attached to this data structure. The original
+paper also describes how to incrementally update the ISA, but this will be omitted, as our
+new data structure contains the ISA implicitly.
+
+Recall that the BWT is a transform on an input string which is often used for compression
+and text-search purposes. The BWT is also reversible by using the LF function to compute
+the original string in reverse. The LF function is computed for a position $i$ such that
+$LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where the array $C$ contains for any character $c$,
+how many characters are lexicographically smaller than $c$. This function can intuitively
+be used in the context of the BWT to allow us to move from $CS_i$ to $CS_{i-1}$. Also
+recall that the suffix array and the BWT of a string is highly correlated to the point
+where one can compute the BWT from the suffix array in a single pass. Any updates to the
+BWT will also correspond to similar updates to the suffix array, so the algorithm which
+updates the BWT can be used to determine how the suffix array changes as well.
 
 \subsection*{Updating BWT on insertion}
 
 We will observe which parts of a BWT changes when we insert a single character. The
 approach for deletions and substitutions are similar, and this approach can easily be
-extended to edit operations of more than one character. Note that we will only consider
-changes to the BWT, meaning the final character in each shift, not the whole cyclic-shift.
-We will consider an insertion of a character $c$, inserted at position $i$. When $c$ is
-inserted, we know that we will have exactly one more $CS$ for the string, which starts
-with the inserted character $c$, at position $i$. This $CS$ ends with the character at
-position $i - 1$. We also know that exactly one $CS$ will change its last character, which
-is the cyclic-shift previously starting at position $i$, but is now at position $i + 1$
-after the insertion. This new $CS$ will now end with the new inserted character, $c$.
-These are the only changes that happen to the characters in the BWT, but the ordering
-might not be correct anymore.
+extended to edit operations of more than one character. Note that we are only storing the
+BWT in a data structure, not the whole cyclic-shifts. We will consider an insertion of a
+character $c$, inserted at position $i$. When $c$ is inserted, we know that we will have
+exactly one more $CS$ for the string, which starts with the inserted character $c$, at
+position $i$. This $CS$ ends with the character at position $i - 1$. We also know that
+exactly one $CS$ will change its last character, which is the CS previously starting at
+position $i$, but is at position $i + 1$ after the insertion. This new $CS$ will end with
+the inserted character, $c$. These are the only changes that happen to the characters in
+the BWT, but as we will see, the ordering of the BWT characters may not be correct
+anymore.
 
 \begin{table}[t]
 	\begin{center}
@@ -709,10 +728,10 @@ the cyclic-shifts which have changed their lexicographical ordering. It is possi
 the cyclic-shifts change their ordering because of the new character. For example
 \verb|ANANA$B| $<$ \verb|ANA$BAN|, but \verb|ABNANA$B| $>$ \verb|ANA$BABN|. A useful
 observation is that only $CS_j$ where $j \leq i$ will have their lexicographical ordering
-changed. This is because only in these cyclic-shifts the inserted \verb|B| comes before
-the \verb|$|. Since the \verb|$| is the smallest lexicographical character, and no two
-cyclic-shifts will have \verb|$| in the same location, we know that the lexicographical
-comparison of two cyclic-shifts will never go past the \verb|$|.
+changed. This is because only in these cyclic-shifts the inserted character $c$ comes
+before the \verb|$|. Since the \verb|$| is the smallest lexicographical character, and no
+two cyclic-shifts will have \verb|$| in the same location, we know that the
+lexicographical comparison of two cyclic-shifts will never go past the \verb|$|.
 
 We know that only $CS_j$ where $j \leq i$ can have their ordering changed, and we have
 already inserted $CS_i$ at the correct position (the new cyclic-shift). We will store two
@@ -721,34 +740,35 @@ which was stored before any changes were made to the BWT. $pos$ is therefore the
 position of $CS_{i - 1}$, $expected$ is the expected position of $CS_{i - 1}$, which is
 computed by computing $LF(insertionPoint)$ where $insertionPoint$ is the position where
 the new $CS_i$ was inserted. With the knowledge of where the cyclic-shift of order $i - 1$
-is, and where it should be, we can move the cyclic-shift to that position. In the example,
-we have that the $expected = 3$, and $pos = LF(5) = 2$ after the insertion gives us the
-expected location of the cyclic-shift of order $1$. Therefore, we remove the cyclic-shift
-at position $3$, and insert it again at position $2$.
+is, and where we expect it to be, we can move the cyclic-shift to that position. In the
+example, we have that $expected = 3$, and $pos = LF(5) = 2$ after the insertion gives us
+the expected location of the cyclic-shift of order $1$. Therefore, we remove the
+cyclic-shift at position $3$, and insert it again at position $2$.
 
-Before performing the row-move, we also compute $newPos = LF(pos)$ which will give us the
-position of the cyclic-shift of order $i - 2$. After the row-move, we can continue
-comparing the position and expected position by updating $pos = newPos$, and $expected =
+Before we move the character, we also compute $newPos = LF(pos)$ which will give us the
+position of the cyclic-shift of order $i - 2$. After the move, we can continue comparing
+the position and expected position by updating $pos = newPos$, and $expected =
 LF(expected)$. In the example this would update both $pos$ and $expected$ to $4$. Since
 the expected position and actual position is the same, the algorithm is done, and we know
 that every position of the BWT is now in the correct location. We know that there will be
-no more row-moves for any other $CS$ down to order $0$ because $LF(pos) = LF(expected)$,
-which would be true for all future iterations as soon as $pos = expected$
+no more characters which are out of place for any other $CS$ down to order $0$ because
+$LF(pos) = LF(expected)$, which would be true for all future iterations as soon as $pos =
+expected$
 
 \subsection*{Updating SA on insertion}
 
-The suffix array is updated similarly to the BWT. When we insert the new cyclic-shift at
-position $5$ in the BWT, we similarly insert the value $2$ at position $5$ in SA. We
-insert the value $2$ because the new suffix which corresponds to the new cyclic-shift
-starts at the position where the new character was inserted, which was $2$. When the new
-cyclic-shift is inserted, we are now in an invalid state for the suffix array, because we
-have two elements with the value $2$. Note that a suffix array is always a permutation of
-the values $(0..n)$ where $n$ is the number of characters in the input. Since we have
-inserted a new suffix in the suffix array which is the 2nd smallest suffix, all the
-previous suffixes which had a value $j \geq 2$ is now incremented. After incrementing all
-these suffixes, we are now in a valid suffix array state, but similarly to our BWT, some
-suffixes may have had its ordering changed. For every move-row operation in the BWT, the
-elements in SA are reordered in the same fashion.
+The suffix array is updated similarly to the BWT. When we insert the new CS at position
+$5$ in the BWT, we similarly insert the value $2$ at position $5$ in SA. We insert the
+value $2$ because the new suffix which corresponds to the new cyclic-shift starts at the
+position where the new character was inserted, which was $2$. When the new CS is inserted,
+we are now in an invalid state for the suffix array, because we have two elements with the
+value $2$. Note that a suffix array is always a permutation of the values $(0..n)$ where
+$n$ is the number of characters in the input. Since we have inserted a new suffix in the
+suffix array which is the 2nd smallest suffix, all the previous suffixes which had a value
+$j \geq 2$ is now incremented. After incrementing all these suffixes, we are now in a
+valid suffix array state, but similarly to our BWT, some suffixes may have had its
+ordering changed. For every reordering operation in the BWT, the elements in SA are
+reordered in the same fashion.
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
@@ -844,15 +864,14 @@ do not suspect that this will worsen the performance in any significant way.
 
 \subsection*{LF function}
 
-The LF function is called multiple times for any operation which is done to update the
-suffix array. Therefore, it is important to be able to efficient compute $LF$ at any point
-in time. The naive approach of linearly iterating through the BWT to compute the $rank$
-and number of smaller characters is too slow. Recall that $LF(i) = rank_{BWT[i]}(i) +
-C[BWT[i]]$ where $rank_{BWT[i]}(i)$ is the rank for the character $BWT[i]$ at position $i$
-in the BWT, and $C[BWT[i]]$ counts the number of lexicographically smaller characters than
-$BWT[i]$ in the BWT. We therefore need a data structure for $rank$ queries on the BWT, and
-a data structure which stores the number of smaller characters of each character in the
-BWT. 
+The LF function is used multiple times for any suffix array update. Therefore, it is
+important to be able to efficient compute $LF$ at any point in time. The naive approach of
+linearly iterating through the BWT to compute the $rank$ and number of smaller characters
+is too slow. Recall that $LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where $rank_{BWT[i]}(i)$
+is the rank for the character $BWT[i]$ at position $i$ in the BWT, and $C[BWT[i]]$ counts
+the number of lexicographically smaller characters than $BWT[i]$ in the BWT. We therefore
+need a data structure for $rank$ queries on the BWT, and a data structure which stores the
+number of smaller characters of each character in the BWT. 
 
 For the $rank$ queries, recall that the wavelet matrix was a data structure which could
 efficiently compute $rank/select$ queries for strings. The data structure is implemented
@@ -934,7 +953,7 @@ consists of all zeroes. Afterwards, the new element is inserted in the normal fa
 The $C$ array can be implemented in two ways. Either $C[c]$ holds the number of smaller
 character than $c$ in the input, or $C[c]$ holds the number of occurrences of $c$. There
 are trade-offs with either implementation, as storing the number of smaller characters
-requires a linear scan whenever a character is inserted/deleted, while storing the number
+requires a linear scan whenever a character is inserted or deleted, while storing the number
 of occurrences requires a linear scan to compute the number of smaller characters whenever
 the LF function is called. We have chosen the approach of storing the number of
 occurrences, as updating the array is simpler in cases where the alphabet size increases.
@@ -943,50 +962,52 @@ option of storing the number of smaller characters in $C$ is faster.
 
 \section{Dynamic extended suffix arrays}
 
-A major bottleneck when inserting/deleting elements in the suffix array is that when an
-element is removed, all elements after it needs to be moved by one index so that the gap
-is closed. This is also the case in the reordering stage, where all the elements between
-the old position and new position of an element needs to be moved by one position. In
-addition, since a suffix array is always a permutation from $0$ to $n$ where $n$ is the
-number of elements in the input, we need increment/decrement all elements greater than or
-equal to the element which was inserted/deleted. For example, if we insert a new element
-into the suffix array which indicates that a new suffix is the ith smallest, then
-naturally the previous suffix with value $i$ in SA should now have the value $i + 1$,
+A major bottleneck when inserting or deleting elements in the suffix array is that when an
+element is for example removed, all elements after it needs to be moved by one index so
+that the gap is closed. This is also the case in the reordering stage, where all the
+elements between the old position and new position of an element needs to be moved by one
+position. In addition, since a suffix array is always a permutation from $0$ to $n - 1$
+where $n$ is the number of elements in the input, we need increment/decrement all elements
+greater than or equal to the element which was inserted or deleted. For example, if we
+insert a new element into the suffix array which indicates that a new suffix is the ith
+smallest, then the previous suffix with value $i$ in SA should now have the value $i + 1$,
 which applies to all other suffixes lexicographically greater than the new suffix as well.
 In a standard representation for a suffix array (an array), this would require either a
 linear scan through the entire SA, or a linear scan through ISA from position $i$, which
 is also linear in the worst case. Multiple linear scans through the SA would make the
-algorithm slower than the linear time SACA when the amount of inserted/deleted character
-increases. 
+algorithm slower than the linear time SACA when the amount of inserted or deleted
+character increases. 
 
-In this section we will introduce a data structure called the dynamic extended suffix
-array. This data structure consists of a dynamic permutation, which facilitates
-insertion/deletion of elements in a permutation from $0$ to $n$, without linear scans to
+In this section we will introduce a data structure we call the dynamic extended suffix
+array. This data structure consists of a dynamic permutation, which facilitates insertion
+and deletion of elements in a permutation from $0$ to $n - 1$, without linear scans to
 close gaps or incrementing/decrementing elements. The data structure stores SA, ISA and
 LCP and is inspired by the data structure introduced for the same purpose by Salson et
 al.~\cite{DynamicExtendedSuffixArrays}. The data structure used by Salson et al. uses the
 same dynamic permutation tree, but reduces the amount of values which is stored to reduce
-memory consumption, but also slows down the access time of elements in the permutation.
-Our data structure will not be compressed, which allows faster access to arbitrary
-elements, and will be extended to also include the LCP values as well. Therefore, this
-data structure encompasses the entire extended suffix array.
+memory consumption, but this compression also slows down the access time of elements in
+the permutation. Our data structure will not be compressed, which allows faster access to
+arbitrary elements, and will be extended to also include the LCP values as well.
+Therefore, this data structure encompasses the entire extended suffix array.
 
 The data structure consists of two balanced binary trees, with pointers between elements
-in one tree to the other. Figure \ref{fig:dynamicpermutation} shows the two trees
-which are labeled the $A$ tree and the $B$ tree. Note that the trees do not actually hold
-the values displayed in the figure, the values in each node of the figure only represents
-the inorder position of each node, which is called the inorder rank of the node.
+in one tree to the other. Figure \ref{fig:dynamicpermutation} shows the two trees which
+are labeled the $A$ tree and the $B$ tree. We will see that these trees can intuitively be
+understood as a tree containing the indexes (A), and a tree containing the values (B) of
+our permutation. Note that the trees do not actually hold the values displayed in the
+figure, the values in each node of the figure only represents the inorder position of each
+node, which is called the inorder rank of the node.
 
-To construct a permutation such as $[6,5,3,1,0,4,2]$, for each element, insert a node in
-each tree. After the trees have all the nodes in them, pointers are added from a node in
-$A$ to a node in $B$ and vice versa (doubly linked). If an element in SA has a value $i$
-at position $j$, pointers will be added between the node in $A$ with inorder rank $i$, and
-the node in $B$ with inorder rank $j$. 
+To construct a permutation of length $n$ such as $[6,5,3,1,0,4,2]$, we can insert a node
+in each tree for each element. After the trees both contain $n$ nodes, pointers are added
+from a node in $A$ to a node in $B$ and vice versa (doubly linked). If an element in SA
+has a value $i$ at position $j$, pointers will be added between the node in $A$ with
+inorder rank $i$, and the node in $B$ with inorder rank $j$. 
 
 Now the tree is complete, but we can also insert new nodes into the data structure as the
 suffix array grows. When a new value $j$ is added at position $i$, a node is inserted into
 $A$ such that it has the inorder rank of $i$, and a node is inserted into $B$ such that it
-has the inorder rank of $j$. For example if we wanted to insert a new value $4$ at
+has the inorder rank of $j$. For example, if we wanted to insert a new value $4$ at
 position $1$ in the permutation in figure \ref{fig:dynamicpermutation}, we would insert a
 new node in $A$ so that it is the right child of the node labeled $0$, and then insert a
 new node in $B$ which is the left child of the node labeled $4$. The trees can intuitively
@@ -999,6 +1020,7 @@ position $i$.
 Deleting a node at position $i$ is similar, but we will instead find the node with a rank
 of $i$ in $A$, then delete that node and the node it points to in $B$. As the trees are
 implemented as balanced trees, traversing, inserting and deleting nodes takes $O(\log n)$
+time.
 
 An essential property of this tree is that when a new value $j$ is inserted into the
 permutation at position $i$, all indices $\geq i$ and values $\geq j$ is incremented by
@@ -1106,7 +1128,7 @@ finding the position of a given value, we can use this data structure to represe
 suffix array and inverse suffix array, instead of a simple array. Inserting, deleting and
 accessing a node in this data structure takes $O(\log n)$ time, and we no longer need a
 linear scan through the data structure to increment/decrement values, as values are
-automatically incremented/decremented when a new element is inserted/deleted.
+automatically incremented/decremented when a new element is inserted or deleted.
 
 \section{Dynamic LCP array updates}
 
@@ -1145,11 +1167,11 @@ different cases where an LCP value at a position $i$ could be changed:
         $i - 2$ the new suffix that the suffix at position $i$ should compute its LCP
         value for.
 
-    \item A character was inserted/deleted in the middle of the LCP for the suffix at
+    \item A character was inserted or deleted in the middle of the LCP for the suffix at
         position $i$ in SA, which shortens the LCP value between it and the suffix at
         position $i - 1$, and the LCP value between the suffix at position $i$ and $i + 1$.
 
-    \item A character was inserted/deleted at the end of the LCP for the suffix at
+    \item A character was inserted or deleted at the end of the LCP for the suffix at
         position $i$ in SA, which could potentially extend the LCP value between it and
         the suffix at position $i - 1$, and the LCP value between the suffix at position
         $i$ and $i + 1$.
@@ -1186,10 +1208,10 @@ and $k + 1$ where $SA[k] = j$. These two LCP values can change, because at posit
 the suffix at position $SA[k]$ is compared with $SA[k - 1]$, and at position $k + 1$, the
 suffix at position $SA[k + 1]$ is compared with $SA[k]$. Since both of these LCP values
 depend on the suffix at position $SA[k] = j$, they can potentially change when the suffix
-is changed. The positions in SA which possibly can be changed can be found using the
-LF function. In the final phase of the suffix array update algorithm when we have
-inserted/deleted an element at position $i$, we are reordering suffixes at position $j
-\leq i$. These are the suffixes we are looking for, but we can skip all suffixes which are
+is changed. The positions in SA which possibly can be changed can be found using the LF
+function. In the final phase of the suffix array update algorithm when we have inserted or
+deleted an element at position $i$, we are reordering suffixes at position $j \leq i$.
+These are the suffixes we are looking for, but we can skip all suffixes which are
 reordered, as they are already marked to be computed in the bitset for the previous cases.
 Therefore, the variable $pos$ points to the next suffix we need to consider at the end of
 algorithm \ref{alg:updatesuffixarrayinsert}.
@@ -1231,12 +1253,12 @@ in LCP values, the algorithm is finished and the LCP array is updated. Algorithm
 shows how the LCP array is updated, given the bitset of updated positions which is built
 during algorithm \ref{alg:updatesuffixarrayinsert}.
 
-The actual computation of LCP values is also more complex than it seems. In the dynamic
-detection algorithm we are not storing the entire fingerprint, we only have the BWT stored
-in the wavelet matrix, and the LF function allows us to move from one character to the
-previous in the original input text. When we compute LCP values, we need to be able to
-compare characters in two suffixes from start to potentially end of the input, therefore
-we need to be able to move from one character to the next, which is the inverse of the LF
+The actual computation of LCP values is also fairly complex. In the incremental detection
+algorithm we are not storing the entire fingerprint, we only have the BWT stored in the
+wavelet matrix, and the LF function allows us to move from one character to the previous
+in the original input text. When we compute LCP values, we need to be able to compare
+characters in two suffixes from start to potentially end of the input, therefore we need
+to be able to move from one character to the next, which is the inverse of the LF
 function. 
 
 The inverse LF function for a position $i$ computes the next cyclic-shift by first
@@ -1251,7 +1273,7 @@ position $i$, recall that the $F$ column in the sorted cyclic-shifts just contai
 characters of the input in sorted order. We can therefore use the $C$ to determine which
 character is located at exactly position $i$, just by counting the number of occurrences
 of the previous characters. If $C$ is instead implemented as an array where the $C[c]$
-holds the number of smaller characters than $c$ in the input, finding the correct
+holds the number of characters smaller than $c$ in the input, finding the correct
 character can be done efficiently with a binary search. When we know which character is
 located at position $i$ in the first column, we do $select_c(i - C[c])$ to determine where
 that occurence of $c$ is located in the last column (the BWT), which is then returned as
@@ -1301,16 +1323,15 @@ been updated, we can filter out nodes which have had their LCP value updated to 
 the threshold.
 
 After all LCP values are updated, we are left with a set of all the nodes with an LCP
-value above the token threshold parameter. In order to filter out clones which are
-contained within other clones, we need to add a similar check to the loop which was added
-in algorithm \ref{alg:cloneextraction}, however since the set only contains nodes with an
-LCP values above the token threshold, the algorithm will be slightly different. Instead of
-adding a loop which skips past indices which are contained clones, we can instead check if
-the last node which was deemed the start of a code clone contains the current clone we are
-looking at. Doing the process in this fashion allows us to skip checking many nodes if
-there are long stretches of suffixes in the fingerprint with LCP values below the token
-threshold. Algorithm \ref{alg:dynamiccloneextraction} shows how this algorithm is
-implemented.
+value above the token threshold. In order to filter out clones which are contained within
+other clones, we need to add a similar check to the loop which was added in Algorithm
+\ref{alg:cloneextraction}, however since the set only contains nodes with LCP values above
+the token threshold, the algorithm will be slightly different. Instead of adding a loop
+which skips past indices which are contained clones, we can instead check if the last node
+which was deemed the start of a code clone contains the current clone we are looking at.
+Doing the process in this fashion allows us to skip checking many nodes if there are long
+stretches of suffixes in the fingerprint with LCP values below the token threshold.
+Algorithm \ref{alg:dynamiccloneextraction} shows how these clone indices are computed.
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
@@ -1345,9 +1366,9 @@ implemented.
 \end{algorithm}
 
 After applying this algorithm we are left with the nodes with inorder ranks which
-correspond to the same indices as in the initial detection, and for the final phase, which
-is mapping the clone indices back to the original source code, we can do almost the same
-procedure as in the initial detection. This algorithm is almost the same as algorithm
+correspond to the same indices as in the initial detection For the final phase, which
+involves mapping the clone indices back to the original source code, we can do almost the
+same procedure as in the initial detection. This algorithm is almost the same as algorithm
 \ref{alg:buildclonemap}, but some parts are changed to avoid traversing through the trees
 many times to find the second index, which we would have to do if we used algorithm
 \ref{alg:buildclonemap} without any modifications. The problem with algorithm
@@ -1362,10 +1383,10 @@ $\Var{firstNode}$ and following its pointer. Remember that the nodes we have sto
 clone indices are nodes in the $A$ tree which corresponds to $SA$ indices. Following the
 pointer corresponds to SA values, or alternatively, ISA indices. After we have both the
 $\Var{firstNode}$ and $\Var{secondNode}$, we can get their fingerprint indices by getting
-the inorder rank of their pointer, with algorithm \ref{alg:getrankofnode}. Afterwards, the
+the inorder rank of their pointer, with Algorithm \ref{alg:getrankofnode}. Afterwards, the
 algorithm continues as previously. While this still requires traversing the tree in
 $O(\log n)$ time, we have reduced the number of traversals needed from $5$ with a direct
-translation of algorithm \ref{alg:buildclonemap} to $2$ with the smarter traversal of
+translation of Algorithm \ref{alg:buildclonemap} to $2$ with the smarter traversal of
 nodes described here.
 
 Now that we have successfully source-mapped from our dynamic extended suffix arrays to

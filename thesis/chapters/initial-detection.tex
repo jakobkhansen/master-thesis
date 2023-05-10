@@ -221,18 +221,16 @@ the algorithm. Input to the algorithm is a string $S$ with length $n$.
 \begin{figure}[t]
     \begin{center}
 	$$
-        \ArrayAccess{\Var{types}}{\Var{n}} = S
-	$$
-	$$
-        \sum^{n - 1}_{i = 0}\ArrayAccess{\Var{types}}{\Var{i}} =
+        type(S, i) =
         \begin{cases}
-            S & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} < \ArrayAccess{\Var{S}}{\Var{i + 1}} \\
-            L & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} > \ArrayAccess{\Var{S}}{\Var{i + 1}} \\
-            \ArrayAccess{\Var{types}}{\Var{i + 1}} & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} = \ArrayAccess{\Var{S}}{\Var{i + 1}} 
+            \text{S-type} & \textrm{if\ i\ is\ the\ last\ character\ of\ S} \\
+            \text{S-type} & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} < \ArrayAccess{\Var{S}}{\Var{i + 1}} \\
+            \text{L-type} & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} > \ArrayAccess{\Var{S}}{\Var{i + 1}} \\
+            type(S, i + 1) & \textrm{if\ } \ArrayAccess{\Var{S}}{\Var{i}} = \ArrayAccess{\Var{S}}{\Var{i + 1}} 
         \end{cases}
 	$$
 
-	\caption{Suffix type recurrence}
+	\caption{Suffix type}
 	\label{eq:suffixtypesrecurrence}
     \end{center}
 \end{figure}
@@ -384,10 +382,11 @@ with $n$ halving in each call. Therefore, the recurrence will have the complexit
     T(n) =
 \begin{cases}
     O(n) & \text{if base-case.} \\
-    T(n / 2) + O(n)
+    T(n / 2) + O(n) & \text{otherwise.}
 \end{cases}
-= O(n)
 \end{gather*}
+
+Which means $T(n) = 2n = O(n)$.
 
 \subsection*{Building ISA and LCP arrays}
 
