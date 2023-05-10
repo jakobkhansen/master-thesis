@@ -1368,15 +1368,15 @@ Algorithm \ref{alg:dynamiccloneextraction} shows how these clone indices are com
 After applying this algorithm we are left with the nodes with inorder ranks which
 correspond to the same indices as in the initial detection For the final phase, which
 involves mapping the clone indices back to the original source code, we can do almost the
-same procedure as in the initial detection. This algorithm is almost the same as algorithm
+same procedure as in the initial detection. This algorithm is similar to Algorithm
 \ref{alg:buildclonemap}, but some parts are changed to avoid traversing through the trees
-many times to find the second index, which we would have to do if we used algorithm
-\ref{alg:buildclonemap} without any modifications. The problem with algorithm
+many times to find the second index, which we would have to do if we used Algorithm
+\ref{alg:buildclonemap} without any modifications. The problem with Algorithm
 \ref{alg:buildclonemap} is that it computes the expression $\SA{\ISA{\Var{firstIndex}} -
 1}$ to find the index of the matching clone. This is not a problem in the initial
 detection, because SA and ISA are arrays, which give $O(1)$ time access. This is not the
 case for the dynamic extended suffix array, which would require $O(\log n)$ access time
-for that expression. Instead, only the nodes of the clone indices in algorithm
+for that expression. Instead, only the nodes of the clone indices in Algorithm
 \ref{alg:dynamiccloneextraction} is stored, and for a node $firstNode$, when we can find
 the node of the matching $secondNode$ in $O(1)$ time by finding the predecessor of
 $\Var{firstNode}$ and following its pointer. Remember that the nodes we have stored as
@@ -1386,8 +1386,8 @@ $\Var{firstNode}$ and $\Var{secondNode}$, we can get their fingerprint indices b
 the inorder rank of their pointer, with Algorithm \ref{alg:getrankofnode}. Afterwards, the
 algorithm continues as previously. While this still requires traversing the tree in
 $O(\log n)$ time, we have reduced the number of traversals needed from $5$ with a direct
-translation of Algorithm \ref{alg:buildclonemap} to $2$ with the smarter traversal of
-nodes described here.
+translation of Algorithm \ref{alg:buildclonemap}, to $2$ traversals needed with the
+smarter traversal of nodes described here.
 
 Now that we have successfully source-mapped from our dynamic extended suffix arrays to
 code clones, we are finished, and we have the set of clones ready to be sent to the

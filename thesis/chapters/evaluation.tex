@@ -18,6 +18,7 @@ building the suffix array from scratch.
 This chapter will evaluate CCDetect-LSP in the following ways:
 
 \begin{itemize}
+    \item Verify correctness of clone detection with BigCloneBench.
     \item Informal complexity analysis of phases in initial, SACA and incremental detection
     \item Performance benchmark of SACA detection, incremental detection and iClones
     \item Memory usage benchmark of SACA detection, incremental detection and iClones
@@ -80,32 +81,41 @@ of the incremental detection is more efficient than the initial detection. In ea
 we will argue the run time in terms of Big O notation. Some claims will be substantiated
 in the next section where we look at concrete code bases and their properties.
 
-The initial detection runs in $O(n)$ time, where $n$ is the number of characters in the
-code base. The bottleneck of the initial detection is reading and parsing all the content
-in each file. Tree-sitter generates Generalized LR (GLR) parsers~\cite{GLR}, which in the
-worst-case have a $O(n^3)$ running time, but $O(n)$ for any deterministic grammar. As
-programming languages generally have deterministic grammars, we will assume that the
-running time of parsing with Tree-sitter takes $O(n)$ time. After the initial parsing, the
-SACA detection runs in $O(f)$ time, where $f$ is the size of the fingerprint and $f \ll
-n$. The running time is $O(f)$ because the suffix array construction is performed for
-every update, which takes linear time in the size of the input, which is the fingerprint.
-The extraction of clones from the LCP array also runs in $O(f)$ as it is a single scan
-over the LCP array. The final source-mapping is a bit more complicated, taking
-$O(\vert\text{clones}\vert \times \log (\vert\text{documents}\vert))$. This complexity
-comes from binary-searching the list of documents to find the correct document for each
-clone. This is highly likely to be less time consuming than the suffix array construction,
-as the number of documents and number of clones are usually orders of magnitude lower than
-the size of the whole code base. Therefore, we get a final running time of $O(f) +
-O(\vert\text{clones}\vert \times \log(\vert\text{document}\vert))$, where $O(f)$ is highly
-likely to be the slowest factor.
+First, we will define some notation for this analysis. We are analyzing a code base of
+size $n$, where $n$ is the number of characters in the code base. The fingerprint of the
+code base is of size $f$, where $f$ is the number of symbols in the full fingerprint and
+$f \ll n$. The alphabet of the fingerprint has a size of $\sigma$. In the incremental
+detection, $E$ is an edit, consisting of $e$ characters. We will also use
+$\vert\text{clones}\vert$, $\vert\text{documents}\vert$, $\vert\text{edits}\vert$ when
+discussing the number of clones, documents and edits.
+
+The initial detection runs in $O(n)$ time. The bottleneck of the initial detection is
+reading and parsing all the content in each file. Tree-sitter generates Generalized LR
+(GLR) parsers~\cite{GLR}, which in the worst-case have a $O(n^3)$ running time, but $O(n)$
+for any deterministic grammar. As programming languages generally have deterministic
+grammars, we will assume that the running time of parsing with Tree-sitter takes $O(n)$
+time. After the initial parsing, the SACA detection runs in $O(f)$ time. The running time
+is $O(f)$ because the suffix array construction is performed for every update, which takes
+linear time in the size of the input, which is the fingerprint. The extraction of clones
+from the LCP array also runs in $O(f)$ as it is a single scan over the LCP array. The
+final source-mapping is a bit more complicated, taking $O(\vert\text{clones}\vert \times
+\log (\vert\text{documents}\vert))$. This complexity comes from binary-searching the list
+of documents to find the correct document for each clone. This is highly likely to be less
+time consuming than the suffix array construction, as the number of documents and number
+of clones are usually orders of magnitude lower than the size of the whole code base.
+Therefore, we get a final running time of $O(f) + O(\vert\text{clones}\vert \times
+\log(\vert\text{document}\vert))$, where $O(f)$ is highly likely to be the dominating factor.
 
 For the incremental detection, we have already parsed the code base and built the index
 and dynamic extended suffix array structure for the code base. Afterwards, when an edit
 $E$ is performed in a document $D$, the first phase is to update the document index. We
-iterate over the documents to update their fingerprint ranges, and when a document which
-has been edited is reached, the new document content is incrementally parsed, queried
-for fragments and then the fragments are fingerprinted. In the worst-case, we have to
-fingerprint the entire document, which has a complexity of $O(\vert D\vert)$.
+iterate over the documents to update their fingerprint ranges, which has a complexity of
+$O(\vert\text{documents}\vert)$. When a document which has been edited is reached, the new
+document content is incrementally parsed, queried for fragments and then the fragments are
+fingerprinted. In an IDE scenario, only one file is edited in each update, so only one
+document needs to be parsed in each update. In the worst-case, we have to fingerprint the
+entire document, which has a complexity of $O(\vert D\vert)$. The complexity of this phase
+is therefore $O(\vert\text{documents}\vert + \vert D\vert)$.
 
 Next, extracting the edit operations which have happened to $D_f$ (fingerprint of $D$),
 takes $O(\vert D_f\vert + \vert E\vert^2)$ where $\vert E\vert \leq \vert D_f\vert$. Note
@@ -126,35 +136,36 @@ time, as it requires deleting and inserting an element in the dynamic extended s
 array. In addition, we need to call the LF function twice for each reordering, which has a
 $O(\sigma + \log f \log\sigma)$ complexity. The complexity of the LF function comes from a
 $rank$ call in the wavelet matrix, and an iteration over $C$ to find the number of smaller
-characters. This results in a $O(f \times (\log f + \sigma + \log f \log\sigma))$ running
-time of this phase, which is worse than the $O(f)$ running time of the SACA algorithm. In
+characters. This results in a $O(f \times (\sigma + \log f \log\sigma))$ running time of
+this phase, which is worse than the $O(f)$ running time of the SACA algorithm. In
 addition, before the reordering when we are inserting/deleting characters in the BWT, we
-use the LF function and insert/delete in the wavelet matrix and the $C$ array. The highest
-complexity of these operations is again the LF function. If an edit operation consists of
-inserting/deleting multiple characters, the number of LF function calls is increased, with
-a complexity of $O(e \times (\sigma + \log f \log\sigma))$, where $e$ is the number of
-characters inserted/deleted. Note that while there are many factors in this time
-complexity, all the factors should be quite small compared to $f$, making the complexity of
-reordering the suffixes the slowest factor of this phase.
+use the LF function and insert/delete in the wavelet matrix and the $C$ array. The
+dominating factor of these operations is again the LF function. If an edit operation
+consists of inserting/deleting multiple characters, the number of LF function calls is
+increased, with a complexity of $O(e \times (\sigma + \log f \log\sigma))$. Note that
+while there are many factors in this time complexity, all the factors should be quite
+small compared to $f$, making the complexity of reordering the suffixes the dominating
+factor of this phase.
 
 The average-case complexity of this phase is however highly likely to be faster. Salson et
-al.~\cite{DynamicExtendedSuffixArraysReorderings} have shown that on average, the number
-of reorderings required for an insertion/deletion in a suffix array is highly correlated
-with the average LCP value of the input. Their data shows that for multiple different
-types of data such as genome sequences and english text, the average LCP value of the
-input is generally magnitudes lower than the input size. In our experiments, this applies
-to source code as well, as code bases we have tested on have all had an average LCP values
-well below $100$. See table \ref{tab:codebases} to see the average LCP value for different
-codebases. A lower number of reorderings for lower LCP values seems intuitive, as
-lower LCP values mean that the insertion/deletion will affect the ordering of fewer
-suffixes in the input. With this information, it would be more accurate to downplay the
-importance of the $O(f)$ number of reorderings in our analysis, and we therefore claim
-that the average running time of an edit operation on the suffix array is closer to $O(\log f +
-(e \times \sigma + \log f \log\sigma))$. We extend this to account for multiple edit operations as
-well, for each edit operations which was computed in the last phase, we perform an
-insertion/deletion of $e$ characters. Therefore, the total complexity of this phase on
-average is closer to $O(\vert\text{edits}\vert \times (\log f + (e \times \sigma + \log f
-\log\sigma)))$.
+al.have shown that on average, the number of reorderings required for an
+insertion/deletion in a suffix array is highly correlated with the average LCP value of
+the input~\cite{DynamicExtendedSuffixArraysReorderings}. Their data shows that for
+multiple different types of data such as genome sequences and english text, the average
+LCP value of the input is generally magnitudes lower than the input size. In our
+experiments, this applies to source code as well, as code bases we have tested on have all
+had an average LCP values well below $100$. See Table \ref{tab:codebases} to see the
+average LCP value for different code bases. A lower number of reordered suffixes for lower
+LCP values seems intuitive, as lower LCP values mean that the insertion/deletion will
+affect the ordering of fewer suffixes in the input. With this information, it would be
+more accurate to de-emphasize the importance of the $O(f)$ number of reordered suffixes in
+our analysis, and we therefore claim that the average running time of an edit operation on
+the suffix array is closer to $O(e \times (\sigma + \log f \log\sigma))$ if we account for
+multiple characters being inserted or deleted as well. We extend this to account for
+multiple edit operations as well, for each edit operations which was computed in the last
+phase, we perform an insertion/deletion of $e$ characters. Therefore, the total complexity
+of this phase on average is closer to $O(\vert\text{edits}\vert \times (e \times (\sigma +
+\log f \log\sigma)))$.
 
 Next there is the clone extraction phase. Recall that in the dynamic detection clone
 extraction phase, we had stored all nodes with an LCP value above the token threshold, and
@@ -168,7 +179,7 @@ to $O(\vert\text{clones}\vert)$, which is highly likely to be much less expensiv
 iterating over all the LCP nodes. For each examined LCP node, we need to traverse from the
 node, to its pointer node, and then to the root of the $B$ tree to determine the
 fingerprint index of that LCP node. We do the same to determine the index of the matching
-clone, as described in \cref{dynamicdetection}. These traversals take $O(\log f)$ time.
+clone, as described in Chapter \ref{dynamicdetection}. These traversals take $O(\log f)$ time.
 The worst-case performance of this phase is therefore $O(f \times \log(f))$, but we will
 see that the average-case performance is closer to $O(\vert\text{clones}\vert \times
 \log(f))$.
@@ -179,11 +190,12 @@ of clones and their matches, building the clone-map takes $O(\vert\text{clones}\
 documents to get the source location for each clone index we found in the previous phase.
 This is the same complexity for both the SACA and incremental detection.
 
-With this informal analysis, we have shown that in the average case, the incremental
-detection should be faster than the SACA detection, as none of the phases reach or exceed
-the $O(f)$ running time of the SACA detection. In the next section we will show that the
-properties we have assumed for this analysis are present in multiple code bases, and that
-these properties do lead to better performance for the incremental detection.
+With this informal analysis, we have demonstrated that in the average case, the
+incremental detection should be faster than the SACA detection, as none of the phases
+reach or exceed the $O(f)$ running time of the SACA detection. In the next section we will
+show that the properties we have assumed for this analysis are present in multiple code
+bases, and that these properties lead to a better benchmark performance for the
+incremental detection.
 
 \section{Benchmark performance}
 
@@ -191,7 +203,7 @@ For the performance benchmark we will benchmark the running time of CCDetect-LSP
 bases and edits of different sizes. We will compare the performance of the incremental
 detection with the SACA detection and iClones~\cite{GodeIncrementalCloneDetection}.
 
-iClones is a tool which similarly to CCDetect-LSP, does incremental clone detection. The
+iClones is a tool which, similarly to CCDetect-LSP, does incremental clone detection. The
 tool takes $n$ revisions of the same code base and will after the initial detection, reuse
 as much information as possible to reduce the amount of work needed to analyze consecutive
 revisions. The algorithm which iClones uses is based on generalized suffix trees (GST),
@@ -223,10 +235,10 @@ After we have generated for example $10$ revisions where the difference between 
 revision is deletion of some number of fragments, we can then reverse the ordering of the
 revisions, so that the final revision is now the first revision, and so on. This will
 translate each deletion to instead be an insertion, as an insertion is simply an inversion
-of a deletion. Figure \ref{fig:revisioninversion} show graphically how a test consisting
-of three revisions with deletions can be inverted to create a test of insertions. With
-this technique we can generate arbitrary tests consisting of either a number of insertions
-or deletions in each revision.
+of a deletion. Figure \ref{fig:revisioninversion} illustrates how a test consisting of
+three revisions with deletions can be inverted to create a test of insertions. With this
+technique we can generate arbitrary tests consisting of either a number of insertions or
+deletions in each revision.
 
 \begin{figure}[t]
     \begin{center}
