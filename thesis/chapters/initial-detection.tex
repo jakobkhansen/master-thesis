@@ -194,8 +194,8 @@ array (ISA) and longest-common prefix array (LCP) is computed from.
 
 We have utilized a straight-forward implementation of the ``Induced sorting
 variable-length LMS-substrings'' algorithm~\cite{LinearTimeSuffixArraySAIS} which computes
-a suffix array in linear time. The following section will give high-level overview of how
-the algorithm works. 
+a suffix array in linear time. The following section will give a high-level overview of
+how the algorithm works. 
 
 The algorithm will be assumed to have a string as its input, as this is most common for
 suffix arrays, and working with strings can be more clear to the reader when considering
@@ -207,8 +207,7 @@ is an algorithm that works by divide and conquering the suffix array and inducin
 sort the suffixes of the string $S$ from a smaller string, $S_1$. This smaller string
 consists of the ``building blocks'' of $S$ and will make it simple to compute the rest of
 the suffix array of $S$. First, we will introduce some definitions and theorems used for
-the algorithm. Input to the algorithm is a string $S$ with length $n$. Let
-$\mathrm{suffix}(S, i)$ be the suffix in S starting at position i.
+the algorithm. Input to the algorithm is a string $S$ with length $n$. 
 
 \begin{definition}[L-type and S-type suffixes] A suffix starting at position $i$ in a
     string $S$ is considered to be L-type if it is lexicographically larger than the next
@@ -333,18 +332,20 @@ suffixes recursively using the following theorems:
     There are at most $n / 2$ LMS-substrings in a string $S$ of length n.
 \end{theorem}
 
-These theorems are proven in the original paper, we will now use these theorems to show
-how we can compute the suffix array in linear time. Table \ref{tab:bucketinglms} shows a
-running example of the algorithm. We can construct a smaller string $S_1$ by first sorting
-the LMS-substrings. Sorting LMS-substrings can be done by first bucket-sorting each
-LMS-substring by its first character. The buckets are implemented as arrays and each
-LMS-substring is inserted at the end of the correct bucket. Afterwards, L-type suffixes
-are bucketed by iterating over the buckets, and for each suffix in the bucket, insert the
-suffix to the left, if it is L-type. Meaning that if we encounter the suffix at position
-6, the suffix at position 5 is bucketed if it is L-type. Finally, S-type suffixes are
-bucketed similarly in the same fashion, but the buckets are scanned from right-to-left and
-suffixes are inserted at the end of the bucket. This final step could possibly change the
-ordering of the LMS-substrings.
+These theorems are proven in the original paper~\cite{LinearTimeSuffixArraySAIS}, we will
+now use these theorems to demonstrate how we can compute the suffix array in linear time.
+Table \ref{tab:bucketinglms} shows a running example of the algorithm. We can construct a
+smaller string $S_1$ by first sorting the LMS-substrings. Sorting LMS-substrings can be
+done by first bucket-sorting each LMS-substring by its first character. The buckets are
+implemented as arrays and each LMS-substring is inserted at the end of the correct bucket.
+Afterwards, L-type suffixes are ``bucketed'' by iterating over the buckets, and for each
+suffix in the bucket, insert the suffix to the left, if it is L-type. Meaning that if we
+encounter the suffix at position 6, the suffix at position 5 is bucketed if it is L-type.
+These suffixes should be inserted into the beginning of their respective bucket. Finally,
+S-type suffixes are bucketed in the same fashion, but the buckets are scanned from
+right-to-left and at positions where the previous suffix is S-type, the previous suffix is
+inserted at the end of its bucket. This final step could possibly change the ordering of
+the LMS-substrings.
 
 After sorting, each equal LMS-substring is given a unique increasing integer value. Two
 LMS-substrings are considered equal if they are equal in terms of length, characters and
@@ -562,7 +563,7 @@ matches with the same code clone as the previous suffix, but with an offset of 1
 For any large code clone, there will therefore be many smaller clones which are completely
 contained within it, but these clones are also likely to match with another clone which is
 also contained within the larger clones match. Since the code clones point at mostly the
-same area, the contained clones are not very useful, and should not be considered. We
+same area, the contained clones are not very useful, and is discarded by the tool. We
 extend our clone extraction algorithm to account for this, by using the following theorem:
 
 \begin{theorem} 
@@ -579,7 +580,7 @@ extend our clone extraction algorithm to account for this, by using the followin
 Algorithm \ref{alg:cloneextraction} adds a while-loop to the clone extraction algorithm
 which skips over suffixes which are contained according to the theorem. Note that this
 algorithm doesn't disallow contained clones entirely, but any clone which is a shorter
-version of another clone pointing to the same match, will be filtered. Also note that
+version of another clone pointing to the same match, will be discarded. Also note that
 overlapping clones, meaning two clones which share tokens, but where neither contains the
 other, will not be filtered.
 
@@ -609,7 +610,7 @@ end position that the document has in the fingerprint.
   \SetAlgoLined\DontPrintSemicolon
     \algo{\SourceMap{documents, i}}{
         $\Var{left} \gets 0$ \;
-        $\Var{right} \gets \Access{\Var{documents}}{\Var{len}} - 1$ \;\;
+        $\Var{right} \gets \Len{$\Var{documents}$} - 1$ \;\;
 
 
         \While{$\Var{left} \leq \Var{right}$}{
@@ -663,7 +664,7 @@ token (at position $i + \text{LCP}[\text{ISA}[i]]$):
 
 \subsection*{Aggregating clones}
 
-With this algorithm to get the clone locations, the next step is to make sure that
+With this algorithm which gets the clone locations, the next step is to make sure that
 matching code clones are collected into buckets of clone classes. Remember that the LCP
 array only gives us the longest match between two suffixes, but it is naturally possible
 to have more than two clones of the same code snippet. This case happens when multiple
@@ -674,23 +675,24 @@ $$
 SA[i] \xrightarrow{clone} SA[i+1] \xrightarrow{clone} SA[i + 2]
 $$
 
-then clones at position $SA[i]$, $SA[i+1]$ and $SA[i + 2]$ are all clones of each other.
-This should be achieved by making sure that every new clone-pair discovered adds
-previously detected clones to their clone sets, and previously discovered clones also add
-new clones to theirs. Figure \ref{fig:cloneaggregation} shows how a new match is found in
-two previously disjoint clone classes, and the resulting aggregated clone class.
+then clones at position $SA[i]$ and $SA[i + 2]$ are clones as well. This should be
+achieved by making sure that every new clone-pair discovered adds previously detected
+clones to their clone sets, and previously discovered clones also add new clones to
+theirs. Figure \ref{fig:cloneaggregation} shows how a new match is found in two previously
+disjoint clone classes, and the resulting aggregated clone class.
 
 This is achieved in algorithm \ref{alg:buildclonemap} where we build a clone-map, where
-the key is the index that a clone starts at in the fingerprint. For each clone index $i$
-which was extracted in the last phase, we get the corresponding match index $j$
-($\text{SA}[\text{ISA[i]} - 1]$), and for both $i$ and $j$ we look in the clone-map if
-there already is a clone at that position, or a new clone object is created and put in the
-map. Then, in order to aggregate the previously discovered clones and the new clone
-together, the set of matching clones is unioned between the two clones. In this way, all
-the previous existing clones of $i$ is added as a clone in $j$ and vice versa. Every clone
-in the two clone classes will then receive the same set of code clones. The
-\verb|UnionCloneClass| function unions all the clone sets in both clone classes and then
-adds a match from all clones in one clone class to all clones in the other.
+the key is the index that a clone starts in the fingerprint, and the value is a code clone
+object. For each clone index $i$ which was extracted in the last phase, we get the
+corresponding match index $j$ ($\text{SA}[\text{ISA[i]} - 1]$), and for both $i$ and $j$
+we look in the clone-map if there already is a clone at that position, or a new clone
+object is created and put in the map. Then, in order to aggregate the previously
+discovered clones and the new clone together, the set of matching clones is unioned
+between the two clones. In this way, all the previous existing clones of $i$ is added as a
+clone in $j$ and vice versa. Every clone in the two clone classes will then receive the
+same set of code clones. The \verb|UnionCloneClass| function unions all the clone sets in
+both clone classes and then adds a match from all clones in one clone class to all clones
+in the other.
 
 Finally, we have a list of every code clone in the code base, which is then sent to the
 LSP module of the tool, which handles the displaying of code clones to the client as
