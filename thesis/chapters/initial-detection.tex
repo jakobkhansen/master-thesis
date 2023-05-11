@@ -20,8 +20,12 @@ index is built for each file of the source code.
 
 The algorithm of CCDetect-LSP detects syntactical type-1 code clones, based on a token
 threshold. Clones detected are therefore snippets of source-code which has at least $N$
-equal tokens, where $N$ is a configurable parameter. There are also two rules which govern
-which clones are included in the list of reported clones.
+equal tokens, where $N$ is a configurable parameter. The clones detected are exactly
+equal, but allows differences in for example white-space, and anything else which is not
+parsed into the syntax-tree. Additionally, Tree-sitter grammar often defines some AST
+nodes such as comments as ``extra'' nodes, which are ignored. There is also a configurable
+parameter to ignore additional nodes. There are also two rules which govern which clones
+are included in the list of reported clones.
 
 \begin{itemize}
     \item Clones which are completely contained within another larger clone are excluded.
