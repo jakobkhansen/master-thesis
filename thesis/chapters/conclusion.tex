@@ -44,20 +44,21 @@ without performance problems.
 In this section we list future work and research in order of what we consider
 most interesting to do more research on, to least.
 
-\subsection*{Type-3 clones}
+\subsection*{Type-2 and type-3 clones}
 
-An interesting topic which would benefit from further research is the topic of detecting
-type-3 clones incrementally. A classic algorithm to detect type-3 algorithms is to use
-sparse dynamic programming to find matches of type-1 and type-2 clones which are not
-exactly similar~\cite{BakerSparseDynamicProgramming}. It would be interesting to look at
-such an algorithm in an incremental perspective, and determine if it would be beneficial
-to try and avoid computation of the same type-3 clones in each revision. Another approach
-could be to create a dynamic data structure which is simple to maintain between revisions,
-and allows extraction of type-3 clones in addition to type-1 and type-2 clones. 
+Finding type-2 clones is useful for CCDetect-LSP, but may not be of any interest for
+research, as applying an input normalization of certain token types is likely a
+satisfactory solution also for incremental detection.
 
-Finding type-2 clones is also useful, but may not be of any interest for research, as
-applying an input normalization of certain token types is likely a satisfactory solution
-also for incremental detection.
+Finding type-3 clones incrementally, could be more interesting to research. A classic
+algorithm to detect type-3 algorithms is to use sparse dynamic programming to find matches
+of type-1 and type-2 clones which are not exactly
+similar~\cite{BakerSparseDynamicProgramming}. It would be interesting to look at such an
+algorithm in an incremental perspective, and determine if it would be beneficial to try
+and avoid computation of the same type-3 clones in each revision. Another approach could
+be to create a dynamic data structure which is simple to maintain between revisions, and
+allows extraction of type-3 clones in addition to type-1 and type-2 clones. 
+
 
 \subsection*{Optimal edit operations}
 
@@ -122,31 +123,27 @@ phase, we run a suffix array update. In each one of these updates, we determine 
 positions in the LCP array need to be updated, and then compute the LCP value at that
 position. It is possible that we can avoid some work here if multiple of these edit
 operations lead to updating the same LCP positions, as we can delay the computation of
-those LCP values until after all the edit operations have updated the suffix array. We did
-experiment with delaying the LCP update algorithm and processing the bitset which
-contained the positions until after all the edit operations had updated the suffix array,
-but we did not verify the correctness of this approach. This experiment did not show any
-significant gain in performance, as it does seem that few LCP positions are updated
-multiple times, but it is possible that our approach was not correct.
-
+those LCP values until after all the edit operations have updated the suffix array. This
+would be of interest for algorithms which utilizes the dynamic extended suffix array
+algorithm in general, if multiple edits are applied.
 
 \section{Conclusion}
 
-The results show that the incremental algorithm of CCDetect-LSP scales better than the
-other two algorithms in terms of time, at least in the IDE scenario where edits are
+The results demonstrate that the incremental algorithm of CCDetect-LSP scales better than
+the other two algorithms in terms of time, at least in the IDE scenario where edits are
 relatively small. The algorithm was able to process large edits for code bases of over
-5MLOC in under 2 seconds, and faster for smaller edits. We have shown that our novel
-application of dynamic suffix arrays is a suitable and fast approach to clone detection,
-and can give comparable and better results than tools which implement a dynamic suffix
-tree. It also outperforms other incremental detection algorithms in terms of memory. Even
-so, the memory usage is still high, and would preferably be lower when running on
-computers with lower specifications, in an IDE scenario. 
+5MLOC in under 2 seconds, and faster for smaller edits. We have demonstrated that our
+novel application of dynamic suffix arrays is a suitable and fast approach to clone
+detection, and can give comparable and better results than tools which implement a dynamic
+suffix tree. It also outperforms other incremental detection algorithms in terms of
+memory. Though memory consumption is the main limitation for practical use, CCDetect-LSP
+still outperforms other comparable tools in the IDE scenario.
 
-We have shown that LSP can implement the bare-minimum features needed for a clone
+We have demonstrated that LSP can implement the bare-minimum features needed for a clone
 detection tool, but some extensions would be useful in order to separate clone detection
 from other types of diagnostics.
 
-Finally, we have shown that language agnostic clone detection using a parser generator
-works and allows sufficient selection of fragment selection to avoid listing unnecessary
+Finally, we have demonstrated that language agnostic clone detection using a parser
+generator works and allows sufficient selection of fragments to avoid listing unnecessary
 clone information. We have also discussed that a language agnostic approach is more
 challenging in terms of normalizing inputs and therefore detection of type-2 clones.

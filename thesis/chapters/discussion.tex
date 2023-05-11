@@ -1,10 +1,10 @@
 \chapter{Discussion}
 
-This chapter will discuss the results of the different evaluations performed in
-\cref{evaluation} and conclude with some insights into which algorithms seem to be more
-efficient in each case. We will also discuss the implications of the memory usage, and
-discuss the clones which are detected, and the possibility of extending the incremental
-algorithm of CCDetect-LSP to more intricate types of clones.
+This chapter discusses the results of the evaluations performed in \cref{evaluation} and
+conclude with some insights into which algorithms seem to be more efficient in each case.
+We will also discuss the implications of the memory usage, and discuss the clones which
+are detected, and the possibility of extending the incremental algorithm of CCDetect-LSP
+to more intricate types of clones.
 
 \section{Performance}
 
@@ -12,17 +12,16 @@ In \cref{evaluation} we saw how the SACA detection, incremental detection and iC
 performed on multiple code bases of differing size. This section will discuss these
 observations and consider which factors that contributed to the observed outcomes and what
 this means for CCDetect-LSP as a clone detection tool in an IDE environment. While we have
-tested iClones in our evaluation, we do not have access to the source code, which is not
-open-source. Therefore, we cannot speak much to why iClones is faster/slower on certain
-test instances. It is possible that iClones spends some time to build data structures for
-detecting type-3 clones, which would be unfair for the evaluation as type-3 detection is
-not considered. However, it seems like at minimum, most of the work is avoided when type-3
-clone detection is disabled, as enabling it drastically slows down the benchmarks of
-iClones.
+tested iClones in our evaluation, we do not have access to the source code. Therefore, we
+cannot speak much to why iClones is faster/slower on certain test instances. It is
+possible that iClones spends some time to build data structures for detecting type-3
+clones, which would be unfair for the evaluation as type-3 detection is not considered.
+However, it seems most of the work is avoided when type-3 clone detection is disabled, as
+enabling it drastically slows down the benchmarks of iClones.
 
 It is clear that for the initial detection (revision 0), iClones has the best performance.
 This was unexpected, as one would think that the SACA detection, which does not need to
-build any significant data structures would be able to detect the clones faster than
+build any significant data structures, would be able to detect the clones faster than
 iClones. However, we also see that the subsequent SACA detections (revisions 1-9) after
 the initial detection is generally much faster than the initial iClones detection
 (revision 0). Since much of the initial detection time is taken up by parsing the entire
@@ -31,15 +30,21 @@ parsing, not the clone detection. Tree-sitter focuses on being performant on inc
 parsing, and therefore might not be as performant on the initial parse, which could
 explain why the initial detection for both the CCDetect-LSP detections are slower than
 iClones\footnote{Tree-sitter is not widely discussed in the literature, but is
-open-source. This claim is based on the source code and discussions surrounding it.
-(Github issues)}. In the case of our incremental algorithm, it is not unexpected that the
+open-source. This claim is based on the source code and discussions surrounding it, e.g.
+Github issues.}. In the case of our incremental algorithm, it is not unexpected that the
 initial detection is slower than the SACA initial detection, and therefore also the
 slowest algorithm overall for the initial detection. Because our incremental algorithm
 does the same work as the initial detection, but also needs to build the wavelet-matrix
 and dynamic extended suffix array data structures, it seems to consistently be the slowest
-algorithm in the initial detection. This is one of the downsides of our incremental
+algorithm in the initial detection. This is one of the tradeoffs of our incremental
 algorithm, as the initial detection can be very slow for larger code bases, taking 3-4
-minutes for the intellij-community code base.
+minutes for the intellij-community code base. An interesting idea is to persist some of
+the data on the disk, in order to avoid the slow initial detection of CCDetect-LSP. If the
+fingerprint of each document was stored in a file on disk, this file could be read and
+used to index the project without needing to parse every file before the detection can
+happen. However, we encounter a problem whenever we want to perform an incremental update,
+as we do not know which tokens map to which integer values in the fingerprint. This could
+be solved by also persisting the token to integer mapping.
 
 For the subsequent incremental detections (revisions 1-9), we see that depending on the
 size of the code base, and the size of the edits, our incremental detection and iClones
@@ -154,16 +159,20 @@ also that both type-1 and type-2 clones are clones which are often good targets 
 refactoring, since they can be parameterized to account for the differences in literals
 and types, before they are merged into a single function/method. In the case of
 CCDetect-LSP, we could normalize the input to allow detection of type-2 clones by
-consistently fingerprinting tokens to the same value if they are allowed to be different.
-Because CCDetect-LSP is language agnostic and relies only on a Tree-sitter grammar for a
-given programming language, performing this normalization is more challenging than in
-typical clone detectors. This is because CCDetect-LSP needs to know which type of tokens
-should be consistently fingerprinted as the same value. One might also want to only detect
-clones with consistently substituted parameters, where Baker's technique could be
-implemented~\cite{Bakerdup}. This could be done by allowing the user to configure a list
-of AST node types which should be consistently fingerprinted, but this also requires the
-user to be intimately familiar with the node types in the AST of their chosen programming
-language.
+consistently fingerprinting tokens of the same type, but different value to the same value
+if they are allowed to. Because CCDetect-LSP is language agnostic and relies only on a
+Tree-sitter grammar for a given programming language, performing this normalization is
+more challenging than in typical clone detectors, and would likely require the client to
+send a list of token types which should be normalized. One might also want to
+differentiate between consistently renaming tokens and consistently substituting specific
+token values. An example of this is that one might only consider two snippets type-2
+clones if their variable names are consistently renamed, meaning that there needs to be a
+consistent mapping between variable names in the two snippets. Baker's technique could be
+implemented to achieve this, but again, this seems difficult to achieve in a language
+agnostic setting~\cite{Bakerdup}. This could be done by allowing the user to configure a
+list of AST node types which should be consistently fingerprinted, but this also requires
+the user to be intimately familiar with the node types in the AST of their chosen
+programming language.
 
 For type-3 clones we need to consider how useful it is to report these clones in an IDE
 scenario. Recall that type-3 clones are clones which in addition to type-1 and type-2
@@ -179,14 +188,14 @@ the incremental detection, and if any type-3 detection algorithms can be made mo
 efficient for an incremental detection approach.
 
 CCDetect-LSP identifies clones on a token level, unlike other tools which identifies
-clones on a line level\cite{Zibran_real_time_search}. It is more fine-grained to detect
+clones on a line level~\cite{Zibran_real_time_search}. It is more fine-grained to detect
 clones on a token level, and it could detect clones which would not be detected on a line
 level without needing to format the source code. However, it is possible that we could see
 a substantial performance and memory usage gain by instead fingerprinting entire lines
 instead of each token. This would drastically reduce the size of the fingerprint, which
 would make the suffix array updates faster and reduce the size of the dynamic extended
 suffix array and wavelet matrix. However, as there are a lot more unique lines in a code
-base than tokens, this would also drastically increase the alphabet size, $\theta$, which
+base than tokens, this would also drastically increase the alphabet size, $\sigma$, which
 will at least slow down operations on the wavelet matrix. This is a trade-off which would
 be interesting to explore further.
 
@@ -198,20 +207,20 @@ language agnostic setting.
 \subsection*{IDE agnostic}
 
 CCDetect-LSP was implemented as a standalone program, which communicates with an IDE
-client via LSP. As mentioned, this means that the tool is IDE agnostic in the sense that
-any IDE which implements LSP can communicate with CCDetect-LSP and receive code clone
-information from it. With our implementation we are able to list clones in the form of
-diagnostics, and navigate between all the matches of a clone via code-actions and/or
-information embedded in the diagnostic. This shows that LSP is capable of supporting the
-bare-minimum needed functionality of a clone detection tool. 
+client via LSP. This means that the tool is IDE agnostic in the sense that any IDE which
+implements LSP can communicate with CCDetect-LSP and receive code clone information from
+it. With our implementation we are able to list clones in the form of diagnostics, and
+navigate between all the matches of a clone via code-actions and/or information embedded
+in the diagnostic. This demonstrates that LSP is capable of supporting the bare-minimum
+needed functionality of a clone detection tool.
 
-In the previous chapter, we showed that CCDetect-LSP is able to run in at least two IDEs
-which can act as LSP clients, but we also saw that some LSP clients require more setup
-than others, and some LSP clients implement fewer features. This is the reality of working
-with a protocol which tries to unify multiple tools which do things differently. There
-will always be some IDEs which do not implement the full LSP protocol, but we believe that
-the features we have decided to use (diagnostics and code-actions) are good candidates to
-be implemented in most IDEs. Barros et al.~\cite{LSPPractices} performed a study on LSP
+In the previous chapter, we discussed that CCDetect-LSP is able to run in at least two
+IDEs which implement LSP, but we also saw that some LSP clients require more setup than
+others, and some LSP clients implement fewer features. This is the reality of working with
+a protocol which tries to unify multiple tools which do things differently. There will
+always be some IDEs which do not implement the full LSP protocol, but we believe that the
+features we have decided to use (diagnostics and code-actions) are good candidates to be
+implemented in most IDEs. Barros et al.~\cite{LSPPractices} performed a study on LSP
 servers, which showed that out of 30 LSP servers, 28 of them implemented diagnostics, and
 15 of them implemented code-actions. While this is not necessarily an indication of what
 the LSP clients implement, there is likely a correlation between what is generally offered
@@ -236,21 +245,21 @@ such as renaming variables.
 \subsection*{Language agnostic}
 
 The algorithm of CCDetect-LSP is also language agnostic. We have shown that as long as
-there exists a Tree-sitter grammar for a language\footnote{Tree-sitter can parse most
-mainstream languages, see: \url{https://tree-sitter.github.io/tree-sitter/}}, it can be
+there exists a Tree-sitter grammar for a language,\footnote{Tree-sitter can parse most
+mainstream languages, see: \url{https://tree-sitter.github.io/tree-sitter/}} it can be
 parsed and fingerprinted. When the source code has been fingerprinted, there is no longer
 any difference between detection for different languages. Therefore, CCDetect-LSP should
-work for any language, and in our testing, there is nothing which hinders CCDetect-LSP
-from working for any language we have tested, other than grammars not working correctly.
-We have tested CCDetect-LSP for multiple languages, and shown that there is very little
+work for any language, and in our testing, there is nothing that hinders CCDetect-LSP from
+working for any language we have tested, other than grammars not working correctly. We
+have tested CCDetect-LSP for multiple languages, and shown that there is very little
 configuration required to change the desired language. Therefore, we claim that
 CCDetect-LSP works very well as a language agnostic code analysis tool.
 
 In the case of the C language, which did not work correctly because of a quirk of its
-grammar, this is a downside to going with the parser-generator strategy. You cannot
-completely rely on every grammar to always work as you expect. It could be possible to
-forego parsing the source code, and only use a tokenizer to get the tokens. One could then
-use a language agnostic tokenization algorithm to avoid needing a grammar at all, and
+grammar, it demonstrates a downside to going with the parser generator strategy. You
+cannot completely rely on every grammar to always work as you expect. It could be possible
+to forego parsing the source code, and only use a tokenizer to get the tokens. One could
+then use a language agnostic tokenization algorithm to avoid needing a grammar at all, and
 makes the algorithm truly language agnostic. However, this would not allow any sort of
 fragment selection, which likely leads to a lot of unnecessary code being analyzed for
 clones. This both slows down the detection process, but can also lead to a lot of noise in
