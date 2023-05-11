@@ -59,7 +59,26 @@ Elasticsearch (3.2MLOC) was the largest code base that iClones could be run on w
 RAM, and for this code base it seems that our incremental detection starts to outperform
 the other two detection algorithms in all cases. It would be interesting to see if this
 trend continues for even larger code bases and continue to compare CCDetect-LSP
-incremental detection with iClones, but this would require more RAM to benchmark.
+incremental detection with iClones, but this would require more RAM to benchmark. 
+
+In the case of figure \ref{fig:elasticsearch_inc}, where we performed an evaluation of
+elasticsearch and incresed the number of edits in each revision, we see that for a smaller
+number of edits, our incremental detection has the best performance. For the smaller edits
+(INS10, DEL10), the incremental detection outperforms or is comparable to the other
+algorithms even up to 100 edits (1000 tokens inserted or deleted in total). However, we
+see a clear trend that once the number of edits increase, our incremental algorithm is
+slowly overtaken by iClones. For the larger edits (INS100, DEL100), we see that our
+incremental detection is fastest for the smaller number of edits, but is quickly
+outperformed by iClones and even the SACA detection at around 25 edits (2500 tokens
+inserted or deleted in total). These results are an indication that CCDetect-LSP
+incremental detection scales worse than the other algorithms when the number of edits
+increase. Our incremental detection can outperform the other algorithms up to a decently
+large number of edits, but if the code base drastically changes (thousands of tokens) in
+each revision, iClones seems to have the best performance. Since editing thousands of
+tokens at a time is unrealistic in the IDE scenario, we are therefore confident in saying
+that CCDetect incremental detection still has the best performance for the IDE scenario,
+but that this algorithm is not very suitable in the evolution scenario, if the changes in
+each revision are affecting thousands of tokens.
 
 In terms of stability of performance, it seems that the SACA detection is naturally very
 stable between each revision, as it is recomputing the entire suffix array anyway. The two
@@ -91,7 +110,7 @@ code is a good candidate to apply the dynamic suffix array update algorithm to, 
 in source code will on average mean few suffixes need to be reordered.
 
 With these results, it is clear that CCDetect-LSP incremental detection is fast enough to
-be used in an IDE environment for many code bases at least up to ${\sim}2.2$MLOC (flink,
+be used in the IDE scenario for many code bases at least up to ${\sim}2.2$MLOC (flink,
 graal), as most updates can be processed in under $1$ second for these code bases. For
 code bases of larger sizes (elasticsearch, intellij), small edits (INS10, DEL10) can still
 be processed in under $1$ second, but larger edits (INS100, DEL100) can start to take some
@@ -99,7 +118,10 @@ time, as the processing time exceeds $1$ second and can be closer to $2$ seconds
 programmer is generally only performing small edits in few files, and not doing
 large-scale refactoring across many files at once, CCDetect-LSP is likely fast enough to
 feel ``real-time'' even for these large code bases, but might feel sluggish to update on
-such larger refactoring operations.
+such larger refactoring operations. It is also clear that while CCDetect-LSP incremental
+detection is fast for the IDE scenario, it starts to get outperformed by other algorithms
+in the evolution scenario if the number of edits increases, and the size of the edits get
+larger.
 
 \section{Memory usage}
 

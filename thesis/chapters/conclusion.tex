@@ -131,19 +131,19 @@ algorithm in general, if multiple edits are applied.
 
 The results demonstrate that the incremental algorithm of CCDetect-LSP scales better than
 the other two algorithms in terms of time, at least in the IDE scenario where edits are
-relatively small. The algorithm was able to process large edits for code bases of over
-5MLOC in under 2 seconds, and faster for smaller edits. We have demonstrated that our
-novel application of dynamic suffix arrays is a suitable and fast approach to clone
-detection, and can give comparable and better results than tools which implement a dynamic
-suffix tree. It also outperforms other incremental detection algorithms in terms of
-memory. Though memory consumption is the main limitation for practical use, CCDetect-LSP
-still outperforms other comparable tools in the IDE scenario.
+relatively small. The incremental algorithm was able to process large edits for code bases
+of over 5MLOC in under 2 seconds, and faster for smaller edits. We have demonstrated that
+our novel application of dynamic extended suffix arrays is a suitable and fast approach to
+clone detection in the IDE scenario, and can give comparable and better results than tools
+which implement a dynamic suffix tree. It also outperforms other incremental detection
+algorithms in terms of memory. Though memory consumption is the main limitation for
+practical use, CCDetect-LSP still outperforms other comparable tools in the IDE scenario.
 
 We have demonstrated that LSP can implement the bare-minimum features needed for a clone
 detection tool, but some extensions would be useful in order to separate clone detection
 from other types of diagnostics.
 
 Finally, we have demonstrated that language agnostic clone detection using a parser
-generator works and allows sufficient selection of fragments to avoid listing unnecessary
-clone information. We have also discussed that a language agnostic approach is more
-challenging in terms of normalizing inputs and therefore detection of type-2 clones.
+generator works and allows sufficient selection of fragments for flexible analysis, and to
+avoid listing unwanted clones. We have also discussed that a language agnostic approach is
+more challenging in terms of normalizing inputs and therefore detection of type-2 clones.
