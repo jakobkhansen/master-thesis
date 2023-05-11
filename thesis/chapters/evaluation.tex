@@ -305,26 +305,40 @@ that the algorithm can process most realistic editing scenarios.
 
 The benchmarks were run on a computer with 16GB RAM, and an Intel i7-2600K CPU with a
 3.4GHz clock speed and 4 cores\footnote{Note that this CPU is quite old, and may not be
-representative of today's modern CPUs}. The computer is running Manjaro Linux with kernel
+representative of today's modern CPUs}. The computer runs Manjaro Linux with kernel
 version 6.1.25-1. The SACA detection, incremental detection and iClones was run with a
 token threshold of $100$, and the processing time of each revision was timed using a
 simple clock mechanism programmed in Java. Type-3 clone detection was disabled for iClones
 with the \verb|-minclone 100| parameter. Each test was run three times, and the results
 were averaged. Only three runs of all tests were performed because running all the tests
-takes a significant amount of time (multiple hours), and the results seem to be very
-stable from these three runs only.
+takes a significant amount of time (multiple hours), and the results seem to be stable
+from three runs only.
+
+In addition, we performed a final test on the elasticsearch code base where in each
+revision, the number of edits increase. This was tested to see how CCDetect-LSP scales
+when the number of edits increase. The size of these edits are not realistic for the IDE
+scenario, as when the number of edits increases, thousands of tokens are being edited in a
+single revision. However, this could be more realistic for the evolution scenario. Recall
+that the evolution scenario is when we analyze different revisions of a code base such as
+different commits in version control.
+
 
 Figure \ref{fig:WorldWind}, \ref{fig:neo4j}, \ref{fig:graal}, \ref{fig:flink},
-\ref{fig:elasticsearch} and \ref{fig:intellij} shows the benchmark results on the
-different code bases. Each graph shows the running time of the SACA detection, the
-incremental detection and iClones when run on a certain code base and edit operation size.
-The running time is shown on a log scale, as the initial detection is extremely slow
-compared to the subsequent detections. iClones was not able to run on the
+\ref{fig:elasticsearch}, \ref{fig:intellij} and \ref{fig:elasticsearch_inc} shows the
+benchmark results on the different code bases. Each graph shows the running time of the
+SACA detection, the incremental detection and iClones when run on a certain code base and
+edit operation size. The running time is shown on a log scale, as the initial detection is
+extremely slow compared to the subsequent detections. iClones was not able to run on the
 intellij-community code base, as the memory usage exceeded 16GB, therefore only the
 CCDetect-LSP algorithms is shown on those graphs. The elasticsearch code base with a size
 of $3.2\text{MLOC}$ was approximately the maximum size code base iClones could run on
-before the computer ran out of available memory.
+before the computer ran out of available memory. Note that figure
+\ref{fig:elasticsearch_inc} shows the test where an increasing number of edits were
+performed in each revision, the number of edits are displayed as the labels of the X-axis.
 
+\newpage
+\null
+\vfill
 
 \begin{figure}[H]
     \begin{center}
@@ -337,6 +351,12 @@ before the computer ran out of available memory.
     \label{fig:WorldWind}
 \end{figure}
 
+\vfill
+
+\newpage
+\null
+\vfill
+
 \begin{figure}[H]
     \begin{center}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_DEL10.pdf}
@@ -348,6 +368,11 @@ before the computer ran out of available memory.
     \label{fig:neo4j}
 \end{figure}
 
+\vfill
+
+\newpage
+\null
+\vfill
 
 \begin{figure}[H]
     \begin{center}
@@ -360,6 +385,12 @@ before the computer ran out of available memory.
     \label{fig:graal}
 \end{figure}
 
+\vfill
+
+\newpage
+\null
+\vfill
+
 \begin{figure}[H]
     \begin{center}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/flink_DEL10.pdf}
@@ -371,6 +402,11 @@ before the computer ran out of available memory.
     \label{fig:flink}
 \end{figure}
 
+\vfill
+
+\newpage
+\null
+\vfill
 \begin{figure}[H]
     \begin{center}
         \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_DEL10.pdf}
@@ -379,6 +415,12 @@ before the computer ran out of available memory.
     \caption{elasticsearch performance benchmark}
     \label{fig:elasticsearch}
 \end{figure}
+
+\vfill
+
+\newpage
+\null
+\vfill
 
 \begin{figure}[H]
     \begin{center}
@@ -390,6 +432,26 @@ before the computer ran out of available memory.
     \caption{intellij-community performance benchmark}
     \label{fig:intellij}
 \end{figure}
+
+\vfill
+
+\newpage
+\null
+\vfill
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/incedit_performancegraphs/elasticsearch_DEL10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/incedit_performancegraphs/elasticsearch_DEL100.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/incedit_performancegraphs/elasticsearch_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/incedit_performancegraphs/elasticsearch_INS100.pdf}
+    \end{center}
+    \caption{Elasticsearch performance benchmark with increasing number of edits}
+    \label{fig:elasticsearch_inc}
+\end{figure}
+
+\vfill
+\newpage
 
 \section{Memory usage}
 

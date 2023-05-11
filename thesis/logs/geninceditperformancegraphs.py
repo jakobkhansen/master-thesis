@@ -66,7 +66,7 @@ for file in os.scandir("incedit_results/"):
     df["changes"] = columns
 
     ax = df.plot(x="changes", kind="bar", rot=0, title=chart_name)
-    xlabel = "Number of inserts" if "INS" in ccdetectfile else "Number of deletions"
+    xlabel = "Number of insertions" if "INS" in ccdetectfile else "Number of deletions"
     ax.set(xlabel=xlabel, ylabel="ms (log)", yscale="log")
     ax.get_yaxis().set_major_formatter(
     mpl.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
