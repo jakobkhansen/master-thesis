@@ -233,13 +233,26 @@ bibsource = {dblp computer science bibliography, https://dblp.org}
 	abstract = {Sparse Dynamic Programming has emerged as an essential tool for the design of efficient algorithms for optimization problems coming from such diverse areas as computer science, computational biology, and speech recognition. We provide a new sparse dynamic programming technique that extends the Hunt–Szymanski paradigm for the computation of the longest common subsequence (LCS) and apply it to solve the LCS from Fragments problem: given a pair of strings X and Y (of length n and m, respectively) and a set M of matching substrings of X and Y, find the longest common subsequence based only on the symbol correspondences induced by the substrings. This problem arises in an application to analysis of software systems. Our algorithm solves the problem in O(|M|log|M|) time using balanced trees, or O(|M|loglogmin(|M|,nm/|M|)) time using Johnson's version of Flat Trees. These bounds apply for two cost measures. The algorithm can also be adapted to finding the usual LCS in O((m+n)log|Σ|+|M|log|M|) time using balanced trees or O((m+n)log|Σ|+|M|loglogmin(|M|,nm/|M|)) time using Johnson's version of Flat Trees, where M is the set of maximal matches between substrings of X and Y and Σ is the alphabet. These bounds improve on those of the original Hunt–Szymanski algorithm while retaining the overall approach.}
 }
 
-@article{Bakerdup,
-  title={A program for identifying duplicated code},
-  author={Baker, Brenda S},
-  journal={Computing Science and Statistics},
-  pages={49--49},
-  year={1993},
-  publisher={Citeseer}
+@inproceedings{Bakerdup,
+  added-at = {2012-09-26T22:01:19.000+0200},
+  annote = {clone detection},
+  author = {Baker, Brenda S.},
+  biburl = {https://www.bibsonomy.org/bibtex/2ab044742207a046e4de9b2dcd0247f0f/melvinfrohike},
+  booktitle = {Computer Science and Statistics: Proc. Symp. on the Interface},
+  date-modified = {2007-09-26 10:33:40 +0200},
+  interhash = {e99e1b56afadd1457786398759f35b72},
+  intrahash = {ab044742207a046e4de9b2dcd0247f0f},
+  keywords = {code duplication},
+  month = {March},
+  owner = {pdeleenh},
+  pages = {49--57},
+  timestamp = {2012-09-26T22:01:40.000+0200},
+  title = {{A program for identifying duplicated code}},
+  url = {http://citeseer.nj.nec.com/baker92program.html},
+  year = 1992
+}
+
+
 }
 
 @book{crosby1980quality,
@@ -688,10 +701,12 @@ url="https://doi.org/10.1007/978-1-4939-2864-4_412"
 	isbn="978-3-662-21545-6"
 }
 
-@techreport{TowardsAutomatedRefactoring,
-  title={Towards automated refactoring of code clones in object-oriented programming languages},
-  author={Baars, Simon and Oprescu, Ana},
-  year={2019},
+@Booklet{TowardsAutomatedRefactoring,
+  author = {Simon Baars and Ana Oprescu},
+  title = {Towards Automated Refactoring of Code Clones in Object-Oriented Programming Languages},
+  howpublished = {EasyChair Preprint no. 1278},
+
+  year = {EasyChair, 2019}
 }
 
 @Inbook{RefactoringOrientedClones,
@@ -711,12 +726,19 @@ url="https://doi.org/10.1007/978-1-4939-2864-4_412"
 }
 
 @misc{AmirDynamicSuffixWithPoly,
-      title={Dynamic Suffix Array with Sub-linear update time and Poly-logarithmic Lookup Time}, 
-      author={Amihood Amir and Itai Boneh},
-      year={2021},
-      eprint={2112.12678},
-      archivePrefix={arXiv},
-      primaryClass={cs.DS}
+    author       = {Amihood Amir and
+                  Itai Boneh},
+  title        = {Dynamic Suffix Array with Sub-linear update time and Poly-logarithmic
+                  Lookup Time},
+  journal      = {CoRR},
+  volume       = {abs/2112.12678},
+  year         = {2021},
+  url          = {https://arxiv.org/abs/2112.12678},
+  eprinttype    = {arXiv},
+  eprint       = {2112.12678},
+  timestamp    = {Tue, 04 Jan 2022 15:59:27 +0100},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2112-12678.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 
 @inproceedings{GrammarPluggableCloneDetection,

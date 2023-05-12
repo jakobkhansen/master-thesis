@@ -1335,13 +1335,13 @@ Algorithm \ref{alg:dynamiccloneextraction} shows how these clone indices are com
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
-    \algo{\DynamicCloneExtraction{nodesAboveTreshold}}{
+    \algo{\DynamicCloneExtraction{nodesAboveThreshold}}{
         $\Var{clones} \gets \textrm{empty\ list}$
 
         $\Var{lastAdded} \gets -1$ \;
         $\Var{lastLCP} \gets -1$ \;
 
-        \For{$\Var{node} \In \Var{nodesAboveTreshold}$}{
+        \For{$\Var{node} \In \Var{nodesAboveThreshold}$}{
             
             $\Var{index} \gets \GetRankOfNode{$\Access{\Var{node}}{\Var{pointer}}$}$ \;
 

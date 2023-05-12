@@ -215,9 +215,9 @@ the algorithm. Input to the algorithm is a string $S$ with length $n$.
 
 \begin{definition}[L-type and S-type suffixes] A suffix starting at position $i$ in a
     string $S$ is considered to be L-type if it is lexicographically larger than the next
-    suffix at position $i + 1$. Meaning that $\mathrm{suffix}(S, i) > \mathrm{suffix}(S,
-    i+1)$. Conversely, a suffix is considered to be S-type if $\mathrm{suffix}(S, i) <
-    \mathrm{suffix}(S, i+1)$. The sentinel suffix (\$) of $S$ is always S-type.
+    suffix at position $i + 1$, meaning $\mathrm{suffix}(S, i) > \mathrm{suffix}(S, i+1)$.
+    Conversely, a suffix is considered to be S-type if $\mathrm{suffix}(S, i) <
+\mathrm{suffix}(S, i+1)$. The sentinel suffix (\$) of $S$ is always S-type.
 \end{definition}
 
 
@@ -379,7 +379,7 @@ slotted correctly afterwards. For BANANA\$ this will be the exact same process a
 \ref{tab:bucketinglms}, since the LMS-substrings were already inserted in reverse
 ordering.
 
-There will be $O(\log_2(n))$ recursive call, where each recursive call takes $O(n)$ time,
+There will be $O(\log_2(n))$ recursive calls, where each recursive call takes $O(n)$ time,
 with $n$ halving in each call. Therefore, the recurrence will have the complexity of:
 
 \begin{gather*}

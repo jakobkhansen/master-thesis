@@ -37,8 +37,9 @@ database containing information of the clones which exist in the dataset.
 BigCloneEval~\cite{BigCloneEval} is a tool which simplifies evaluation of a tool on the
 BigCloneBench. BigCloneEval evaluates a tool by running the tool on the dataset, letting
 the tool output all the clones the tool finds, and then matching the clones the tool found
-with the clones in the database. The clones in the database are manually verified by
-humans, and include type-1 to type-3 clones.
+with the clones in the database. This makes the BigCloneBench essentially a big oracle for
+clone detection in a code base, which we test CCDetect-LSP against. The clones in the
+database are manually verified by humans, and include type-1 to type-3 clones.
 
 We evaluated CCDetect-LSP by running the initial detection algorithm on the dataset, and
 outputting all the clones the tool found. BigCloneEval expects to get a file where each
@@ -55,10 +56,12 @@ report which BigCloneEval outputs.
 
 For CCDetect-LSP, we used mostly the default parameters of BigCloneEval, but we increased
 the minimum clone size to $100$ and set the minimum similarity threshold to be $100\%$,
-since we are only evaluating CCDetect-LSP for type-1 clone recall. This was done to reduce
-the time an evaluation takes as it does not consider type-3 clones when the similarity
-threshold is set to $100\%$, and the default token threshold of $50$ requires a lot of
-time to match clones with the database.
+since we are only evaluating CCDetect-LSP for type-1 clone recall. The similarity
+threshold was set to $100\%$ because we only consider type-1 clones which are exactly
+similar, and not reporting type-3 clones drastically reduces the time the evaluation
+takes. The default token threshold was set to $100$ instead of $50$, as the evaluation
+time increases drastically as the number of clones to match in the database and the number
+of clones reported by CCDetect-LSP increases.
 
 Appendix \ref{bcblog} shows the command which runs BigCloneEval, and the beginning of the
 report generated when CCDetect-LSP is evaluated. The report shows that CCDetect-LSP has a
@@ -503,17 +506,19 @@ either selecting the root node of the AST, or all methods or
 functions\footnote{Tree-sitter queries for multiple languages are shown in the README file
 of the CCDetect-LSP source code.}.
 
-In our experience, CCDetect-LSP seems to work flawlessly on most languages. While we
-cannot objectively tell if all clones are detected without having a tool like the
-BigCloneBench for each language, the experience of browsing and navigating clones seems to
-be similar when switching between different languages. For example, we explored the source
-code of both the Rust and Go compilers in their respective languages, and we were able to
-locate thousands of clones in each code base (token threshold 100).
+Initial experiments show that CCDetect-LSP seems to work flawlessly on most languages.
+There experiments are not shown in the thesis and are based purely on our experience with
+testing the tool on different code bases. While we cannot objectively tell if all clones
+are detected without having an oracle like the BigCloneBench for each code base, the
+experience of browsing and navigating clones seems to work as well when switching between
+different languages. For example, we explored the source code of both the Rust and Go
+compilers in their respective languages, and we were able to locate thousands of clones in
+each code base (token threshold 100).
 
 While our testing of multiple languages was not extensive, only one language we tested did
 not work flawlessly out of the box. The Tree-sitter grammar for C had a weird quirk where
-not every tokens had its own leaf-node in the AST. For example, the string literal token
-did not have a distinct AST node for the string value. Therefore, functions which had
+not every token had its own leaf-node in the AST. For example, the string literal token
+did not have a distinct leaf-node for the string value. Therefore, functions which had
 completely different string literals in them could be considered clones. In a positive
 light, this actually resulted in some type-2 clones being detected, but it also resulted
 in some clones being detected which were not clones at all. Even if this issue was
@@ -523,8 +528,8 @@ where CCDetect-LSP did not have perfect language support.
 \subsection*{IDE agnostic}
 
 CCDetect-LSP can in theory communicate with any IDE which can act as an LSP client. We
-have tested CCDetect-LSP on two editors which have great LSP support,
-Neovim\footnote{Neovim: \url{https://neovim.io/}} and VSCode\footnote{VSCode:
+have tested CCDetect-LSP on two IDEs which have great LSP support, Neovim\footnote{Neovim:
+\url{https://neovim.io/}} and VSCode\footnote{VSCode:
 \url{https://code.visualstudio.com/}}. 
 
 For Neovim, only a configuration file needs to be setup, where we specify the command
