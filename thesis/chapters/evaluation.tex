@@ -285,11 +285,12 @@ neo4j\footnote{neo4j: \url{https://github.com/neo4j/neo4j}}, graal\footnote{graa
 intellij-community\footnote{intellij-community:
 \url{https://github.com/JetBrains/intellij-community}}. The code bases are all Java code
 bases of different size, with different amounts of duplication. Table \ref{tab:codebases}
-shows some properties of the code bases, including its number of lines, the number of
+shows some properties of the code bases, including their number of lines, the number of
 clones detected by CCDetect-LSP for a token threshold of $100$, the average LCP value and
 the number of LCP values above $100$. An interesting aspect of the graal and flink code
 bases is that they both contain ${\sim}2.2\text{MLOC}$, but graal has a higher
-$\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array update.
+$\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array update,
+according to our informal analysis.
 
 \begin{table}[t]
     \begin{center}
@@ -316,14 +317,22 @@ $\text{LCP}_\text{avg}$, which could potentially lead to a slower suffix array u
     \label{tab:codebases}
 \end{table}
 
-Additionally, we chose to test both an edit size of $10$ and $100$ with $10$ edits in each
-revision. We believe these values to be slightly larger than what is realistic for an IDE
-scenario where a programmer is editing and updating the fingerprint of a single file at a
-time. For a test where we are performing $10$ insertions of $100$ tokens, this means we
-are inserting $1000$ tokens in a single edit, which is likely larger than any realistic
-edit, but could occur in large-scale automatic refactoring operations. Therefore, if the
-data shows that the algorithm can process these types of edits in ``real-time'', we believe
-that the algorithm can process most realistic editing scenarios.
+Additionally, we chose to test both an edit size of $10$ and $100$ tokens with $10$ edits
+in each revision. We believe these values to be slightly larger than what is realistic for
+an IDE scenario where a programmer is editing and updating the fingerprint of a single
+file at a time. For a test where we are performing $10$ insertions of $100$ tokens, this
+means we are inserting $1000$ tokens in a single edit, which is likely larger than any
+realistic edit, but could occur in large-scale automatic refactoring operations.
+Therefore, if the results shows that the algorithm can process these types of edits in
+``real-time'', we believe that the algorithm can process most realistic editing scenarios.
+
+In addition, we performed a final test on the elasticsearch code base where in each
+revision, the number of edits increase. This was tested to see how CCDetect-LSP scales
+when the number of edits increase. The size of these edits are not realistic for the IDE
+scenario, as when the number of edits increases, thousands of tokens are being edited in a
+single revision. However, this could be more realistic for the evolution scenario. Recall
+that the evolution scenario is when we analyze different revisions of a code base such as
+different commits in version control.
 
 The benchmarks were run on a computer with 16GB RAM, and an Intel i7-2600K CPU with a
 3.4GHz clock speed and 4 cores\footnote{Note that this CPU is quite old, and may not be
@@ -339,24 +348,19 @@ averaged. Only three runs of all tests were performed because running all the te
 a significant amount of time (multiple hours), and the results seem to be stable from
 three runs only.
 
-In addition, we performed a final test on the elasticsearch code base where in each
-revision, the number of edits increase. This was tested to see how CCDetect-LSP scales
-when the number of edits increase. The size of these edits are not realistic for the IDE
-scenario, as when the number of edits increases, thousands of tokens are being edited in a
-single revision. However, this could be more realistic for the evolution scenario. Recall
-that the evolution scenario is when we analyze different revisions of a code base such as
-different commits in version control.
 
 
 Figure \ref{fig:WorldWind}, \ref{fig:neo4j}, \ref{fig:graal}, \ref{fig:flink},
 \ref{fig:elasticsearch}, \ref{fig:intellij} and \ref{fig:elasticsearch_inc} shows the
 benchmark results on the different code bases. Each graph shows the running time of the
 SACA detection, the incremental detection and iClones when run on a certain code base and
-edit operation size. The running time is shown on a log scale, as the initial detection is
-extremely slow compared to the subsequent detections. iClones was not able to run on the
-intellij-community code base, as the memory usage exceeded 16GB, therefore only the
-CCDetect-LSP algorithms is shown on those graphs. The elasticsearch code base with a size
-of $3.2\text{MLOC}$ was approximately the maximum size code base iClones could run on
+edit operation size. For each code base there were four tests, where two graphs consider
+deletions of size $10$ or $100$ (DEL10, DEL100) and two graphs consider insertions of size
+$10$ or $100$ (INS10, INS100). The running time is shown on a log scale, as the initial
+detection is extremely slow compared to the subsequent detections. iClones was not able to
+run on the intellij-community code base, as the memory usage exceeded 16GB, therefore only
+the CCDetect-LSP algorithms is shown on those graphs. The elasticsearch code base with a
+size of $3.2\text{MLOC}$ was approximately the maximum size code base iClones could run on
 before the computer ran out of available memory. Note that figure
 \ref{fig:elasticsearch_inc} shows the test where an increasing number of edits were
 performed in each revision, the number of edits are displayed as the labels of the x-axis.
@@ -483,9 +487,9 @@ performed in each revision, the number of edits are displayed as the labels of t
 Another important aspect of clone detection tools and especially IDE tools, is the memory
 usage of the tool. As CCDetect-LSP is primarily implemented as an IDE tool, it is
 important that the tool can run alongside other IDE tools and applications. Therefore, we
-will in this section analyze the memory footprint of CCDetect-LSP and again compare the
-SACA detection, incremental detection and iClones. To simplify this analysis, we will for
-each code base run one of the tests we previously ran for the performance benchmark, and
+will in this section analyze the memory usage of CCDetect-LSP and again compare the SACA
+detection, incremental detection and iClones. To simplify this analysis, we will for each
+code base run one of the tests we previously ran for the performance benchmark, and
 observe the peak memory usage of each algorithm, using the JProfiler\footnote{JProfiler:
 https://www.ej-technologies.com/products/jprofiler/overview.html} profiling tool. In our
 experience, the clone detection tools we are evaluating in this scenario does not have
@@ -493,10 +497,10 @@ large spikes in memory usage, and generally stabilizes around the peak memory us
 Therefore, we only observed the peak memory usage, as it seems to represent the amount of
 memory which would be required to run each tool in an IDE scenario.
 
-JProfiler provides a live memory usage overview which it records every $2$ seconds on a
-running JVM process. Figure \ref{fig:memoryusage} shows the results of the memory usage
-test. iClones is again left out for the intellij code base, as the memory usage exceeded
-16GB.
+JProfiler provides a live memory profiling overview which records the memory usage of a
+running JVM process every $2$ seconds. Figure \ref{fig:memoryusage} shows the results of
+the memory usage test. iClones is again left out for the intellij code base, as the memory
+usage exceeded 16GB.       
 
 \begin{figure}[t]
     \begin{center}
@@ -527,7 +531,7 @@ not be trivial in some languages, but we suspect that the most common choices wo
 either selecting the root node of the AST, or all methods or
 functions\footnote{Tree-sitter queries for multiple languages are shown in the README file
 of the CCDetect-LSP source code.}. If type-2 detection should be enabled, the client needs
-to provide a list of AST node types which should be normalized for that language.
+to provide a list of token types which should be normalized for that language.
 
 Initial experiments show that CCDetect-LSP seems to work flawlessly on most languages.
 These experiments are not shown in the thesis and are based purely on our experience with
@@ -542,22 +546,21 @@ While our testing of multiple languages was not extensive, only one language we 
 not work flawlessly out of the box. The Tree-sitter grammar for C had a weird quirk where
 not every token had its own leaf-node in the AST. For example, the string literal token
 did not have a distinct leaf-node for the string value. Therefore, functions which had
-completely different string literals in them could be considered clones. In a positive
-light, this actually resulted in some type-2 clones being detected, but it also resulted
-in some clones being detected which were not clones at all. Even if this issue was
+completely different string literals in them could be considered clones. This resulted in
+some clones being detected which were not clones at all. Even if this issue was
 preventable by treating some AST nodes differently, we consider this to be an instance
 where CCDetect-LSP did not have perfect language support.
 
 \subsection*{IDE agnostic}
 
-CCDetect-LSP can in theory communicate with any IDE which can act as an LSP client. We
-have tested CCDetect-LSP on two IDEs which have great LSP support, Neovim\footnote{Neovim:
+CCDetect-LSP can communicate with any IDE which can act as an LSP client. We have tested
+CCDetect-LSP on two IDEs which have great LSP support, Neovim\footnote{Neovim:
 \url{https://neovim.io/}} and VSCode\footnote{VSCode:
 \url{https://code.visualstudio.com/}}. 
 
 For Neovim, only a configuration file needs to be setup, where we specify the command
 which launches the LSP server, which file-type the LSP server should be launched on, and
-the rest of the configuration which CCDetect-LSP needs. Diagnostics and code-actions works
+the rest of the configuration which CCDetect-LSP needs. Diagnostics and code-actions work
 out of the box, but a diagnostic view which shows all code clones requires an extra plugin
 such as Telescope\footnote{Telescope:
 \url{https://github.com/nvim-telescope/telescope.nvim}}. Neovim does not support the
@@ -568,7 +571,7 @@ For VSCode, a small extension (plugin) had to be created, which simply uses the 
 APIs of VSCode to launch the LSP server on the correct file-type with the correct
 configuration options. Once launched, VSCode has full LSP support, including diagnostics
 with match information, code-actions and a nice diagnostic view which displays all code
-clones. VSCode running this plugin was shown in figure \ref{fig:vscodeclones} in
+clones. VSCode running this extension was shown in figure \ref{fig:vscodeclones} in
 \cref{lspimplementation}. While the configuration settings such as token threshold and
 language is currently hard-coded into the extension, we imagine it would be simple to
 create a GUI configurator for CCDetect-LSP in VSCode. It could also be possible to use the
