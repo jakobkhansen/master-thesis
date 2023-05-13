@@ -164,32 +164,34 @@ to only two, a deletion and an insertion, will be useful in our final algorithm.
 Another possible approach is to look at the ranges that the LSP client provides with each
 \verb|textDocument/didChange| message and determine which tokens in the fingerprint have
 been affected according to this range. However, this approach tightly couples the
-algorithm to LSP and the scenario where we know the exact ranges of each change. Also, we
-might do unnecessary amounts of operations if we do multiple edits, since some operations
-could cancel each other out, for example by inserting and then deleting the same text.
+algorithm to LSP and the scenario where we know the exact ranges of each change, which
+makes the algorithm harder to use, test and evaluate individually when not running as an
+LSP server. Also, we might do unnecessary amounts of operations if we do multiple edits,
+since some operations could cancel each other out, for example by inserting and then
+deleting the same text.
 
 A better approach is to determine the changes of the fingerprint using an edit distance
 algorithm. An edit distance algorithm is an algorithm which computes the distance between
 two strings $S_1$ and $S_2$. Distance between two strings is the minimum number of edit
 operations (insert, delete, substitute) which is required to transform $S_1$ into $S_2$.
-Many of the algorithms which computes the edit distance, also allows computing what the
+Many of the algorithms which computes the edit distance, also allow computing what the
 operations are.
 
 The classic algorithm for calculating edit distance operations is attributed to Wagner and
 Fischer~\cite{WagnerFischer}. The input to the algorithm is two strings $S_1$ and $S_2$ of
 length $n$ and $m$. The output will be the set of operations needed to turn $S_1$ into
 $S_2$. This algorithm is based on dynamic programming where a matrix $M$ is filled from
-top to bottom and then the operations are inferred from $M$. The recurrence in equation
+top to bottom and then the operations are inferred from $M$. The recurrence in figure
 \ref{eq:editdistancerecurrence} shows how the edit distance matrix is filled and table
 \ref{tab:wagnerfischermatrix} shows an example matrix.
 
 \begin{figure}[t]
     \begin{center}
 	$$
-		\sum^{n}_{i = 0}{M[i][0] = i}
+        M[i][0] = i \text{ where } 0 \leq i \leq n
 	$$
 	$$
-		\sum^{m}_{j = 0}{M[0][j] = j}
+        M[0][j] = j \text{ where } 0 \leq j \leq m
 	$$
 
 	\begin{gather*}
@@ -268,7 +270,7 @@ EditOperation {
 }
 \end{lstlisting}
 
-where type is either an insert, delete or substitute.
+where OperationType is either an insert, delete or substitute.
 
 One way to combine operations is to find operations of the same type which are sequenced
 in the matrix. For example in table \ref{tab:wagnerfischermatrix}, we have two consecutive
@@ -410,7 +412,7 @@ fifth row has been computed using only the fourth row. This is done by first com
 left-most index of the fifth row, which is always one more than the previous row.
 Afterwards, we can compute the other elements of the row from left to right, with the same
 recurrence, shown in equation \ref{eq:editdistancerecurrence}. This is possible because we
-always know the above, left, and top-left elements of the current index. This can be
+always know the above, left, and top-left elements from the current index. This can be
 implemented as two arrays, which holds the previous and current row. 
 
 \begin{table}[t]
@@ -443,10 +445,10 @@ Wagner-Fischer algorithm, but uses only linear space in the size of either of th
 strings.
 \subsection*{Hirschberg's algorithm}
 
-The first insight we need for this algorithm is that there is at minimum one edit
-operation on each row/column of the edit distance matrix. This is intuitive, because in
-order to ``travel'' from the top-left to the bottom-right of the matrix, the path needs to
-visit at least one cell from the top to the bottom, visiting all the rows, and from the left
+The first insight we need for this algorithm is that the optimal path contains at minimum
+one edit operation on each row/column of the edit distance matrix. This is intuitive,
+because in order to ``travel'' from the top-left to the bottom-right of the matrix, the
+path needs to travel from the top to the bottom, visiting all the rows, and from the left
 to the right, visiting all the columns. Hirschberg's algorithm uses this insight to
 compute one position of the optimal path at a time, which it finds in the middle row
 between two already known positions of the path. Table \ref{tab:hirschbergs} shows an
@@ -528,7 +530,7 @@ example of how the positions are found.
         \end{tabular}
 	\end{center}
 	\caption{Hirschberg's algorithm. Blue cells are part of the optimal path, dark-blue
-    cells are new positions.}
+    cells are new positions in the current iteration.}
 	\label{tab:hirschbergs}
 \end{table}
 
@@ -587,9 +589,9 @@ operation.
 Constructing/updating the extended suffix array is the most time-consuming phase of the
 algorithm, so the goal for the dynamic update is to take the previous suffix array and an
 edit operation, and compute the new suffix array faster than building the suffix array
-from scratch. We will also in a following section convert the suffix array into a dynamic
-structure, which allows insertions, deletions and increments multiple elements faster than
-linear time.
+from scratch. We will also in a following section convert the extended suffix array into a
+dynamic structure, which allows insertions, deletions and increments of multiple elements
+faster than linear time.
 
 The algorithm used is the algorithm presented by Salson et al.~\cite{DynamicBWT,
 DynamicExtendedSuffixArrays}. This algorithm is presented as two algorithms, one which
@@ -604,7 +606,7 @@ new data structure contains the ISA implicitly.
 Recall that the BWT is a transform on an input string which is often used for compression
 and text-search purposes. The BWT is also reversible by using the LF function to compute
 the original string in reverse. The LF function is computed for a position $i$ such that
-$LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where the array $C$ contains for any character $c$,
+$LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where the array $C$ contains for a character $c$,
 how many characters are lexicographically smaller than $c$. This function can intuitively
 be used in the context of the BWT to allow us to move from $CS_i$ to $CS_{i-1}$. Also
 recall that the suffix array and the BWT of a string is highly correlated to the point
@@ -626,6 +628,21 @@ position $i$, but is at position $i + 1$ after the insertion. This new $CS$ will
 the inserted character, $c$. These are the only changes that happen to the characters in
 the BWT, but as we will see, the ordering of the BWT characters may not be correct
 anymore.
+
+
+For the string \verb|BANANA$|, let $c = \verb|B|$, and $i = 2$, which results in the
+string \verb|BABNANA$|. In table \ref{table:bwtupdate} we can see that some substrings of
+the BWT is preserved, such as \verb|$AA| and \verb|AN|, but some other changes have
+occured. In table \ref{table:bwtupdatestages} We see that the new $CS_2$ is
+\verb|BNANA$BA|, and the changed $CS_3$ is \verb|NANA$BAB|. We can find where these
+cyclic-shifts are located by first looking up $i$ in the ISA, $\ISA{2} = 6$. This is the
+location of $CS_3$ (after the insertion), where the final character is updated to the
+inserted character \verb|B|. To find the position where the new cyclic-shift should be
+inserted, we can use the LF function to move from the $CS_3$ to $CS_2$. Computing
+$LF(6)$ after the substitute gives us $5$, which is where the new $CS_2$ should be
+inserted in the BWT. When we insert in the BWT, we only need to consider the final
+character of $CS_2$, which in this case is \verb|A|, the character which was previously
+substituted.
 
 \begin{table}[t]
 	\begin{center}
@@ -661,20 +678,6 @@ anymore.
 		\label{table:bwtupdate}
 	\end{center}
 \end{table}
-
-For the string \verb|BANANA$|, let $c = \verb|B|$, and $i = 2$, which results in the
-string \verb|BABNANA$|. In table \ref{table:bwtupdate} we can see that some substrings of
-the BWT is preserved, such as \verb|$AA| and \verb|AN|, but some other changes have
-occured. In table \ref{table:bwtupdatestages} We see that the new $CS_2$ is
-\verb|BNANA$BA|, and the changed $CS_3$ is \verb|NANA$BAB|. We can find where these
-cyclic-shifts are located by first looking up $i$ in the ISA, $\ISA{2} = 6$. This is the
-location of $CS_3$ (after the insertion), where the final character is updated to the
-inserted character \verb|B|. To find the position where the new cyclic-shift should be
-inserted, we can use the LF function to move from the $CS_3$ to $CS_2$. Computing
-$LF(6)$ after the substitute gives us $5$, which is where the new $CS_2$ should be
-inserted in the BWT. When we insert in the BWT, we only need to consider the final
-character of $CS_2$, which in this case is \verb|A|, the character which was previously
-substituted.
 
 \begin{table}[t]
 	\begin{center}
@@ -721,7 +724,7 @@ substituted.
                 3     & N  & B & \\
 			\end{tabular}
 		}
-		\caption{BWT for string before and after insert}
+    \caption{Updating BWT dynamically for the string BANANA\$ $\rightarrow$ BABNANA\$} 
 		\label{table:bwtupdatestages}
 	\end{center}
 \end{table}
@@ -745,7 +748,7 @@ position of $CS_{i - 1}$, $expected$ is the expected position of $CS_{i - 1}$, w
 computed by computing $LF(insertionPoint)$ where $insertionPoint$ is the position where
 the new $CS_i$ was inserted. With the knowledge of where the cyclic-shift of order $i - 1$
 is, and where we expect it to be, we can move the cyclic-shift to that position. In the
-example, we have that $expected = 3$, and $pos = LF(5) = 2$ after the insertion gives us
+example, we have that $pos = 3$, and $expected = LF(5) = 2$ after the insertion gives us
 the expected location of the cyclic-shift of order $1$. Therefore, we remove the
 cyclic-shift at position $3$, and insert it again at position $2$.
 
@@ -755,21 +758,21 @@ the position and expected position by updating $pos = newPos$, and $expected =
 LF(expected)$. In the example this would update both $pos$ and $expected$ to $4$. Since
 the expected position and actual position is the same, the algorithm is done, and we know
 that every position of the BWT is now in the correct location. We know that there will be
-no more characters which are out of place for any other $CS$ down to order $0$ because
+no more characters which are out of place for any other $CS$ down to $CS_0$, because
 $LF(pos) = LF(expected)$, which would be true for all future iterations as soon as $pos =
 expected$
 
 \subsection*{Updating SA on insertion}
 
 The suffix array is updated similarly to the BWT. When we insert the new CS at position
-$5$ in the BWT, we similarly insert the value $2$ at position $5$ in SA. We insert the
-value $2$ because the new suffix which corresponds to the new cyclic-shift starts at the
-position where the new character was inserted, which was $2$. When the new CS is inserted,
+$LF(ISA[i])$ in the BWT, we similarly insert the value $i$ at position $LF(ISA[i])$ in SA.
+We insert the value $i$ because the new suffix which corresponds to the new cyclic-shift
+starts at the position where the new character was inserted. When the new CS is inserted,
 we are now in an invalid state for the suffix array, because we have two elements with the
-value $2$. Note that a suffix array is always a permutation of the values $(0..n)$ where
+value $i$. Note that a suffix array is always a permutation of the values $(0..n)$ where
 $n$ is the number of characters in the input. Since we have inserted a new suffix in the
-suffix array which is the 2nd smallest suffix, all the previous suffixes which had a value
-$j \geq 2$ is now incremented. After incrementing all these suffixes, we are now in a
+suffix array which is the ith smallest suffix, all the previous suffixes which had a value
+$j \geq i$ is now incremented. After incrementing all these suffixes, we are now in a
 valid suffix array state, but similarly to our BWT, some suffixes may have had its
 ordering changed. For every reordering operation in the BWT, the elements in SA are
 reordered in the same fashion.
@@ -868,14 +871,15 @@ do not suspect that this will worsen the performance in any significant way.
 
 \subsection*{LF function}
 
-The LF function is used multiple times for any suffix array update. Therefore, it is
+The $LF$ function is used multiple times for any suffix array update. Therefore, it is
 important to be able to efficient compute $LF$ at any point in time. The naive approach of
 linearly iterating through the BWT to compute the $rank$ and number of smaller characters
-is too slow. Recall that $LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where $rank_{BWT[i]}(i)$
-is the rank for the character $BWT[i]$ at position $i$ in the BWT, and $C[BWT[i]]$ counts
-the number of lexicographically smaller characters than $BWT[i]$ in the BWT. We therefore
-need a data structure for $rank$ queries on the BWT, and a data structure which stores the
-number of smaller characters of each character in the BWT. 
+is too slow, as it would be a linear scan in the size of the fingerprint. Recall that
+$LF(i) = rank_{BWT[i]}(i) + C[BWT[i]]$ where $rank_{BWT[i]}(i)$ is the rank for the
+character $BWT[i]$ at position $i$ in the BWT, and $C[BWT[i]]$ counts the number of
+lexicographically smaller characters than $BWT[i]$ in the BWT. We therefore need a data
+structure for $rank$ queries on the BWT, and a data structure which stores the number of
+smaller characters of each character in the BWT. 
 
 For the $rank$ queries, recall that the wavelet matrix was a data structure which could
 efficiently compute $rank/select$ queries for strings. The data structure is implemented
@@ -887,8 +891,8 @@ $access$ and $rank$ queries on it as needed. With the wavelet matrix, we do not 
 store the BWT itself, as we can simply query the wavelet matrix to access characters of
 the BWT. We also do not need to store the full fingerprint, since we can access characters
 in the wavelet matrix and if we need to access the characters in a sorted order, we can
-use the LF function. We decided to use the wavelet matrix instead of a wavelet tree as it
-has been shown to have faster $rank$ queries, and is more memory efficient for larger
+use the $LF$ function. We decided to use the wavelet matrix instead of a wavelet tree as
+it has been shown to have faster $rank$ queries, and is more memory efficient for larger
 alphabets. Our alphabet can be quite large compared the standard applications of
 $rank/select$ data structures (such as DNA analysis). The wavelet matrix is also generally
 simpler to implement, and can be dynamically updated in a simple manner. Each bitset in
@@ -971,15 +975,15 @@ element is for example removed, all elements after it needs to be moved by one i
 that the gap is closed. This is also the case in the reordering stage, where all the
 elements between the old position and new position of an element needs to be moved by one
 position. In addition, since a suffix array is always a permutation from $0$ to $n - 1$
-where $n$ is the number of elements in the input, we need increment/decrement all elements
-greater than or equal to the element which was inserted or deleted. For example, if we
-insert a new element into the suffix array which indicates that a new suffix is the ith
-smallest, then the previous suffix with value $i$ in SA should now have the value $i + 1$,
-which applies to all other suffixes lexicographically greater than the new suffix as well.
-In a standard representation for a suffix array (an array), this would require either a
-linear scan through the entire SA, or a linear scan through ISA from position $i$, which
-is also linear in the worst case. Multiple linear scans through the SA would make the
-algorithm slower than the linear time SACA when the amount of inserted or deleted
+where $n$ is the number of elements in the input, we need to increment/decrement all
+elements greater than or equal to the element which was inserted or deleted. For example,
+if we insert a new element into the suffix array which indicates that a new suffix is the
+ith smallest, then the previous suffix with value $i$ in SA should now have the value $i +
+1$, which applies to all other suffixes lexicographically greater than the new suffix as
+well. In a standard representation for a suffix array (an array), this would require
+either a linear scan through the entire SA, or a linear scan through ISA from position
+$i$, which is also linear in the worst case. Multiple linear scans through the SA would
+make the algorithm slower than the linear time SACA when the amount of inserted or deleted
 character increases. 
 
 In this section we will introduce a data structure we call the dynamic extended suffix
@@ -987,12 +991,13 @@ array. This data structure consists of a dynamic permutation, which facilitates 
 and deletion of elements in a permutation from $0$ to $n - 1$, without linear scans to
 close gaps or incrementing/decrementing elements. The data structure stores SA, ISA and
 LCP and is inspired by the data structure introduced for the same purpose by Salson et
-al.~\cite{DynamicExtendedSuffixArrays}. The data structure used by Salson et al. uses the
-same dynamic permutation tree, but reduces the amount of values which is stored to reduce
-memory consumption, but this compression also slows down the access time of elements in
-the permutation. Our data structure will not be compressed, which allows faster access to
-arbitrary elements, and will be extended to also include the LCP values as well.
-Therefore, this data structure encompasses the entire extended suffix array.
+al.~\cite{DynamicExtendedSuffixArrays}. The data structure presented by Salson et al. uses
+the same dynamic permutation tree which facilitates access to SA and ISA. They also reduce
+the amount of values stored to reduce memory consumption, however this compression also
+slows down the access time of elements in the permutation. Our data structure will not be
+compressed, which allows faster access to arbitrary elements, and will be extended to
+include the LCP values as well. Therefore, this data structure encompasses the entire
+extended suffix array.
 
 The data structure consists of two balanced binary trees, with pointers between elements
 in one tree to the other. Figure \ref{fig:dynamicpermutation} shows the two trees which
@@ -1002,7 +1007,7 @@ our permutation. Note that the trees do not actually hold the values displayed i
 figure, the values in each node of the figure only represents the inorder position of each
 node, which is called the inorder rank of the node.
 
-To construct a permutation of length $n$ such as $[6,5,3,1,0,4,2]$, we can insert a node
+To construct a permutation of length $n$, such as $[6,5,3,1,0,4,2]$, we can insert a node
 in each tree for each element. After the trees both contain $n$ nodes, pointers are added
 from a node in $A$ to a node in $B$ and vice versa (doubly linked). If an element in SA
 has a value $i$ at position $j$, pointers will be added between the node in $A$ with
@@ -1014,17 +1019,19 @@ $A$ such that it has the inorder rank of $i$, and a node is inserted into $B$ su
 has the inorder rank of $j$. For example, if we wanted to insert a new value $4$ at
 position $1$ in the permutation in figure \ref{fig:dynamicpermutation}, we would insert a
 new node in $A$ so that it is the right child of the node labeled $0$, and then insert a
-new node in $B$ which is the left child of the node labeled $4$. The trees can intuitively
-be understood such that the inorder values in $A$ represent the indices of the
-permutation, and the inorder values in $B$ represent the values in the permutation.
-Therefore, if we look at a node in $A$ with inorder rank $i$, and follow the pointer to a
-node in $B$ with inorder rank $j$, this means that the permutation has the value $j$ at
-position $i$. 
+new node in $B$ which is the left child of the node labeled $4$. 
 
 Deleting a node at position $i$ is similar, but we will instead find the node with a rank
 of $i$ in $A$, then delete that node and the node it points to in $B$. As the trees are
 implemented as balanced trees, traversing, inserting and deleting nodes takes $O(\log n)$
 time.
+
+The trees can intuitively be understood such that the inorder values in $A$ represent the
+indices of the permutation, and the inorder values in $B$ represent the values in the
+permutation. Therefore, if we look at a node in $A$ with inorder rank $i$, and follow the
+pointer to a node in $B$ with inorder rank $j$, this means that the permutation has the
+value $j$ at position $i$. 
+
 
 An essential property of this tree is that when a new value $j$ is inserted into the
 permutation at position $i$, all indices $\geq i$ and values $\geq j$ is incremented by
@@ -1041,12 +1048,12 @@ where each node $x$ stores an additional integer $size$, which contains the numb
 nodes in the subtree rooted at $x$. This allows us to easily determine how many nodes is
 in the left subtree of a given node, and use this to determine where the node with a
 certain inorder rank is located. If we wanted to find the node in the $A$ tree of figure
-\ref{fig:dynamicpermutation} with inorder rank $4$, we would start at the root, see that
-the left subtree of the root contains $3$ nodes. Therefore, the roots inorder rank is $3$.
-With this information we know that we need to traverse to the right child, and look for
-the node with inorder rank $4 - 4 = 0$ in that subtree (since we have already seen 4
-nodes). Since the node labelled $5$ has a rank of $1$ (in its own subtree), we know to
-traverse left, and at that point we have reached the correct node.
+\ref{fig:dynamicpermutation} with inorder rank $4$, we would start at the root and see
+that the left subtree of the root contains $3$ nodes. Therefore, the roots inorder rank is
+$3$. With this information we know that we need to traverse to the right child, and look
+for the node with inorder rank $4 - 4 = 0$ in that subtree (since we have already seen 4
+nodes). Since the node labelled $5$ has an inorder rank of $1$ (in its own subtree), we
+know to traverse left, and at that point we have reached the correct node.
 
 \begin{figure}[t]
 	\begin{center}
@@ -1103,14 +1110,16 @@ traverse left, and at that point we have reached the correct node.
 \end{algorithm}
 
 Algorithm \ref{alg:getnodebyrank} shows how to find a node in a tree by its inorder rank,
-and algorithm \ref{alg:getrankofnode} shows how to determine the rank of a given node. The
-algorithm to find the value at a certain position is simple with these algorithms. To find
-the value in the permutation at position $i$, find the node with inorder rank $i$ in $A$,
-follow its pointer to a node in $B$, and then find the inorder rank of that node, which is
-the value at position $i$ in the permutation. We can also find the position of any value
-$j$ in the permutation by performing this algorithm in reverse, by instead starting at the
-$B$ tree, finding a node with rank $j$, then following its pointer to a node in $A$ and
-returning that nodes inorder rank.
+and algorithm \ref{alg:getrankofnode} shows how to determine the rank of a given node,
+which uses the same idea, but counts the inorder rank of the node when traveling from the
+node up to the root instead. The algorithm to find the value at a certain position is
+simple with these algorithms. To find the value in the permutation at position $i$, find
+the node with inorder rank $i$ in $A$, follow its pointer to a node in $B$, and then find
+the inorder rank of that node, which is the value at position $i$ in the permutation. We
+can also find the position of any value $j$ in the permutation by performing this
+algorithm in reverse, by instead starting at the $B$ tree, finding a node with inorder
+rank $j$, then following its pointer to a node in $A$ and returning that nodes inorder
+rank.
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
@@ -1147,9 +1156,9 @@ the respective node is also deleted.
 
 In the initial construction of the dynamic permutation, LCP values would be inserted
 together with the nodes. When dynamically updating the LCP values as suffixes are
-inserted/removed, the procedure is more complicated. Salson et
-al.\cite{DynamicExtendedSuffixArrays} also describe a procedure for updating the LCP
-values after an insert/delete operation, which we will use.
+inserted/deleted, the procedure is more complicated. Salson et al. also describe a
+procedure for updating the LCP values after an insert/delete operation, which we will
+use~\cite{DynamicExtendedSuffixArrays}.
 
 When inserting a character into the input string, the suffix array changes by inserting a
 new value, and afterwards moving values from one position to another (reordering stage).
@@ -1212,13 +1221,14 @@ and $k + 1$ where $SA[k] = j$. These two LCP values can change, because at posit
 the suffix at position $SA[k]$ is compared with $SA[k - 1]$, and at position $k + 1$, the
 suffix at position $SA[k + 1]$ is compared with $SA[k]$. Since both of these LCP values
 depend on the suffix at position $SA[k] = j$, they can potentially change when the suffix
-is changed. The positions in SA which possibly can be changed can be found using the LF
-function. In the final phase of the suffix array update algorithm when we have inserted or
-deleted an element at position $i$, we are reordering suffixes at position $j \leq i$.
-These are the suffixes we are looking for, but we can skip all suffixes which are
-reordered, as they are already marked to be computed in the bitset for the previous cases.
-Therefore, the variable $pos$ points to the next suffix we need to consider at the end of
-Algorithm \ref{alg:updatesuffixarrayinsert}.
+is changed. The positions in the LCP array which can possibly be changed can be iterated
+over with the LF function. In the final phase of the suffix array update algorithm when we
+have inserted or deleted an element at position $i$, we are reordering suffixes at
+position $j \leq i$. These are the suffixes we are looking for, but we can skip all
+suffixes which are reordered, as they are already marked to be computed in the bitset for
+the previous cases. Therefore, the variable $pos$ points to the next suffix we need to
+consider at the end of Algorithm \ref{alg:updatesuffixarrayinsert}.
+
 
 Another useful observation when iterating over suffixes is that after an
 insertion/deletion, no two suffixes will have the insertion/deletion occur at the same
@@ -1228,20 +1238,39 @@ an insert/deletion at the same position for two different suffixes. With that in
 another useful observation is that given two suffixes with an LCP value of $p$, any change
 inside the range of the LCP in either of the suffixes, will change $p$.
 
-The idea is to determine if the insertion/deletion is out of range to possibly affect the
-LCP value of a suffix. Recall that the LCP value for a suffix at position $i - 1$ is at
-minimum one less than the LCP value for the previous suffix at position $i$, as discussed
-in \cref{initialdetection}. We can determine that it is impossible for the LCP value at
-position $i - 1$ to change, if neither of the LCP values which is affected by the suffix
-at position $i$ changes, unless the insertion/deletion happens at position $i - 1$. This
-is explained by the fact that at minimum, the LCP of the suffix at position $i$ covers
-every character of the LCP of the suffix at position $i - 1$ except for the first
-character. If the first character was the position of the insertion/deletion, it can
-change the LCP value, but that case is already handled by the positions stored in the
-bitset. Since the suffix at position $i - 1$ did not update, this holds recursively for
-the next suffix at position $i - 2$ as well. Therefore, as soon as we find a single suffix
-at position $i$ which does not lead to an LCP value update, this will recursively hold for
-all suffixes at position $j < i$.
+\begin{table}[t]
+	\begin{center}
+		\scalebox{1.5}{
+			\begin{tabular}[c]{c|cccccccc}
+				              &               &     & \multicolumn{2}{c}{$\leftrightarrow$}
+				              &               & INS &                                       &                                           \\
+				BWT           & A             & N   & B                                     & N             & \$            & A & A & B \\
+				SA            & 7             & 6   & 4                                     & 1             & 0             & 2 & 5 & 3 \\
+				Old LCP       & 0             & 0   & \underline{1}                         & \underline{3} & \underline{0} &
+				\underline{N} & \underline{0} & 2                                                                                       \\
+				New LCP       & 0             & 0   & 1                                     & 1             & 0             & 1 & 0 & 2 \\
+			\end{tabular}
+		}
+	\end{center}
+	\caption{LCP array updating after BANANA\$ $\rightarrow$ BABNANA\$ suffix array
+		update. Values which needs to be updated is underscored in old LCP}
+	\label{tab:lcpupdates}
+\end{table}
+
+The idea when updating LCP values in the last two cases is to determine if the
+insertion/deletion is out of range to possibly affect the LCP value of a suffix. Recall
+that the LCP value for a suffix at position $i - 1$ is at minimum one less than the LCP
+value for the previous suffix at position $i$, as discussed in \cref{initialdetection}. We
+can determine that it is impossible for the LCP value at position $i - 1$ to change, if
+neither of the LCP values which is affected by the suffix at position $i$ changes, unless
+the insertion/deletion happens at position $i - 1$. This is explained by the fact that at
+minimum, the LCP of the suffix at position $i$ covers every character of the LCP of the
+suffix at position $i - 1$ except for the first character. If the first character was the
+position of the insertion/deletion, it can change the LCP value, but that case is already
+handled by the positions stored in the bitset. Since the suffix at position $i - 1$ did
+not update, this holds recursively for the next suffix at position $i - 2$ as well.
+Therefore, as soon as we find a single suffix at position $i$ which does not lead to an
+LCP value update, this will recursively hold for all suffixes at position $j < i$.
 
 With this in mind, the algorithm to update the LCP array has two stages. Given the bitset
 of positions which need to be updated in correlation with the first two cases, we perform
@@ -1267,43 +1296,25 @@ the next, which is the inverse of the LF function.
 The inverse LF function for a position $i$ computes the next cyclic-shift by first
 determining what character is in the first column of the CS at position $i$ in the sorted
 cyclic-shifts, and its $rank$ in the first column. With the character and rank of that
-character, we can perform a $select$ on the BWT for that character and rank, which will
-give us the location of where that character is located in the last column (BWT) which is
-the next CS. This is the next cyclic-shift because it is the cyclic-shift where the
-character which was previously in the first column, but is now cycled one character to the
+character, we can perform a $select$ query on the BWT for that character and rank, which
+will give us the location of where that character is located in the last column (BWT)
+which is the next CS. This is the next cyclic-shift because it is the cyclic-shift where
+the character which was previously in the first column is now cycled one character to the
 left, which corresponds to the next CS. To find which character is in the first column at
 position $i$, recall that the $F$ column in the sorted cyclic-shifts just contain all the
-characters of the input in sorted order. We can therefore use the $C$ to determine which
-character is located at exactly position $i$, just by counting the number of occurrences
-of the previous characters. If $C$ is instead implemented as an array where the $C[c]$
-holds the number of characters smaller than $c$ in the input, finding the correct
-character can be done efficiently with a binary search. When we know which character is
-located at position $i$ in the first column, we do $select_c(i - C[c])$ to determine where
-that occurence of $c$ is located in the last column (the BWT), which is then returned as
-the result of the inverse LF function.
+characters of the input in sorted order. We can therefore use the $C$ array to determine
+which character is located at exactly position $i$, just by counting the number of
+occurrences of the previous characters. If $C$ is instead implemented as an array where
+the $C[c]$ holds the number of characters smaller than $c$ in the input, finding the
+correct character can be done efficiently with a binary search. When we know which
+character is located at position $i$ in the first column, we do $select_c(i - C[c])$ to
+determine where that occurrence of $c$ is located in the last column (the BWT), which is
+then returned as the result of the inverse LF function.
 
 With the inverse LF function, computing the LCP value between two suffixes at position $i$
 and $j$ is done by repeatedly applying the inverse LF function to $i$ and $j$, and
 comparing the characters at those positions in the BWT.
 
-\begin{table}[t]
-	\begin{center}
-		\scalebox{1.5}{
-			\begin{tabular}[c]{c|cccccccc}
-				              &               &     & \multicolumn{2}{c}{$\leftrightarrow$}
-				              &               & INS &                                       &                                           \\
-				BWT           & A             & N   & B                                     & N             & \$            & A & A & B \\
-				SA            & 7             & 6   & 4                                     & 1             & 0             & 2 & 5 & 3 \\
-				Old LCP       & 0             & 0   & \underline{1}                         & \underline{3} & \underline{0} &
-				\underline{N} & \underline{0} & 2                                                                                       \\
-				New LCP       & 0             & 0   & 1                                     & 1             & 0             & 1 & 0 & 2 \\
-			\end{tabular}
-		}
-	\end{center}
-	\caption{LCP array updating after BANANA\$ $\rightarrow$ BABNANA\$ suffix array
-		update. Values which needs to be updated is underscored in old LCP}
-	\label{tab:lcpupdates}
-\end{table}
 
 Table \ref{tab:lcpupdates} shows how the LCP array is updated for the same example as in
 table \ref{table:bwtupdatestages}. In the suffix array update, we inserted a new suffix
@@ -1316,8 +1327,8 @@ As these LCP updates overlap on position $3$, only $5$ LCP values need to be upd
 total. Note that multiple of the LCP values that needed to be updated did not actually
 change value, this is simply because the new LCP value coincided with the previous value,
 and it was marked to be changed because it could potentially have changed. The last two
-cases of potential LCP updates, where we need to iterate over suffixes did not lead to any
-additional changes in this instance.
+cases of potential LCP updates, where we need to iterate over suffixes, did not lead to
+any additional LCP value changes in this instance.
 
 \section{Dynamic clone extraction and source-mapping}
 
@@ -1337,20 +1348,20 @@ source-mapping phase.
 Recall that the initial detection clone extraction algorithm in \cref{initialdetection}
 traversed the suffixes from beginning to end, and extracts indices of suffixes where the
 LCP value is above the token threshold parameter. Also recall that some clones were
-filtered, those being clones which extend past a single fragment, or clones which are
+ignored, those being clones which extend past a single fragment, or clones which are
 contained inside a larger clone. This algorithm will now be converted to run on the
 balanced tree which contains the LCP values, which also optimizes the algorithm to reduce
 the amount of LCP values we need to examine.
 
 The idea for this algorithm is to always store a list of all the nodes in the tree which
-have an LCP value above the token threshold. These are afterall the only nodes which could
-possibly be the beginning of a code clone, even if some of them will be filtered out
-later. When a value is updated, we can check to see if the new value is above the token
-threshold. If the previous value was below the threshold, and the new value is above the
-threshold, we know that this is a node which could potentially be a code clone, so storing
-these nodes can reduce the amount of nodes we need to examine. When all LCP values have
-been updated, we can filter out nodes which have had their LCP value updated to be below
-the threshold.
+have an LCP value above the token threshold. These are after all the only nodes which
+could possibly be the beginning of a code clone, even if some of them will be filtered out
+later. When an LCP value is updated, we can check to see if the new value is above the
+token threshold. If the previous value was below the threshold, and the new value is above
+the threshold, we know that this is a node which could potentially be a new code clone, so
+storing and examining only these nodes can reduce the amount of nodes we need to examine.
+When all LCP values have been updated, we can filter out nodes which have had their LCP
+value updated to be below the threshold as well.
 
 After all LCP values are updated, we are left with a set of all the nodes with an LCP
 value above the token threshold. In order to filter out clones which are contained within
@@ -1407,17 +1418,18 @@ many times to find the second index, which we would have to do if we used Algori
 detection, because SA and ISA are arrays, which give $O(1)$ time access. This is not the
 case for the dynamic extended suffix array, which would require $O(\log n)$ access time
 for that expression. Instead, only the nodes of the clone indices in Algorithm
-\ref{alg:dynamiccloneextraction} is stored, and for a node $firstNode$, when we can find
-the node of the matching $secondNode$ in $O(1)$ time by finding the predecessor of
+\ref{alg:dynamiccloneextraction} is stored, and for a node $firstNode$, we can find the
+node of the matching $secondNode$ in $O(1)$ time by finding the predecessor of
 $\Var{firstNode}$ and following its pointer. Remember that the nodes we have stored as
 clone indices are nodes in the $A$ tree which corresponds to $SA$ indices. Following the
 pointer corresponds to SA values, or alternatively, ISA indices. After we have both the
 $\Var{firstNode}$ and $\Var{secondNode}$, we can get their fingerprint indices by getting
 the inorder rank of their pointer, with Algorithm \ref{alg:getrankofnode}. Afterwards, the
-algorithm continues as previously. While this still requires traversing the tree in
-$O(\log n)$ time, we have reduced the number of traversals needed from $5$ with a direct
-translation of Algorithm \ref{alg:buildclonemap}, to $2$ traversals needed with the
-smarter traversal of nodes described here.
+algorithm continues as in the initial detection, which finally builds the clone-map. While
+this algorithm still requires traversing the tree in $O(\log n)$ time, we have reduced the
+number of traversals needed from $5$ with a direct translation of Algorithm
+\ref{alg:buildclonemap}, to $2$ traversals for each clone, with the smarter traversal of
+nodes.
 
 Now that we have successfully source-mapped from our dynamic extended suffix arrays to
 code clones, we are finished, and we have the set of clones ready to be sent to the
