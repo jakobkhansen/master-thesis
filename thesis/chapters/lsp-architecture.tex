@@ -6,7 +6,7 @@ focuses on our novel algorithm based on dynamic extended suffix
 arrays\footnote{CCDetect-LSP source code is available here:
 \url{https://github.com/jakobkhansen/CCDetect-lsp}}. The current chapter will look at the
 LSP integration and how source code is initially indexed, while the following two chapters
-will first discuss how clones are initially detected and then how this analysis in
+will first discuss how clones are initially detected and then how this analysis is
 incrementally updated as source code changes.
 
 CCDetect-LSP is integrated into IDEs via LSP. The tool starts up as an LSP server, which
@@ -58,7 +58,8 @@ The following user-stories shows how interaction with the LSP server works.
         matching code clones. The programmer selects any of the code clones which will
         open the file and location of the selected code clone. Alternatively, a
         code-action can be invoked to navigate, if the client does not implement the
-        \verb|DiagnosticRelatedInformation| interface.
+        \verb|DiagnosticRelatedInformation| information.
+
 
       \item A programmer wants to refactor a set of clones by applying the
           ``extract-method'' refactoring (not implemented by CCDetect-LSP). The programmer

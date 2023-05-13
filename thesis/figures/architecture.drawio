@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2023-05-01T22:59:21.881Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.1 Chrome/112.0.5615.87 Electron/24.1.2 Safari/537.36" etag="W2ozI73jZvbq92Ml4PVV" version="21.2.1" type="device">
+<mxfile host="Electron" modified="2023-05-13T14:55:15.864Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.8 Chrome/112.0.5615.165 Electron/24.2.0 Safari/537.36" etag="VM1TLnlUtHoJQqIBrcnt" version="21.2.8" type="device">
   <diagram name="Page-1" id="Y4n5Yxikip4xXDvf3h0p">
     <mxGraphModel dx="2284" dy="1949" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -32,10 +32,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-9" value="Receives document changes, converts clones to diagnostics and code-actions" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-1" vertex="1">
-          <mxGeometry x="344.24" y="251.82" width="192.86" height="32.73" as="geometry" />
+          <mxGeometry x="354.24" y="240.9" width="192.86" height="62.73" as="geometry" />
         </mxCell>
-        <mxCell id="Iz0A_yomUNvifDAudpDW-11" value="Adding and deletion of files" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-1" vertex="1">
-          <mxGeometry x="79.99384615384616" y="240.91187165775398" width="148.56" height="43.63636363636363" as="geometry" />
+        <mxCell id="Iz0A_yomUNvifDAudpDW-11" value="Creation and deletion of files" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-1" vertex="1">
+          <mxGeometry x="71.30384615384617" y="240.901871657754" width="148.56" height="43.63636363636363" as="geometry" />
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-13" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=14;container=1;fontFamily=Computer Modern;" parent="1" vertex="1">
           <mxGeometry x="160" y="180" width="570" height="360" as="geometry">
@@ -58,7 +58,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-19" value="Incremental reparse of document changes" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-13" vertex="1">
-          <mxGeometry x="24.302857142857125" y="229.99727272727273" width="162.8571428571429" height="32.72727272727273" as="geometry" />
+          <mxGeometry x="10" y="212.74" width="162.86" height="47.27" as="geometry" />
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-20" value="Edit operation calculator" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-13" vertex="1">
           <mxGeometry x="370" y="147.28" width="182.65" height="65.45" as="geometry" />
@@ -70,13 +70,13 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-22" value="Determine what has changed in the fingerprint" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-13" vertex="1">
-          <mxGeometry x="372.65" y="224.54000000000002" width="180" height="43.64" as="geometry" />
+          <mxGeometry x="370" y="212.74" width="180" height="48.18" as="geometry" />
         </mxCell>
         <mxCell id="H_5x75wkn-lfsVb7Z4_q-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="Iz0A_yomUNvifDAudpDW-13" source="Iz0A_yomUNvifDAudpDW-22" target="Iz0A_yomUNvifDAudpDW-22" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="H_5x75wkn-lfsVb7Z4_q-2" value="Compute and set fingerprints for changed documents" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-13" vertex="1">
-          <mxGeometry x="191.97" y="229.99" width="159.41" height="32.73" as="geometry" />
+          <mxGeometry x="190" y="212.73" width="159.41" height="62.73" as="geometry" />
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-23" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=14;container=1;flipV=0;flipH=1;" parent="1" vertex="1">
           <mxGeometry x="-215" y="-370" width="560" height="422.86" as="geometry" />
@@ -118,16 +118,16 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-36" value="Sort suffixes, which finds similar regions in fingerprint" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-23" vertex="1">
-          <mxGeometry x="339.78" y="354.29" width="191.56" height="45.71" as="geometry" />
+          <mxGeometry x="348.44" y="342.86" width="191.56" height="45.71" as="geometry" />
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-37" value="Find fingerprint indices which are clones" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-23" vertex="1">
-          <mxGeometry x="348.44444444444446" y="57.14324324324326" width="174.2222222222222" height="68.5718918918919" as="geometry" />
+          <mxGeometry x="348.44" y="80" width="174.22" height="45.72" as="geometry" />
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-38" value="Map fingerprint indices to source code locations" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-23" vertex="1">
           <mxGeometry x="49.77777777777783" y="57.14324324324326" width="149.33333333333331" height="68.5718918918919" as="geometry" />
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-39" value="Build clone objects to send to LSP module" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-23" vertex="1">
-          <mxGeometry x="49.77777777777783" y="342.85945945945946" width="149.33333333333331" height="68.5718918918919" as="geometry" />
+          <mxGeometry x="49.78" y="342.86" width="149.33" height="51.43" as="geometry" />
         </mxCell>
         <mxCell id="Iz0A_yomUNvifDAudpDW-44" value="Clone indices" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Computer Modern;" parent="Iz0A_yomUNvifDAudpDW-23" vertex="1">
           <mxGeometry x="223.99999999999994" y="125.71513513513517" width="112.00000000000001" height="34.28594594594595" as="geometry" />
@@ -162,23 +162,26 @@
         <mxCell id="Iz0A_yomUNvifDAudpDW-43" value="Fingerprint (Initial)&lt;br style=&quot;font-size: 18px;&quot;&gt;Edits (Dynamic)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontFamily=Computer Modern;" parent="1" vertex="1">
           <mxGeometry x="310" y="100" width="160" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="rPLDc0vXp0AHYgFYvSPC-1" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="aXQNJ8P8G5qulHXLa5gK-1" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="Iz0A_yomUNvifDAudpDW-1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-830" y="300" as="sourcePoint" />
-            <mxPoint x="-630" y="300" as="targetPoint" />
+            <mxPoint x="-810" y="360" as="sourcePoint" />
+            <mxPoint x="-330" y="180" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-690" y="360" />
+            </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="rPLDc0vXp0AHYgFYvSPC-2" value="Client messages" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Computer Modern;fontSize=19;" vertex="1" parent="1">
-          <mxGeometry x="-800" y="270" width="140" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="rPLDc0vXp0AHYgFYvSPC-3" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="Iz0A_yomUNvifDAudpDW-1">
+        <mxCell id="aXQNJ8P8G5qulHXLa5gK-2" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-610" y="220" as="sourcePoint" />
-            <mxPoint x="-830" y="360" as="targetPoint" />
+            <mxPoint x="-630" y="410" as="sourcePoint" />
+            <mxPoint x="-810" y="410" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="rPLDc0vXp0AHYgFYvSPC-4" value="Code clones" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Computer Modern;fontSize=19;" vertex="1" parent="1">
-          <mxGeometry x="-800" y="360" width="140" height="30" as="geometry" />
+        <mxCell id="aXQNJ8P8G5qulHXLa5gK-3" value="&lt;font face=&quot;Computer Modern&quot; style=&quot;font-size: 18px;&quot;&gt;Client messages&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="-780" y="330" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="aXQNJ8P8G5qulHXLa5gK-4" value="&lt;font face=&quot;Computer Modern&quot;&gt;Code clones&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="-780" y="410" width="120" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
