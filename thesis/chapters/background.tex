@@ -14,10 +14,10 @@ metrics such as maintainability, analyzability and changeability being negativel
 affected. Studies generally report that software projects contain $10-15\%$ duplicated
 code, but some studies also report lower and higher percentages~\cite{CloningByAccident}.
 Even so, the percentage of duplication is generally considered to be of non-trivial size
-in many large code bases. Therefore, research into tools and techniques which can assist
+in most large code bases. Therefore, research into tools and techniques which can assist
 in reducing duplicated code will be of benefit to almost all software.
 
-Duplicated code can lead to a plethora of anti-patterns in software. Anti-patterns are bad
+Duplicate code can lead to a plethora of anti-patterns in software. Anti-patterns are bad
 design decisions for software which can lead to technical debt. Technical debt occurs when
 developers make technical compromises that are beneficial in the short term, but increases
 complexity in the long-term~\cite[111]{TechnicalDebt}. An example of this, in the context
@@ -29,7 +29,7 @@ code increases in a software project.
 
 \section{Code clones}
 
-Duplicated code is often described as ``code clones''. A pair of code snippets which are
+Duplicated code is often called code clones in the literature. A pair of code snippets which are
 duplicated are considered clones of each other.
 
 \begin{definition}[Code snippet]
@@ -48,8 +48,8 @@ duplicated are considered clones of each other.
 \end{definition}
 
 
-The clone relation is a relation between code snippets which defines pairs of clones.
-The clone relation is reflexive and symmetric, but not necessarily transitive. The transitive
+The clone relation is a relation between code snippets which defines pairs of clones. The
+clone relation is reflexive and symmetric, but not necessarily transitive. The transitive
 property depends on the threshold for similarity when identifying code clones. Given
 
 $$a \xleftrightarrow{clone} b \xleftrightarrow{clone} c$$
@@ -62,12 +62,12 @@ defined such that only equal clones are considered clones, the relation becomes
 transitive, and clone classes are equal to the equivalence classes of the relation.
 
 Code clones are generally classified into four types~\cite{Inoue_introduction_to_cc}. The
-types would classify two code snippets as code clones with an increasing amount of
-leniency. Therefore, type-1 code clones are very similar, while type-4 clones are not
-necessarily syntactically similar at all. When defining types, it is the syntactic and
-structural differences which is compared, not functionality. The set of code clones
-classified by a code clone type is also a subset of the next type, meaning all type-1
-clones are also type-2 clones, but not vice versa.
+types classify two code snippets as code clones with an increasing amount of leniency.
+Therefore, type-1 code clones are very similar, while type-4 clones are not necessarily
+syntactically similar at all. When defining types, it is the syntactic and structural
+differences which is compared, not functionality. The set of code clones classified by a
+code clone type is also a subset of the next type, meaning all type-1 clones are also
+type-2 clones, but not vice versa.
 
 \textbf{Type-1} clones are syntactically identical. The only differences for a pair of
 type-1 clones are elements without meaning, like comments and white-space, which is often
@@ -77,7 +77,7 @@ snippet on the right.
 
 \begin{figure}[t]
 	\begin{center}
-        \begin{tabular}{p{5cm} | p{5cm}}
+        \begin{tabular}{p{5.1cm} | p{5.1cm}}
 			\begin{lstlisting}
 for (int i = 0; i < 10;   i++) {
     print(i);
@@ -102,27 +102,27 @@ identifiers, literals and types. Type-2 clones are not much harder to detect tha
 clones, since renaming identifiers, literals and types allow a type-1 detection algorithm
 to find type-2 clones~\cite{Bakerdup}. We can also differentiate between blind and
 consistent type-2 clones, where consistent clones need to have consistent renaming of
-values, such as variables being consistently renamed in all the locations it is being
-used. Blind clones can have differences in all the allowed values with no consistency.
-Note that consistent type-2 clones are a subset of blind type-2 clones, as blind type-2
-clones are simply more lenient. Type-2 clones are relevant to consider in refactoring
-scenarios when merging code clones as they can be relatively simple to parameterize in
-order to merge two clones with for example differing literals. The original locations of
-clones can then be replaced with a call to the merged code with different parameters.
-Figure \ref{fig:type2clone} shows an example of a type-2 clone pair where the numbers in
-the for loop initialization and condition could be parameterized to correctly merge the
-two clones. This is an example of consistent type-2 clones, because the $i$ variable has
-been consistently renamed to $j$ in the right-most snippet.
+values, such as a variable being consistently renamed in all the locations it is being
+used. Blind type-2 clones can have differences in all the allowed types with no
+consistency. Note that consistent type-2 clones are a subset of blind type-2 clones, as
+blind type-2 clones are simply more lenient. Type-2 clones are relevant to consider in
+refactoring scenarios when merging code clones as they can be relatively simple to
+parameterize in order to merge two clones with for example differing literals. The
+original locations of clones can then be replaced with a call to the merged code with
+different parameters. Figure \ref{fig:type2clone} shows an example of a type-2 clone pair
+where the numbers in the for loop initialization and condition could be parameterized to
+correctly merge the two clones. This is an example of consistent type-2 clones, because
+the $i$ variable has been consistently renamed to $j$ in the right-most snippet.
 
 \begin{figure}[t]
 	\begin{center}
-        \begin{tabular}{p{5cm} | p{5cm}}
+        \begin{tabular}{p{5.1cm} | p{5.1cm}}
 \begin{lstlisting}
 for (int i = 0; i < 10; i++) {
     print(i);
 }
 \end{lstlisting} & \begin{lstlisting}
-for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf 20*); (*\textbf j++*)) {
+for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\textbf j++*)) {
     print((*\textbf j*));
 }
 \end{lstlisting}
@@ -145,7 +145,7 @@ between the two snippets, so if the similarity is based on differing lines and $
 
 \begin{figure}[t]
 	\begin{center}
-        \begin{tabular}{p{5cm} | p{5cm}}
+        \begin{tabular}{p{5.1cm} | p{5.1cm}}
 			\begin{lstlisting}
 for (int i = 0; i < 10; i++) {
     print(i);
@@ -162,14 +162,6 @@ for (int i = 0; i < 10; i++) {
     \caption{Type-3 clone pair}
     \label{fig:type3clone}
 \end{figure}
-
-
-
-\textbf{Type-4} clones have no requirement for syntactical or structural similarity, but
-are generally only relevant to detect when they have similar functionality. Detecting this
-type of clone is very challenging, but attempts have been made using program dependency
-graphs~\cite{SeedType4Detection}. Figure \ref{fig:type4clone} shows two code snippets
-which have no clear syntactic or structural similarity, but is functionally equal.
 
 \begin{figure}[t]
 	\begin{center}
@@ -193,20 +185,31 @@ print(sum);
 \end{figure}
 
 
+
+\textbf{Type-4} clones have no requirement for syntactical or structural similarity, but
+are generally only relevant to detect when they have similar functionality. Detecting this
+type of clone is very challenging, but attempts have been made using program dependency
+graphs~\cite{SeedType4Detection}. Figure \ref{fig:type4clone} shows two code snippets
+which have no clear syntactic or structural similarity, but is functionally equal.
+
+
+
 Type-1 clones are often referred to as ``exact'' clones, while Type-2 and Type-3 clones
 are referred to as ``near-miss'' clones~\cite[1]{Zibran_real_time_search}.
 
 \section{Code clone detection process and techniques}
 
 \textbf{The Code clone detection process} is generally split into (but is not limited to)
-a sequence of steps to identify clones~\cite{Inoue_introduction_to_cc}. This
+a sequence of common steps to identify clones~\cite{Inoue_introduction_to_cc}. This
 process is often a pipeline of input-processing steps before finally comparing fragments
 against each other and filtering. The steps are generally as follows:
 
 \begin{enumerate}
-	\item \textbf{Pre-processing}: Filter uninteresting code that we do not want to
-	      check for clones, for example generated code. Then partition code into a set of
-	      fragments, depending on granularity such as methods, files or lines.
+
+    \item \textbf{Pre-processing}: Filter uninteresting code that should not be checked
+        for clones, for example generated code. Then partition code into a set of
+        fragments, depending on granularity such as methods, files or lines.
+
 	\item \textbf{Transformation}: Transform fragments into an intermediate
 	      representation, with a source-map which gives the location to the original code.
           An algorithm could potentially do multiple transformation before arriving at the wanted
@@ -227,10 +230,12 @@ against each other and filtering. The steps are generally as follows:
 	\item \textbf{Aggregation}: Optionally aggregating sets of clone pairs into clone sets
 \end{enumerate}
 
-\paragraph{Matching techniques} are the techniques used in the matching stage of the
-algorithm which pairs fragments as clone-pairs. Most matching technique will also require
-specific pre-processing to be done in the earlier steps, for example building an AST. Some
-of the most explored techniques are as follows~\cite{ComparisonAndEvaluationOfTechniques}:
+\subsection*{Matching techniques}
+
+Matching techniques are the techniques used in the matching stage of the algorithm which
+pairs fragments as clone-pairs. Most matching techniques will also require specific
+pre-processing to be done in the earlier steps, for example building an AST. Some of the
+most explored techniques are as follows~\cite{ComparisonAndEvaluationOfTechniques}:
 
 \paragraph{Text-based} approaches do little processing of the source code before
 comparing. Simple techniques such as fingerprinting or incremental hashing have been used
@@ -240,28 +245,28 @@ in this approach.
 to lexical scanning in compilers. The token stream is then scanned for duplicated
 subsequences of tokens. Since lexers often filter out superficial differences such as
 whitespace, indentation and comments, this approach is more robust to such differences.
-Concrete names of identifiers and values can be abstracted away when comparing the
-token-stream, therefore type-2 clones can easily be identified. Type-3 clones can also be
-identified by comparing the fragments tokens and keeping clone pairs with a lexical
-difference lower than a given threshold. This can be solved with dynamic
+Concrete names of identifiers and values can be abstracted away when comparing the token
+stream, therefore type-2 clones can easily be identified. Type-3 clones can also be
+identified by comparing the tokens and keeping clone pairs with a lexical difference lower
+than a given threshold. This can be solved with dynamic
 programming~\cite{BakerSparseDynamicProgramming}. A common approach to detect clones using
-token-streams is with a suffix-tree~\cite{Bakerdup}. A suffix-tree can solve the
+token streams is with a suffix tree~\cite{Bakerdup}. A suffix tree can solve the
 \textit{Find all maximal repeats} problem efficiently, which essentially is the same
 problem as finding clone pairs~\cite[143]{AlgorithmsOnStringsTreesSequences}. A suffix
 array can also be used instead, which requires less
 memory~\cite{ReplaceSuffixTreeWithEnchancedSuffixArray}. This type of code clone detection
 is very fast compared to more intricate types of matching techniques.
 
-\paragraph{Syntactic} approaches transform source code into either concrete syntax trees
-or abstract syntax trees and find clones using either tree matching algorithms or
-structural metrics. For tree matching, the common approach is to find similar subtrees,
-which are then deemed as clone pairs. One way of finding similar subtrees is to compare
-subtrees with a tolerant tree matching algorithm for detecting type-3
-clones~\cite{ASTCloneDetection}. Variable names, literal values and types may be
-abstracted to find type-2 clones more easily. Metrics-based techniques gather metrics for
-code fragments in the tree and uses the metrics to determine if the fragments are clones
-or not. One way is to use fingerprint functions where the fingerprint includes certain
-metrics, and compare the fingerprints of all fragments to find clones~\cite{Deckard}.
+\paragraph{Syntactic} approaches transform source code into either concrete or abstract
+syntax trees and find clones using either tree matching algorithms or structural metrics.
+For tree matching, the common approach is to find similar subtrees, which are then deemed
+as clone pairs. One way of finding similar subtrees is to compare subtrees with a tolerant
+tree matching algorithm for detecting type-3 clones~\cite{ASTCloneDetection}. Variable
+names, literal values and types may be abstracted to find type-2 clones more easily.
+Metrics-based techniques gather metrics for code fragments in the tree and uses the
+metrics to determine if the fragments are clones or not. One way is to use fingerprint
+functions where the fingerprint includes certain metrics, and compare the fingerprints of
+all subtrees to find clones~\cite{Deckard}.
 
 \paragraph{Hybrid} approaches combine multiple approaches in order to improve detection
 capabilities. For example a common approach which Zibran et
@@ -279,9 +284,9 @@ Incremental clone detection avoids computation of already computed results when 
 code clone detection on consecutive revisions of a code base.  A revision of a code base
 is one version of a code base which has been changed from a previous revision, and once
 edited, becomes the next revision.  A revision of the code base could for example be a
-certain Git commit of the code base, or one could say a new revision of the code base is
-created for each edit performed while programming. These two scenarios have respectively
-been called the evolution scenario and the IDE
+certain version control commit of the code base, or one could say a new revision of the
+code base is created for each edit performed while programming. These two scenarios have
+respectively been called the evolution scenario and the IDE
 scenario~\cite{GodeIncrementalCloneDetection}. Incremental clone detection could be
 realized in the form of either storing clones between each revision, or by maintaining a
 data structure which is fast to update when the input updates, and also facilitates fast
@@ -292,10 +297,10 @@ simple problem, since changes in a single location can affect clone detection re
 across the entire codebase.
 
 In order to incrementally detect code clones, an initial algorithm computes the initial
-clones, and for successive revisions of the source code, this list is incrementally
-updated by an incremental algorithm. In some cases, this could be the same algorithm, but
-in general the incremental algorithm is faster than the initial algorithm, and maintains
-dynamic structures to perform efficient updates. 
+clones or builds the initial data structures, and for successive revisions of the source
+code, this list is incrementally updated by an incremental algorithm. In some cases, this
+could be the same algorithm, but in general the incremental algorithm is faster than the
+initial algorithm, and maintains dynamic structures to perform efficient updates. 
 
 Göde and Koschke proposed the first incremental clone detection
 algorithm~\cite{GodeIncrementalCloneDetection}. The algorithm employs a generalized suffix
@@ -306,38 +311,39 @@ scalability.
 Nguyen et al.~\cite{LocalitySensitiveHashingIncremental} showed that an AST-based approach
 utilizing ``Locality-Sensitive Hashing'' can detect clones incrementally with high
 precision, and showed that incremental updates could be done in real-time ($< 1$ second)
-for source code with a size of 300KLOC (lines of code).
+for code bases of size 300KLOC (lines of code).
 
-Hummel et al.~\cite{IndexBasedIncrementalCloneDetection} later introduced the first
-incremental and distributed clone detection technique for type-1 and type-2 clones. This
-approach utilizes a custom ``clone index'' data structure which can be updated
-efficiently. The implementation of this data structure is similar to that of an inverted
-index. This technique uses distributed computing to speed up its detection process.
+Hummel et al.~\cite{IndexBasedIncrementalCloneDetection} introduced the first incremental
+and distributed clone detection technique for type-1 and type-2 clones. This approach
+utilizes a custom ``clone index'' data structure which can be updated efficiently. The
+implementation of this data structure is similar to that of an inverted index. This
+technique uses distributed computing to improve its performance and is therefore not
+easily applicable to the IDE scenario.
 
 More recently, Ragkhitwetsagul and Krinke~\cite{SiameseScalableAndIncrementalClone}
 presented the tool Siamese, which as mentioned uses a novel approach of having multiple
-intermediate representations of source code to detect a high number of clones with support
-for incremental detection. The tool can detect up to type-3 clones, but will only return
-clones based on ``queries'' given to it by the user, and therefore does not allow listing
-all clones in the code base. Queries are either files or methods in source-code, which are
-then matched with other code clones.
+intermediate representations of source code to detect a high number of clones, with
+support for incremental detection. The tool can detect up to type-3 clones, but will only
+return clones based on ``queries'' given to it by the user, and therefore does not allow
+listing all clones in the code base. Queries are either files or methods in source-code,
+which are then matched with other code clones.
 
 \section{Code clone IDE tooling}
 
 Developers are not always aware of the creation of clones in their code. \emph{Clone-aware
-development} means including clone management as a part of the software development
+development} involves including clone management as a part of the software development
 process~\cite{Zibran_real_time_search}. Clone-aware development therefore requires
 programmers to be aware of and be able to identify code clones while programming. Since
 large software projects can contain a lot of duplication, it can be hard to keep track of
 and manage clones. Tools which help developers locate and deal with clones can be a
-solution to this. However, Rieger et al. claims that a problem with many detection
-tools is that the tools ``report large amounts data that must be treated with little tool
+solution to this. However, Rieger et al. claims that a problem with many detection tools
+is that the tools ``report large amounts data that must be treated with little tool
 support''~\cite[1]{InsightsSystemWideDuplication}. Detecting and eliminating clones early
 in their lifecycle with IDE integrated tools could be a solution to the problem of dealing
 with too many clones.
 
-There are multiple existing clone detection tools which integrates into IDEs. The
-IDE-based tools which exist can be categorized as
+There are multiple existing clone detection tools which integrate into IDEs. The IDE-based
+tools which exist can be categorized as
 follows~\cite[8]{Udding_Towards_Convenient_Management}:
 
 \begin{itemize}
@@ -382,7 +388,7 @@ The following tools have been developed as IDE tools to allow for clone-aware de
         assume that the suffix array is recomputed from scratch in each search.
 
     \item The modern IDE IntelliJ has a built-in duplication detection and refactoring
-        service, it is able to detect type-1 and (some) type-2 code clones at a method
+        service. It is able to detect type-1 and (some) type-2 code clones at a method
         granularity and can refactor to remove a clone-pair by replacing one of the clones
         with a method call to the other. The service does not seem to perform incremental
         updates.
@@ -427,7 +433,7 @@ data structures which may provide useful insights in the following chapters.
 One of the first steps in most interpreters and compilers is to perform lexing and parsing
 on the source code. Lexing is the process of turning the source code into a set of tokens,
 turning strings such as ``if'', ``while'', ``+'' and ``('' into singular values which are
-easier to work with. After the source code has been converted to a token-stream, the next
+easier to work with. After the source code has been converted to a token stream, the next
 step is to parse the source code into a tree structure called a syntax tree. A syntax tree
 is a tree which describes the structure of a program. For example an if-statement would
 usually be a node in the tree, with a condition and a list of statements as children. An
@@ -453,8 +459,7 @@ In our detection algorithm we will need to be able to parse our source code into
 representation in order to select specific syntactic regions and extract the tokens.
 Therefore, we need a parsing algorithm. For an incremental scenario, a useful observation
 is that when a small edit is applied to a program, the syntax tree will usually not change
-too much. When source code is edited it would therefore be more efficient to use an
-incremental parsing algorithm which reuses parts of the old syntax tree, but updates it to
+much. When source code is edited it would therefore be more efficient to use a parsing algorithm which reuses parts of the old syntax tree, but updates it to
 reflect the new source code. Incremental parsing is the process of parsing only parts of a
 syntax tree whenever an edit is performed in a file, and reusing subtrees of the previous
 syntax tree which did not change. The motivation behind incremental parsing is to have a
@@ -497,21 +502,21 @@ require few nodes to be parsed compared to the number of nodes reused.
 
 \subsection*{Suffix trees}
 
-A classic algorithm for code clone detection traverses a suffix-tree in order to find
+A classic algorithm for code clone detection traverses a suffix tree in order to find
 maximal repeats in all suffixes of the input string $S$~\cite{Zibran_real_time_search,
 GodeIncrementalCloneDetection}. While our algorithm is only related to suffix trees, this
 section gives some insight into the most common algorithm for clone detection.
 
-A suffix of a string $S$ is a substring $S[i..N]$, denoted where $N$ is the length of $S$.
-A suffix of $S$ is therefore any nonempty substring which reaches the end of $S$. The
-suffix at position $i$ of $S$ is denoted $\text{Suffix}(S, i)$.
+A suffix of a string $S$ is a substring $S[i..N]$, where $N$ is the length of $S$. A
+suffix of $S$ is therefore any nonempty substring which reaches the end of $S$. The suffix
+at position $i$ of $S$ is denoted $\text{Suffix}(S, i)$.
 
 The suffix tree of a string $S$ is a compressed trie where all the suffixes of $S$ have
 been inserted into it. Consecutive nodes of the trie that only have one child are
 compressed into a single node. A common usage of a suffix tree is to determine whether a
 suffix exists in $S$, and where in $S$ the suffix starts.
 
-Figure \ref{fig:suffixtree} shows the suffix-tree for $S=\text{BANANA\$}$. \$ is often
+Figure \ref{fig:suffixtree} shows the suffix tree for $S=\text{BANANA\$}$. \$ is often
 added as a unique terminal character, which simplifies some string problems. In order to
 determine where the suffix $\text{ANANA\$}$ exists in $S$, one can start from the root,
 and traverse the tree, choosing the child node which correspond to the next character of
@@ -525,19 +530,21 @@ Following this path, we see that the suffix $\text{ANANA\$}$ exists in $S$ at in
 
 Suffix trees can be constructed in linear time with Ukkonen's algorithm which builds a
 larger and larger suffix tree by inserting characters one by one and utilizing some tricks
-to avoid inserting suffixes before it needs to, lowering the complexity~\cite{Ukkonen}.
+to avoid inserting suffixes before it needs to, which lowers the
+complexity~\cite{Ukkonen}.
 
 This data structure also facilitates solving the maximal repeat problem. A repeat in a
 string $S$ is a substring that occurs at least twice in $S$. A maximal repeat in $S$ is a repeat
 which is not a substring of another repeat in $S$, meaning that the maximal repeat cannot be
-extended in any direction to form a bigger repeat. The problem of finding all maximal
+extended in either direction to form a bigger repeat. The problem of finding all maximal
 repeats can be solved with a suffix tree using the following theorem:
 
 \begin{theorem}[Repeats in suffix tree]
 
     Every internal node (except for the root) in a suffix tree corresponds to a substring
-    which is repeated at least twice in T. The substring is found by concatenating the
-    strings found on the path from the root of tree to the internal node.
+    which is repeated at least twice in T. The repeated substring is found by
+    concatenating the strings found on the path from the root of the tree to the internal
+    node.
 
 \end{theorem}
 
@@ -604,26 +611,27 @@ repeat would be ANA, since A and NA are not maximal.
 A problem with the suffix tree data structure is that the pointers and nodes require a lot
 of memory. The suffix array (SA) is a data structure which can achieve the same
 functionality, but with a memory efficient array instead. The suffix array of a string $S$
-contains a lexicographical sorting of all suffixes in $S$. The suffix array does not contain
-the actual suffixes, but it contains integers pointing to the index where the suffix
-starts in $S$. Conversely, the inverse suffix array (ISA) contains integers describing which
-rank the suffix at a given position has. The rank of a suffix is its lexicographical
-ordering in $S$. ISA is therefore the inverse array of SA, such that if $\text{SA}[i] =
-n$, then $\text{ISA}[n] = i$.
+contains a lexicographical sorting of all suffixes in $S$. The suffix array does not
+contain the actual suffixes, but it contains integers pointing to the index where the
+suffix starts in $S$. The suffix array is therefore a permutation of the values in the
+range $0$ to $N-1$. Conversely, the inverse suffix array (ISA) contains integers
+describing which rank the suffix at a given position has. The rank of a suffix is its
+lexicographical ordering in $S$. ISA is therefore the inverse array of SA, such that if
+$\text{SA}[i] = n$, then $\text{ISA}[n] = i$.
 
 \begin{definition}[Suffix array] 
 
     Let $S$ be a text of length N. The suffix array SA of $S$ is an array of length N where
-    $\text{SA}[i] = n$ if the suffix at $S[n..N]$ is the ith lexicographically smallest
+    $\text{SA}[i] = n$ if $\text{Suffix}(S, n)$ is the ith lexicographically smallest
     suffix in $S$.
 
 \end{definition}
 
 \begin{definition}[Inverse suffix array] 
 
-    Let $S$ be a text of length N. The inverse suffix array ISA of $S$ is an array of length N
-    where $ISA[i] = n$ if the suffix at $S[i..N]$ is the nth lexicographically smallest
-    suffix in $S$.
+    Let $S$ be a text of length N. The inverse suffix array ISA of $S$ is an array of
+    length N where $ISA[i] = n$ if $\text{Suffix}(S, i)$ is the nth lexicographically
+    smallest suffix in $S$.
 
 \end{definition}
 
@@ -633,12 +641,10 @@ suffix array represents suffixes in a sorted order, the prefix length between ad
 suffixes in SA will be the longest possible common prefix for each suffix. These are the
 values in the LCP array.
 
-\begin{definition}[LCP array]
-    Let T be a text of length N and SA be the suffix array of T.
-    The LCP array of T is an array of length N where $\text{LCP[i] = n}$ if the suffix
-    $\text{T[SA[i]..N]}$ and $\text{T[SA[i-1]..N]}$ has a maximal common prefix of length
-    $\text{n}$. $\text{LCP[0]}$ is undefined or {0}.
-\end{definition}
+\begin{definition}[LCP array] Let S be a text of length N and SA be the suffix array of S.
+The LCP array of S is an array of length N where $\text{LCP[i] = n}$ if $\text{Suffix}(S,
+SA[i])$ and $\text{Suffix}(S, SA[i - 1])$ has a maximal common prefix of length
+$\text{n}$. $\text{LCP[0]}$ is undefined or {0}. \end{definition}
 
 For example, in table \ref{table:BANANA}, the LCP value at position 3 contains the number
 of characters in the longest-common prefix of suffixes starting at position 1 (ANANA\$)
@@ -683,13 +689,13 @@ the LCP value at position 3 is 3.
                 5     & 4  & 1   & 0\\
                 6     & 2  & 0   & 2\\
         \end{tabular}}
-        \caption{$T=\text{BANANA\$}$}
+        \caption{$S=\text{BANANA\$}$}
         \label{table:BANANA}
 	\end{center}
 \end{table}
 
 
-Suffix arrays can be constructed in linear time in terms of the length of T. Many suffix
+Suffix arrays can be constructed in linear time in terms of the length of S. Many suffix
 array construction algorithms (SACA) have been discovered in the last
 decade~\cite{SuffixArrayConstruction}, many of which run in linear time. An algorithm
 which has been shown to be very efficient in practice is Nong and Chan's algorithm based
@@ -722,8 +728,8 @@ position. Bitsets are useful for many problems, especially as a ``succinct data
 structure''. A succinct data structure is a data structure which attempts to use an amount
 of memory close to the theoretic lower bound, while still allowing effective queries on
 it. For example for a string of length $n$, we could store up to $O(n \log_{}\sigma)$ bits
-before the bit vector exceeds the size of the string itself, where $\sigma$ is the size of
-the string's alphabet.
+before the bitset exceeds the size of the string itself, where $\sigma$ is the size of the
+string's alphabet.
 
 The most well known queries to perform on bitsets is the rank/select queries.
 
@@ -764,7 +770,7 @@ A simple implementation of a dynamic bitset could implement the whole bitset as 
 array of bytes $B$, which allows for accessing values in $O(1)$ time, but insertions and
 deletions take $O(n)$ time, where $n$ is the number of bits in $B$.
 
-Another implementation which speeds up the insertions and deletions represents the bitset
+A better implementation which speeds up the insertions and deletions represents the bitset
 as a balanced tree containing multiple smaller bitsets. To represent a bitset of $n$ bits,
 we can divide the bits into smaller bitsets, such that $O(\frac{n}{\log(n)})$ bitsets each
 contains $O(log(n))$ bits. Since the bitsets are now of size $O(log(n))$, insertions and
@@ -908,7 +914,7 @@ be implemented as a dynamic bitset to allow insertions/deletions on a wavelet tr
 \end{figure}
 
 
-\begin{table}[t!]
+\begin{table}[t]
 	\begin{center}
 		\begin{tabular}{c}
             \begin{tabular}{c c c c c c c c c c c c}
@@ -933,9 +939,10 @@ be implemented as a dynamic bitset to allow insertions/deletions on a wavelet tr
 
 
 
-Figure \ref{fig:wavelettree} shows the wavelet tree for the string \verb|abbbefcagdd|. The
-wavelet tree can perform $access$, $rank$ and $select$ queries by traversing the tree from
-root to leaf. 
+Figure \ref{fig:wavelettree} shows the wavelet tree for the string \verb|abbbefcagdd|.
+Note that the wavelet tree does not actually store the characters of the string, only the
+bitsets. The wavelet tree can perform $access$, $rank$ and $select$ queries by traversing
+the tree from root to leaf. 
 
 $access(i)$ gives the bitstring of the character at a position $i$ by first accessing
 position $i$ in the root bitset, if the bit is a $0$, we traverse to the left, if it is a
