@@ -523,7 +523,7 @@ clones in our code base using this data structure.
 \end{figure}
 
 With the extended suffix array computed, we can now consider which substrings (prefixes of
-suffixes) we want to extract as potential code clones. In this phase the indices of the
+suffixes) we want to extract as potential code clones. In this phase, the indices of the
 fingerprint which we consider to be code clones are extracted, which will be mapped back
 to the original source code in the next phase.
 
@@ -632,15 +632,16 @@ considered to be code clones.
 \end{figure}
 
 With the clone indices in the fingerprint computed, we are almost finished. The final step
-is to map the clone indices back to the original source code. In order to correctly
-identify where a clone is located, we need to know which file the clone is located in, the
-range of the source code in that file the code clone covers, and the other matching code
-clones.
+is to map the clone indices back to the original source code. This is the phase where
+clone objects are built. Clone objects consist mainly of the source-mapping information,
+and a list of other code clones which it matches to. In order to correctly identify where
+a clone is located, we need to know which file the clone is located in, the range of the
+source code in that file the code clone covers, and the other matching code clones.
 
 To accomplish this, each document in the index needs to store the range of each of its
-tokens and keep track of which portion of the fingerprint consists of the documents
-tokens. This is done by storing two integer variables, each storing the start position and
-end position that the document has in the fingerprint. 
+tokens and keep track of which portion of the fingerprint the tokens of the document is
+located. This is done by storing two integer variables, each storing the start position
+and end position that the document has in the fingerprint. 
 
 \begin{algorithm}[t]
   \SetAlgoLined\DontPrintSemicolon
@@ -683,9 +684,9 @@ $$
 \Access{D}{start} \leq i \leq \Access{D}{end}
 $$
 
-Once the correct document has been found, we simply have to look up the correct range
-which the document stores. The index of this range is $i -
-\Access{D}{start}$.
+Once the correct document has been found, we simply have to look up the correct range of
+the token which the fingerprint index corresponds to, which the document stores. The index
+of this range is $i - \Access{D}{start}$.
 
 Algorithm \ref{alg:sourcemap} returns the source-map of a given position $i$ in the
 fingerprint, which includes the URI for the document and the source code range of the
@@ -705,7 +706,8 @@ matching code clones are collected into buckets of clone classes. Remember that 
 array only gives us the longest match between two suffixes, but it is naturally possible
 to have more than two clones of the same code snippet. This case happens when multiple
 consecutive indices in the SA are considered to be clones. Since we only look for type-1
-clones, the transitivity property holds, meaning that if
+(and type-2 clones if token types are normalized), the transitivity property holds,
+meaning that if
 
 $$
 SA[i] \xrightarrow{clone} SA[i+1] \xrightarrow{clone} SA[i + 2]
