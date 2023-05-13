@@ -230,7 +230,12 @@ For the performance benchmark, the code bases are set up in the way iClones expe
 each code base to analyze, we will store $n$ revisions of it, where each revision contains
 some changes to some files. An evaluation program for CCDetect-LSP was written so that it
 can process this same setup, making it simple to run both CCDetect-LSP and iClones on the
-same code bases, and compare their results.
+same code bases, and compare their results. Note that it was not feasible to perform
+incremental parsing for such a setup, as this setup did not include a range for the
+changed content inside a file. Instead, each file which is edited in each revision is
+parsed from scratch. However, we believe that the cases where incremental parsing is
+particularly useful, such as when repeatedly editing a large file, is not displayed in
+such a setup anyway, as each revision will only edit a file once in each revision.
 
 To create a larger sample set of code bases and edits, it is preferable to generate new
 revisions of a code base programmatically. Generating new revisions of a code base means

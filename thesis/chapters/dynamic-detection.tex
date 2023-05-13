@@ -13,7 +13,7 @@ the client.
 In broad strokes, when a file is changed, we will first update the document index, which
 involves also incrementally parsing the changes to the file. From there we want to
 determine which edits have happened to the fingerprint, which we compute with an edit
-distance algorithm. The edits are the input to the dynamic extended suffix array
+distance algorithm. The edits are the input to the dynamic extended suffix array update
 algorithm, which is updated to reflect the extended suffix array of the new fingerprint.
 Afterwards, the clones are extracted from the extended suffix array similarly to the
 initial detection, but with slight optimizations based on storing positions of potential
@@ -44,7 +44,8 @@ of parsing a single file is still linear in the size of file content, parsing a 
 from scratch can take a significant amount of time in practice, and for small code bases
 with large files, parsing can take a significant portion of the total running time of an
 incremental update. This is why incremental parsing with Tree-sitter is used, which lowers
-the runtime closer to $O(\vert\text{edit}\vert)$, rather than $O(\vert \text{file} \vert)$
+the runtime of parsing closer to $O(\vert\text{edit}\vert)$, rather than $O(\vert
+\text{file} \vert)$.
 
 We can also afford two more useful operations, iterating over the documents in the index
 (not their contents), and iterating over the clones. We can afford to do these operations
@@ -73,9 +74,9 @@ Each document stores its own content, AST and fingerprint. It is not strictly ne
 store either the content or the AST in memory all the time, as it is likely that only a
 handful of files are open in the IDE at once. Therefore, in the initial detection, we can
 free the memory of the file content and AST for each document after the fingerprint has
-been computed. However, if a file is opened in the IDE, the file can now be changed, so we
-should facilitate efficient updates for these files at least. When a file is opened, the
-file content should be read from the disk and updated via the
+been computed and stored. However, if a file is opened in the IDE, the file can now be
+changed, so we should facilitate efficient updates for these files at least. When a file
+is opened, the file content should be read from the disk and updated via the
 \verb|textDocument/didChange| messages sent from the client. It is also important to keep
 the AST of the opened file in memory in order to facilitate incremental parsing of the
 opened files. 
@@ -107,10 +108,13 @@ AST. After this update, we also set $\Access{D}{\Var{changed}} = \True$.
 With the updated AST for all documents, we can update the fingerprint of all documents
 which have been changed. For each document $D$ where $\Access{D}{\Var{changed}} = \True$,
 the fingerprint for $D$ may have changed. Computing the new fingerprint is the same
-process as in the initial detection, where we first query the AST for all nodes of a
-certain type, then for each matched node $N$, we extract and fingerprint all the tokens
+process as in the initial detection, where we first query the updated AST for all nodes of
+a certain type, then for each matched node $N$, we extract and fingerprint all the tokens
 which $N$ covers, using the same fingerprint mapping as was used for the initial
-detection.
+detection. It could be possible to store the nodes queried between revisions, and try to
+incrementally update this list of nodes as well, but we do not believe this would show any
+significant performance gains, as the number of queried nodes in each file is normally
+small.
 
 An additional change we have to consider when incrementally updating fingerprints is that
 for a document $D$, $\Access{D}{start}$ and $\Access{D}{end}$ which corresponds to the
