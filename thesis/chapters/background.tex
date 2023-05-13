@@ -99,14 +99,20 @@ for (int i = 0; i < 10; i++) {
 
 \textbf{Type-2} clones are structurally identical. Possible differences include changes to
 identifiers, literals and types. Type-2 clones are not much harder to detect than type-1
-clones, since consistently renaming identifiers, literals and types allow a type-1
-detection algorithm to find type-2 clones~\cite{Bakerdup}. This type of clone is relevant
-to consider in refactoring scenarios when merging code clones as they can be relatively
-simple to parameterize in order to merge two clones with for example differing literals.
-The original locations of clones can then be replaced with a call to the merged code with
-different parameters. Figure \ref{fig:type2clone} shows an example of a type-2 clone pair
-where the numbers in the for loop initialization and condition could be parameterized to
-correctly merge the two clones.
+clones, since renaming identifiers, literals and types allow a type-1 detection algorithm
+to find type-2 clones~\cite{Bakerdup}. We can also differentiate between blind and
+consistent type-2 clones, where consistent clones need to have consistent renaming of
+values, such as variables being consistently renamed in all the locations it is being
+used. Blind clones can have differences in all the allowed values with no consistency.
+Note that consistent type-2 clones are a subset of blind type-2 clones, as blind type-2
+clones are simply more lenient. Type-2 clones are relevant to consider in refactoring
+scenarios when merging code clones as they can be relatively simple to parameterize in
+order to merge two clones with for example differing literals. The original locations of
+clones can then be replaced with a call to the merged code with different parameters.
+Figure \ref{fig:type2clone} shows an example of a type-2 clone pair where the numbers in
+the for loop initialization and condition could be parameterized to correctly merge the
+two clones. This is an example of consistent type-2 clones, because the $i$ variable has
+been consistently renamed to $j$ in the right-most snippet.
 
 \begin{figure}[t]
 	\begin{center}

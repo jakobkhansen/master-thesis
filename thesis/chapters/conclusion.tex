@@ -7,20 +7,16 @@ This chapter will first list future work, then conclude the thesis.
 In this section we list future work and research in order of what we consider most
 interesting to do more research on.
 
-\subsection*{Type-2 and type-3 clones}
+\subsection*{Type-3 clones}
 
-Finding type-2 clones is useful for CCDetect-LSP, but may not be of any interest for
-research, as applying an input normalization of certain token types is likely a
-satisfactory solution also for incremental detection.
-
-Finding type-3 clones incrementally, could be more interesting to research. A classic
-algorithm to detect type-3 algorithms is to use sparse dynamic programming to find matches
-of type-1 and type-2 clones which are not exactly
-similar~\cite{BakerSparseDynamicProgramming}. It would be interesting to look at such an
-algorithm in an incremental perspective, and determine if it would be beneficial to try
-and avoid computation of the same type-3 clones in each revision. Another approach could
-be to create a dynamic data structure which is simple to maintain between revisions, and
-allows extraction of type-3 clones in addition to type-1 and type-2 clones. 
+Finding type-3 clones incrementally could be interesting to research. A classic algorithm
+to detect type-3 algorithms is to use sparse dynamic programming to find matches of type-1
+and type-2 clones which are not exactly similar~\cite{BakerSparseDynamicProgramming}. It
+would be interesting to look at such an algorithm in an incremental perspective, and
+determine if it would be beneficial to try and avoid computation of the same type-3 clones
+in each revision. Another approach could be to create a dynamic data structure which is
+simple to maintain between revisions, and allows extraction of type-3 clones in addition
+to type-1 and type-2 clones. 
 
 
 \subsection*{Optimal edit operations}
@@ -110,3 +106,5 @@ Finally, we have demonstrated that language agnostic clone detection using a par
 generator works and allows sufficient selection of fragments for flexible analysis, and to
 avoid listing unwanted clones. We have also discussed that a language agnostic approach is
 more challenging in terms of normalizing inputs and therefore detection of type-2 clones.
+However, this challenge was partly solved by allowing the client to configure how the
+input should be normalized.

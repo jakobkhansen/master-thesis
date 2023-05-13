@@ -56,25 +56,35 @@ report which BigCloneEval outputs.
 
 For CCDetect-LSP, we used mostly the default parameters of BigCloneEval, but we increased
 the minimum clone size to $100$ and set the minimum similarity threshold to be $100\%$,
-since we are only evaluating CCDetect-LSP for type-1 clone recall. The similarity
-threshold was set to $100\%$ because we only consider type-1 clones which are exactly
-similar, and not reporting type-3 clones drastically reduces the time the evaluation
-takes. The default token threshold was set to $100$ instead of $50$, as the evaluation
-time increases drastically as the number of clones to match in the database and the number
-of clones reported by CCDetect-LSP increases.
+since we are only evaluating CCDetect-LSP for type-1 and type-2 clone recall. Setting the
+minimum similarity threshold also drastically reduces the time an evaluation takes, as we
+skip evaluating detection of type-3 clones. The default token threshold was set to $100$
+instead of $50$, as the evaluation time increases drastically as the number of clones to
+match in the database and the number of clones reported by CCDetect-LSP increases.
+
+For the type-2 detection, we set the following AST nodes to be normalized:
+
+\begin{lstlisting}
+    blind_nodes = [
+        "name",
+        "identifier",
+        "string_literal",
+        "decimal_integer_literal",
+        "decimal_floating_point_literal",
+        "type_identifier",
+    ]
+\end{lstlisting}
+
+These nodes were normalized because it correlates with our definition of a type-2 clone.
 
 Appendix \ref{bcblog} shows the command which runs BigCloneEval, and the beginning of the
 report generated when CCDetect-LSP is evaluated. The report shows that CCDetect-LSP has a
-${\sim}99.98\%$ recall for type-1 clones. CCDetect-LSP is clearly capable of detecting
-type-1 clones. As for the missing type-1 clones, while it is not so simple to determine
-which clones were not detected, it is possible that these clones are not reported because
-of inconsistencies in the database. The report also shows that CCDetect-LSP manages to
-detect a few type-2 clones. Detecting these are accidental, as CCDetect-LSP does not
-currently implement any normalization of the input which would allow for type-2 detection.
-These type-2 clones are likely detected because BigCloneEval allows some leniency in terms
-of how much a clone reported by CCDetect-LSP needs to match with a clone reported in the
-BigCloneBench database. Therefore, it is likely the case that a few type-2 clones overlap
-with a type-1 clone, and BigCloneEval matched these clones because of its leniency.
+${\sim}99.98\%$ recall for type-1 clones and a ${\sim}89.40\%$ recall for type-2 clones.
+CCDetect-LSP is clearly capable of detecting type-1 clones. As for the missing type-1
+clones, while it is not so simple to determine which clones were not detected, it is
+possible that these clones are not reported because of inconsistencies in the database.
+The report also shows that CCDetect-LSP manages to detect almost all type-2 clones. This
+will be discussed further in \cref{discussion}.
 
 \section{Time complexity of detection}
 
@@ -222,7 +232,7 @@ some changes to some files. An evaluation program for CCDetect-LSP was written s
 can process this same setup, making it simple to run both CCDetect-LSP and iClones on the
 same code bases, and compare their results.
 
-To create a larger sample set of code bases and edits, it is preferrable to generate new
+To create a larger sample set of code bases and edits, it is preferable to generate new
 revisions of a code base programmatically. Generating new revisions of a code base means
 that we copy the code base and apply a number of insertions/deletions to random files, to
 simulate how a programmer would edit files when programming. Generating new revisions of
@@ -311,11 +321,14 @@ The benchmarks were run on a computer with 16GB RAM, and an Intel i7-2600K CPU w
 representative of today's modern CPUs}. The computer runs Manjaro Linux with kernel
 version 6.1.25-1. The SACA detection, incremental detection and iClones was run with a
 token threshold of $100$, and the processing time of each revision was timed using a
-simple clock mechanism programmed in Java. Type-3 clone detection was disabled for iClones
-with the \verb|-minclone 100| parameter. Each test was run three times, and the results
-were averaged. Only three runs of all tests were performed because running all the tests
-takes a significant amount of time (multiple hours), and the results seem to be stable
-from three runs only.
+simple clock mechanism programmed in Java. CCDetect-LSP did not normalize any AST node
+types in this evaluation, so CCDetect-LSP detects strictly type-1 clones in this
+benchmark. We do not believe detection of type-2 clones would affect the performance
+benchmarks signficantly. Type-3 clone detection was disabled for iClones with the
+\verb|-minclone 100| parameter. Each test was run three times, and the results were
+averaged. Only three runs of all tests were performed because running all the tests takes
+a significant amount of time (multiple hours), and the results seem to be stable from
+three runs only.
 
 In addition, we performed a final test on the elasticsearch code base where in each
 revision, the number of edits increase. This was tested to see how CCDetect-LSP scales
@@ -337,7 +350,7 @@ CCDetect-LSP algorithms is shown on those graphs. The elasticsearch code base wi
 of $3.2\text{MLOC}$ was approximately the maximum size code base iClones could run on
 before the computer ran out of available memory. Note that figure
 \ref{fig:elasticsearch_inc} shows the test where an increasing number of edits were
-performed in each revision, the number of edits are displayed as the labels of the X-axis.
+performed in each revision, the number of edits are displayed as the labels of the x-axis.
 
 \newpage
 \null
@@ -504,10 +517,11 @@ query to be used in the fragment selection phase. Determining the Tree-sitter qu
 not be trivial in some languages, but we suspect that the most common choices would be
 either selecting the root node of the AST, or all methods or
 functions\footnote{Tree-sitter queries for multiple languages are shown in the README file
-of the CCDetect-LSP source code.}.
+of the CCDetect-LSP source code.}. If type-2 detection should be enabled, the client needs
+to provide a list of AST node types which should be normalized for that language.
 
 Initial experiments show that CCDetect-LSP seems to work flawlessly on most languages.
-There experiments are not shown in the thesis and are based purely on our experience with
+These experiments are not shown in the thesis and are based purely on our experience with
 testing the tool on different code bases. While we cannot objectively tell if all clones
 are detected without having an oracle like the BigCloneBench for each code base, the
 experience of browsing and navigating clones seems to work as well when switching between

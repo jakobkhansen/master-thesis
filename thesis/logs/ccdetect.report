@@ -24,19 +24,19 @@ Coverage Matcher.  Coverage Ratio = 0.7, minimum raito is of reference clone: nu
 ================================================================================
 -- Recall Per Clone Type (type: numDetected / numClones = recall) --
               Type-1: 23205 / 23210 = 0.9997845756139595
-              Type-2: 55 / 3547 = 0.015506061460389062
-      Type-2 (blind): 2 / 245 = 0.00816326530612245
- Type-2 (consistent): 53 / 3302 = 0.016050878255602665
+              Type-2: 3171 / 3547 = 0.8939949252889766
+      Type-2 (blind): 9 / 245 = 0.036734693877551024
+ Type-2 (consistent): 3162 / 3302 = 0.9576014536644458
 
 -- Inter-Project Recall Per Clone Type (type: numDetected / numClones = recall)  --
               Type-1: 4620 / 4625 = 0.9989189189189189
-              Type-2: 24 / 3185 = 0.0075353218210361065
-      Type-2 (blind): 0 / 223 = 0.0
- Type-2 (consistent): 24 / 2962 = 0.008102633355840648
+              Type-2: 2917 / 3185 = 0.9158555729984301
+      Type-2 (blind): 2 / 223 = 0.008968609865470852
+ Type-2 (consistent): 2915 / 2962 = 0.9841323430114788
 
 -- Intra-Project Recall Per Clone Type (type: numDetected / numClones = recall) --
 -- Recall Per Clone Type --
               Type-1: 18585 / 18585 = 1.0
-              Type-2: 31 / 362 = 0.0856353591160221
-      Type-2 (blind): 2 / 22 = 0.09090909090909091
- Type-2 (consistent): 29 / 340 = 0.08529411764705883
+              Type-2: 254 / 362 = 0.7016574585635359
+      Type-2 (blind): 7 / 22 = 0.3181818181818182
+ Type-2 (consistent): 247 / 340 = 0.7264705882352941

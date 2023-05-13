@@ -18,14 +18,16 @@ section a figure will be shown to illustrate which part of the pipeline is curre
 discussed. The previous chapter has already detailed the first two phases, how a document
 index is built for each file of the source code.
 
-The algorithm of CCDetect-LSP detects syntactical type-1 code clones, based on a token
-threshold. Clones detected are therefore snippets of source-code which has at least $N$
-equal tokens, where $N$ is a configurable parameter. The clones detected are exactly
-equal, but allows differences in for example white-space, and anything else which is not
-parsed into the syntax-tree. Additionally, Tree-sitter grammar often defines some AST
+The algorithm of CCDetect-LSP detects syntactical type-1 and blind type-2 code clones,
+based on a token threshold. Clones detected are therefore snippets of source-code which
+has at least $N$ equal tokens, where $N$ is a configurable parameter. Without
+configuration, the clones detected are exactly equal, but allows differences in for
+example white-space, and anything else which is not parsed into the syntax-tree. However,
+the client can configure which token types are allowed to have differences, in order to
+allow for type-2 clone detection. Additionally, Tree-sitter grammar often defines some AST
 nodes such as comments as ``extra'' nodes, which are ignored. There is also a configurable
-parameter to ignore additional nodes. There are also two rules which govern which clones
-are included in the list of reported clones.
+parameter to ignore additional nodes. Finally, there are also two rules which govern which
+clones are included in the list of reported clones.
 
 \begin{itemize}
     \item Clones which are completely contained within another larger clone are excluded.
@@ -34,18 +36,19 @@ are included in the list of reported clones.
 
 In broad strokes, the algorithm first selects the relevant parts of source code to detect
 code clones in (fragment selection), then transforms the selected fragments into a smaller
-representation (fingerprinting). For the matching, an extended suffix array for the
-fingerprint is constructed, where the LCP array is used to find long matching instances of
-source code. Finally, clones are filtered and aggregated into clone classes before they
-are source-mapped back to the original source-code locations, which the LSP server can
-send to the IDE in the form of diagnostics.
+representation and normalizes the input for type-2 detection (fingerprinting). For the
+matching, an extended suffix array for the fingerprint is constructed, where the LCP array
+is used to find long matching instances of source code. Finally, clones are filtered and
+aggregated into clone classes before they are source-mapped back to the original
+source-code locations, which the LSP server can send to the IDE in the form of
+diagnostics.
 
 The decision to go with extended suffix arrays were based on the fact that extended suffix
 arrays use less memory than the traditional suffix tree approach, which is important in an
 IDE scenario. We also wanted to explore dynamic extended suffix arrays to determine if it
-could be a better approach to clone detection with regards to performance as well, as we
-are not aware of any related work which implements a dynamic extended suffix array and
-compares its performance with a dynamic suffix tree.
+could be a better approach to clone detection in regard to performance as well, as we are
+not aware of any related work which implements a dynamic extended suffix array and
+compares its performance with a dynamic suffix tree for clone detection.
 
 \section{Fragment selection}
 
@@ -57,17 +60,19 @@ compares its performance with a dynamic suffix tree.
 
 The first phase of the algorithm involves extracting the relevant fragments of source code
 which should be considered for detection. A fragment, in this case is an instance of a
-particular type of node in the AST. The tokens the node encompasses (leaf-nodes of the
-subtree) is in this phase extracted and used in the subsequent phases. Since the algorithm
-is language agnostic, it is not feasible to have a single algorithm for fragment
-extraction or to define a separate fragment extraction algorithm for every possible
-language. Therefore, a parser generator tool is used, which can generate the code for
-parsing any programming language given a grammar. We use Tree-sitter, a parser generator
-with incremental parsing capabilities, as well as a query language for finding any type of
-node in the AST~\cite{treesitter}. Tree-sitter queries are flexible queries to select
-specific nodes or subtrees. For example, in Java it would be natural to consider only
-methods. The Tree-sitter query for selecting only the method nodes in a Java programs AST
-would be:
+particular type of node in the AST. The tokens the node encompasses is in this phase
+extracted and used in the subsequent phases. Note that in a concrete syntax tree, each
+leaf-node encompasses a single token, which means that selecting a node and extracting its
+tokens involves extracting all the leaf-nodes in the subtree of the selected node. Since
+the algorithm is language agnostic, it is not feasible to have a single algorithm for
+fragment extraction or to define a separate fragment extraction algorithm for every
+possible language. Therefore, a parser generator tool is used, which can generate the code
+for parsing any programming language given a grammar. We use Tree-sitter, a parser
+generator with incremental parsing capabilities, as well as a query language for finding
+any type of node in the AST~\cite{treesitter}. Tree-sitter queries are flexible queries to
+select specific nodes or subtrees. For example, in Java it would be natural to consider
+only methods. The Tree-sitter query for selecting only the method nodes in a Java programs
+AST would be:
 
 \begin{equation}
     (\mathrm{method\_declaration\ } \text{@method})
@@ -178,6 +183,21 @@ make space for some terminating characters. Each fragment is terminated by a $1$
 fingerprint is ultimately terminated by a $0$. Having these values in the fingerprint will
 be useful for the matching algorithm where the suffix array is constructed and utilized
 for detection. The fingerprint of each fragment is stored in the relevant document object.
+
+\subsection*{Type-2 clones}
+
+With the above fingerprinting algorithm, only type-1 clones would be detected. However,
+CCDetect-LSP can detect type-2 clones if the client configures which token types should be
+normalized. As shown in \cref{lspimplementation}, CCDetect-LSP can take a list of
+\verb|blind_nodes| in its configuration, which signalizes CCDetect-LSP that each AST node of
+a certain type in this list should be fingerprinted with the same value. This is done by
+fingerprinting the token value, instead of the token type. For example in Java, if the
+\verb|identifier| token is set as a token to normalize, then the \verb|param| variables in
+figure \ref{fig:fingerprint} would be fingerprinted as \verb|identifier|, instead of
+\verb|param|. This allows blind, but not consistent type-2 clone detection, as we do not
+introduce any consistency here. With this fingerprint normalization, we can continue on as
+if we are only detecting exactly similar fragments, since any instance of a normalized
+token, will have the same value in the fingerprint.
 
 \section{Suffix array construction}
 

@@ -161,11 +161,11 @@ than 4GB.
 
 \section{Clones detected}
 
-In \cref{evaluation} we saw that CCDetect-LSP identifies ${\sim}99.98\%$ of type-1 clones in
-the BigCloneBench dataset. The results showed that CCDetect-LSP was able to identify
-practically all type-1 clones, which gives us confidence that our algorithm is correct in
-terms of the reported clones. BigCloneBench also reported that CCDetect-LSP was able to
-detect some type-2 clones, but as previously stated, this is accidental.
+In \cref{evaluation} we saw that CCDetect-LSP identifies ${\sim}99.98\%$ of type-1 clones,
+and ${\sim}89.40\%$ of type-2 clones in the BigCloneBench dataset. The results showed that
+CCDetect-LSP was able to identify practically all type-1 clones, which gives us confidence
+that our algorithm is correct in terms of the reported clones. BigCloneBench also reported
+that CCDetect-LSP was able to detect almost all type-2 clones.
 
 We decided to store and represent clones as clone classes, rather than clone pairs. We
 chose this because it gives a clearer picture to the programmer of all the clones of a
@@ -176,39 +176,27 @@ refactoring a set of clones likely leads to a better result than refactoring onl
 clone pair~\cite{TowardsAutomatedRefactoring}.
 
 Detecting type-1 clones is likely the most important clones to detect in an IDE scenario,
-but type-2 clones are also likely useful. Recall that type-2 clones are clones which are
-structurally identical, but allows differences in literals, identifiers and types. Recall
-also that both type-1 and type-2 clones are clones which are often good targets for
-refactoring, since they can be parameterized to account for the differences in literals
-and types, before they are merged into a single function/method. In the case of
-CCDetect-LSP, we could normalize the input to allow detection of type-2 clones by
-consistently fingerprinting tokens of the same type, but different value to the same value
-if they are allowed to. Because CCDetect-LSP is language agnostic and relies only on a
-Tree-sitter grammar for a given programming language, performing this normalization is
-more challenging than in typical clone detectors, and would likely require the client to
-send a list of token types which should be normalized. One might also want to
-differentiate between consistently renaming tokens and consistently substituting specific
-token values. An example of this is that one might only consider two snippets type-2
-clones if their variable names are consistently renamed, meaning that there needs to be a
-consistent mapping between variable names in the two snippets. Baker's technique could be
-implemented to achieve this, but again, this seems difficult to achieve in a language
-agnostic setting~\cite{Bakerdup}. This could be done by allowing the user to configure a
-list of AST node types which should be consistently fingerprinted, but this also requires
-the user to be intimately familiar with the node types in the AST of their chosen
-programming language.
+but type-2 clones are also likely useful. CCDetect-LSP has shown that it can detect almost
+all type-2 clones with only a few token types added to its configuration, but we believe
+that this number would increase closer to $100\%$ with more token types added. We believe
+that BigCloneBench considers more token types to be allowed differences than our
+configuration, and we therefore claim that CCDetect-LSP is able detect type-2 clones, but
+requires more configuration to be able to detect all type-2 clones in the BigCloneBench
+dataset.
 
-For type-3 clones we need to consider how useful it is to report these clones in an IDE
-scenario. Recall that type-3 clones are clones which in addition to type-1 and type-2
-clones, allow some leniency in terms of the code clones structure. Type-3 clones allows
-tokens to be added, modified or removed and two type-3 clones are considered equal based
-on some similarity threshold. Seeing such clones in the IDE could possibly lead to a lot
-of noise, and CCDetect-LSP could possibly detect a lot of clones which are not necessarily
-simple to refactor and remove. It would be interesting to see how many type-3 clones are
-reported in large code bases and how much value it would provide to the user to list them
-in the IDE. It would also be interesting to see how implementing a type-3 clone algorithm
-such as Baker's algorithm~\cite{BakerSparseDynamicProgramming} would affect the speed of
-the incremental detection, and if any type-3 detection algorithms can be made more
-efficient for an incremental detection approach.
+If type-3 clones were to be considered, we need to consider how useful it is to report
+these clones in an IDE scenario. Recall that type-3 clones are clones which in addition to
+type-1 and type-2 clones, allow some leniency in terms of the code clones structure.
+Type-3 clones allows tokens to be added, modified or removed and two type-3 clones are
+considered equal based on some similarity threshold. Seeing such clones in the IDE could
+possibly lead to a lot of noise, and CCDetect-LSP could possibly detect a lot of clones
+which are not necessarily simple to refactor and remove. It would be interesting to see
+how many type-3 clones are reported in large code bases and how much value it would
+provide to the user to list them in the IDE. It would also be interesting to see how
+implementing a type-3 clone algorithm such as Baker's
+algorithm~\cite{BakerSparseDynamicProgramming} would affect the speed of the incremental
+detection, and if any type-3 detection algorithms can be made more efficient for an
+incremental detection approach.
 
 CCDetect-LSP identifies clones on a token level, unlike other tools which identifies
 clones on a line level~\cite{Zibran_real_time_search}. It is more fine-grained to detect
@@ -267,8 +255,8 @@ such as renaming variables.
 
 \subsection*{Language agnostic}
 
-The algorithm of CCDetect-LSP is also language agnostic. We have shown that as long as
-there exists a Tree-sitter grammar for a language,\footnote{Tree-sitter can parse most
+The algorithm of CCDetect-LSP is language agnostic. We have shown that as long as there
+exists a Tree-sitter grammar for a language,\footnote{Tree-sitter can parse most
 mainstream languages, see: \url{https://tree-sitter.github.io/tree-sitter/}} it can be
 parsed and fingerprinted. When the source code has been fingerprinted, there is no longer
 any difference between detection for different languages. Therefore, CCDetect-LSP should
@@ -276,7 +264,13 @@ work for any language, and in our testing, there is nothing that hinders CCDetec
 working for any language we have tested, other than grammars not working correctly. We
 have tested CCDetect-LSP for multiple languages, and shown that there is very little
 configuration required to change the desired language. Therefore, we claim that
-CCDetect-LSP works very well as a language agnostic code analysis tool.
+CCDetect-LSP works very well as a language agnostic clone detection tool.
+
+However, for type-2 clones, CCDetect-LSP requires manual configuration of which AST nodes
+to normalize in the fingerprint. This process can hardly be called language agnostic, as
+which nodes to normalize is fully up to the client, and requires the user to be at least
+familiar with the AST of the language they are working on, for type-2 clone detection to
+work well.
 
 In the case of the C language, which did not work correctly because of a quirk of its
 grammar, it demonstrates a downside to going with the parser generator strategy. You
@@ -319,6 +313,8 @@ While we are not aware of any other attempts at using dynamic suffix arrays for 
 detection, suffix arrays have been used for clone detection before. The tool SHINOBI uses
 a suffix array index which can be queried for clones based on a string~\cite{SHINOBI}.
 Their paper seems to indicate that only the edited code gets queried in the suffix array.
+
+\Todo{More here about other suffix array based detection tools}
 
 For our dynamic extended suffix array implementation, we built upon the ideas of Salson et
 al.~\cite{DynamicExtendedSuffixArrays, DynamicExtendedSuffixArraysReorderings, DynamicBWT}
