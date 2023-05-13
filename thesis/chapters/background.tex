@@ -1072,7 +1072,7 @@ left side of level $i + 1$, and vice versa for $1$ bits.
 The Burrows-Wheeler transform (BWT) is a transform on strings, often performed to improve
 compression and searching~\cite{BWT}. The transform is computed by sorting all
 ``cyclic-shifts'' of the string lexicographically and extracting a new string from the
-last column of the cyclic-shift'' matrix. The terminating symbol \$ is added to the
+last column of the cyclic-shift matrix. The terminating symbol \$ is added to the
 string, which makes some algorithms on the BWT simpler. \$ is always the lexicographically
 smallest character. Table \ref{table:bwt} shows the BWT for the string S = BANANA\$. There
 is a strong correlation between the BWT of a string and its suffix array, which is why this
@@ -1144,7 +1144,7 @@ everything that occurs after the \$ of the CS will not affect its lexicographica
 ordering. This is because no CS will have a \$ in the same position, so comparing two
 cyclic shifts lexicographically will always terminate whenever a \$ is found. This means
 that the ordering of cyclic shifts is essentially the same as sorting all suffixes of S.
-Algorithm \ref{alg:bwt} shows how the BWT of S can be calculated directly from the SA of S
+Algorithm \ref{alg:bwt} shows how the BWT of S can be computed directly from the SA of S
 in linear time. Since there is a one to one correlation between the SA and BWT, dynamic
 updates to a BWT would correspond to similar dynamic updates in the SA (and ISA). This
 will be useful in the upcoming implementation chapters for the incremental code clone
@@ -1195,18 +1195,18 @@ input string backwards.
 
 Without storing the first column, it might seem hard to determine which CS to move to when
 traversing backwards. We can use the fact that the first column consists of the letters of
-$S$ in sorted order to determine the previous CS with only the BWT. We can calculate the
+$S$ in sorted order to determine the previous CS with only the BWT. We can compute the
 previous CS from only the last column by determining how many characters are
 lexicographically smaller than the current character, and also the rank of the current
 character at this position. The sum of these two values is the location of the previous
-CS. This function is called the Last-to-first function (LF function). Calculating the LF
-function can be done efficiently by using a rank/select data structure such as a wavelet
-tree~\cite{WaveletTree} or wavelet matrix~\cite{WaveletMatrix} to calculate the rank of
-all the characters in the BWT, and an array $C$ which contains the number of occurrences
-of each letter in the BWT. In table \ref{table:bwt}, we can compute the original $S$ from
-the BWT by starting at position $4$, because that is the position of the \$, then use the
-LF-function, $LF(4) = 0$, which means the second to last character is $BWT[0] = A$. $LF(0)
-= 1$, which means the next character is $BWT[1] = N$, and so on.
+CS. This function is called the Last-to-first function (LF function). Computing the result
+of the LF function can be done efficiently by using a rank/select data structure such as a
+wavelet tree~\cite{WaveletTree} or wavelet matrix~\cite{WaveletMatrix} to compute the rank
+of all the characters in the BWT, and an array $C$ which contains the number of
+occurrences of each letter in the BWT. In table \ref{table:bwt}, we can compute the
+original $S$ from the BWT by starting at position $4$, because that is the position of the
+\$, then use the LF-function, $LF(4) = 0$, which means the second to last character is
+$BWT[0] = A$. $LF(0) = 1$, which means the next character is $BWT[1] = N$, and so on.
 
-The LF function will also be useful in the detection algorithm where we dynamically update
-the suffix array of $S$, given the changes of the BWT of $S$.
+The LF function will also be useful in the detection algorithm, when we dynamically update
+the suffix array of $S$, given the changes to the BWT.
