@@ -1,35 +1,28 @@
 \chapter{Introduction}
 
-% Refactoring is the process of restructuring source code in order to improve the internal
-% behavior of the code, without changing the external behavior~\cite[9]{fowlerrefactoring}.
-% Refactoring source code is often performed in order to eliminate instances of bad code
-% quality, otherwise known as code smells.
-%
-% A study conducted by Diego Cedrim et al. has shown that while programmers tend to refactor
-% smelly code, they are rarely successful at eliminating the smells they are
-% targeting~\cite{Rohit_Gheyi_Impact}. Most refactorings performed were either
-% ``smell-neutral'', meaning that the targeted code smell is not eliminated, or ``stinky'',
-% meaning that the refactoring introduced more code smells than they eliminated. Automated
-% tools that help programmers make better refactorings and perform code analysis could be a
-% solution to this problem. 
-
 Duplicate code, often called code clones, is code which is more or less copied to
 different locations in a code base. Code clones occur in practically every large software
 project, and code clone analysis has therefore become a highly active field of research in
-the last decade. Many tools and algorithms have been developed to detect, manage and
-refactor code clones~\cite[6]{Inoue_introduction_to_cc}. Code clone detection in large
-code bases can be a time-consuming process. A consequence of this is that few existing
-tools are highly integrated into the workflow of software developers and are not designed
-to be run on a code base every time the code base changes. This thesis will therefore
-focus on efficient code clone detection and presents a novel algorithm and tool for
-detecting code clones in a real-time programming environment.
+the last decade. While code clones are not always harmful to a code
+base~\cite[209]{Inoue_introduction_to_cc}, code clones are generally considered to
+negatively affect maintainability, analyzability and extensibility of
+software~\cite[22]{Inoue_introduction_to_cc}.
+
+Code clone detection in large code bases can be a time-consuming process. A consequence of
+this is that few existing tools are highly integrated into the workflow of software
+developers and are not designed to be run on a code base every time the code base changes.
+This thesis will therefore focus on efficient code clone detection and presents a novel
+algorithm and tool for detecting code clones in a real-time programming environment. In
+addition, the thesis explores the topics of both programming language agnostic clone
+detection, and IDE agnostic tooling, which are also features of our tool.
 
 \section{Motivation and problem statement}
 
-Many tools and algorithms exist for code clone detection. However, few of these have the
-capability of efficiently detecting clones in a real-time programming environment. A
-problem with existing algorithms is that most of them need to rerun the entire analysis
-whenever a change to a file happens. Incremental algorithms that do not recompute all
+Many tools and algorithms have been developed to detect, manage and refactor code
+clones~\cite[6]{Inoue_introduction_to_cc}. However, few of these have the capability of
+efficiently detecting clones in a real-time programming environment. A problem with
+existing algorithms is that most of them need to rerun the entire analysis whenever a
+change to a file in the code base occurs. Incremental algorithms that do not recompute all
 clones from scratch are therefore interesting for use-cases such as while programming in
 integrated development environments (IDEs) and for analyzing different revisions of the
 same source code, but this type of algorithm has not been thoroughly explored for code
