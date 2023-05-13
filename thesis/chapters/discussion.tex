@@ -62,14 +62,14 @@ the other two detection algorithms in all cases. It would be interesting to see 
 trend continues for even larger code bases and continue to compare CCDetect-LSP
 incremental detection with iClones, but this would require more RAM to benchmark. 
 
-In the case of figure \ref{fig:elasticsearch_inc}, where we performed an evaluation of
-elasticsearch and incresed the number of edits in each revision, we see that for a smaller
-number of edits, our incremental detection has the best performance. For the smaller edits
-(INS10, DEL10), the incremental detection outperforms or is comparable to the other
-algorithms even up to 100 edits (1000 tokens inserted or deleted in total). However, we
-see a clear trend that once the number of edits increase, our incremental algorithm is
-slowly overtaken by iClones. For the larger edits (INS100, DEL100), we see that our
-incremental detection is fastest for the smaller number of edits, but is quickly
+In the case of figure \ref{fig:elasticsearch_inc}, where we performed an evaluation of the
+elasticsearch code base and increased the number of edits in each revision, we see that
+for a smaller number of edits, our incremental detection has the best performance. For the
+smaller edits (INS10, DEL10), the incremental detection outperforms or is comparable to
+the other algorithms even up to 100 edits (1000 tokens inserted or deleted in total).
+However, we see a clear trend that once the number of edits increase, our incremental
+algorithm is slowly overtaken by iClones. For the larger edits (INS100, DEL100), we see
+that our incremental detection is fastest for the smaller number of edits, but is quickly
 outperformed by iClones and even the SACA detection at around 25 edits (2500 tokens
 inserted or deleted in total). These results are an indication that CCDetect-LSP
 incremental detection scales worse than the other algorithms when the number of edits
@@ -131,9 +131,9 @@ different tools. This section will discuss these results and consider which fact
 increase the memory usage of each tool, and what this means for CCDetect-LSP when used in
 an IDE environment.
 
-The results show a clear picture on how the memory usage scales with the number of lines
-of code. The SACA detection has the lowest peak memory usage, which is expected, since it
-only needs to store the extended suffix array in array form, which is more memory
+The results demonstrate a clear picture on how the memory usage scales with the number of
+lines of code. The SACA detection has the lowest peak memory usage, which is expected,
+since it only needs to store the extended suffix array in array form, which is more memory
 efficient than the dynamic structures of the incremental algorithms. The main memory usage
 for the SACA detection is the extended suffix array, which is not much larger than the
 source-mapping information.
@@ -165,7 +165,9 @@ In \cref{evaluation} we saw that CCDetect-LSP identifies ${\sim}99.98\%$ of type
 and ${\sim}89.40\%$ of type-2 clones in the BigCloneBench dataset. The results showed that
 CCDetect-LSP was able to identify practically all type-1 clones, which gives us confidence
 that our algorithm is correct in terms of the reported clones. BigCloneBench also reported
-that CCDetect-LSP was able to detect almost all type-2 clones.
+that CCDetect-LSP was able to detect almost all type-2 clones, which we believe is
+correct, considering we did not fully explore which AST nodes should be normalized to get
+a better recall.
 
 We decided to store and represent clones as clone classes, rather than clone pairs. We
 chose this because it gives a clearer picture to the programmer of all the clones of a
@@ -177,9 +179,9 @@ clone pair~\cite{TowardsAutomatedRefactoring}.
 
 Detecting type-1 clones is likely the most important clones to detect in an IDE scenario,
 but type-2 clones are also likely useful. CCDetect-LSP has shown that it can detect almost
-all type-2 clones with only a few token types added to its configuration, but we believe
-that this number would increase closer to $100\%$ with more token types added. We believe
-that BigCloneBench considers more token types to be allowed differences than our
+all type-2 clones with only a few normalizations added to its configuration, but we
+believe that this number would increase closer to $100\%$ if we added more normalizations.
+We believe that BigCloneBench allows more token types to be allowed differences than our
 configuration, and we therefore claim that CCDetect-LSP is able detect type-2 clones, but
 requires more configuration to be able to detect all type-2 clones in the BigCloneBench
 dataset.
@@ -277,14 +279,15 @@ grammar, it demonstrates a downside to going with the parser generator strategy.
 cannot completely rely on every grammar to always work as you expect. It could be possible
 to forego parsing the source code, and only use a tokenizer to get the tokens. One could
 then use a language agnostic tokenization algorithm to avoid needing a grammar at all, and
-makes the algorithm truly language agnostic. However, this would not allow any sort of
-fragment selection, which likely leads to a lot of unnecessary code being analyzed for
-clones. This both slows down the detection process, but can also lead to a lot of noise in
-the clone list. For example in Java, a sorted list of imports at the beginning of the file
-could easily be cloned in multiple files, without any real possibility of being refactored
-to avoid this duplication. For this reason, we believe a ``grammar-pluggable'' approach
-with a parser generator such as Tree-sitter is a better approach than a completely
-language agnostic one, for the IDE scenario.
+makes the algorithm truly language agnostic. Such a tokenization algorithm was for example
+used by Li et al. in their tool named SAGA~\cite{SAGA}. However, this would not allow any
+sort of fragment selection, which likely leads to a lot of unnecessary code being analyzed
+for clones. This both slows down the detection process, but can also lead to a lot of
+noise in the clone list. For example in Java, a sorted list of imports at the beginning of
+the file could easily be cloned in multiple files, without any real possibility of being
+refactored to avoid this duplication. For this reason, we believe a ``grammar-pluggable''
+approach with a parser generator such as Tree-sitter is a better approach than a
+completely language agnostic one, for the IDE scenario.
 
 \section{Related work}
 
@@ -310,11 +313,11 @@ However, we should note that their evaluation shows that this type of clone dete
 not very fast, so it is not clear if this approach is suitable in a ``real-time'' setting.
 
 While we are not aware of any other attempts at using dynamic suffix arrays for clone
-detection, suffix arrays have been used for clone detection before. The tool SHINOBI uses
-a suffix array index which can be queried for clones based on a string~\cite{SHINOBI}.
-Their paper seems to indicate that only the edited code gets queried in the suffix array.
-
-\Todo{More here about other suffix array based detection tools}
+detection, suffix arrays have been used for clone detection before. Li et al.~\cite{SAGA}
+has used suffix arrays as a way to perform clone detection while utilizing GPU
+acceleration. The tool SHINOBI also uses a suffix array which can be queried for clones
+based on a string~\cite{SHINOBI}. Their paper seems to indicate that only the edited code
+gets queried in the suffix array.
 
 For our dynamic extended suffix array implementation, we built upon the ideas of Salson et
 al.~\cite{DynamicExtendedSuffixArrays, DynamicExtendedSuffixArraysReorderings, DynamicBWT}

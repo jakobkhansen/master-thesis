@@ -1214,7 +1214,7 @@ deleted an element at position $i$, we are reordering suffixes at position $j \l
 These are the suffixes we are looking for, but we can skip all suffixes which are
 reordered, as they are already marked to be computed in the bitset for the previous cases.
 Therefore, the variable $pos$ points to the next suffix we need to consider at the end of
-algorithm \ref{alg:updatesuffixarrayinsert}.
+Algorithm \ref{alg:updatesuffixarrayinsert}.
 
 Another useful observation when iterating over suffixes is that after an
 insertion/deletion, no two suffixes will have the insertion/deletion occur at the same
@@ -1243,23 +1243,22 @@ With this in mind, the algorithm to update the LCP array has two stages. Given t
 of positions which need to be updated in correlation with the first two cases, we perform
 a $select$ operation to continuously find the location of set bits in the bitset, and use
 their position to determine which positions in the LCP array need to be computed. After
-all the positions in the bitset has been updated in the LCP array, we move on the last two
-cases. From the position of $pos$, which was computed during the suffix array update, we
-continuously call the LF function on $pos$ to find the previous suffix. At each position,
-we update the LCP value of the suffix at position $pos$ and $pos + 1$, as these two LCP
-values are both affected by the suffix at position $SA[pos]$. When we encounter the
-situation where both LCP values at position $pos$ and $pos + 1$ did not lead to a change
-in LCP values, the algorithm is finished and the LCP array is updated. Algorithm \ref{}
-shows how the LCP array is updated, given the bitset of updated positions which is built
-during algorithm \ref{alg:updatesuffixarrayinsert}.
+all the positions in the bitset have been updated in the LCP array, we move on the last
+two cases. From the position of $pos$, which was computed during the suffix array update,
+we continuously call the LF function on $pos$ to find the previous suffix. At each
+position, we update the LCP value of the suffix at position $pos$ and $pos + 1$, as these
+two LCP values are both affected by the suffix at position $SA[pos]$. When we encounter
+the situation where both LCP values at position $pos$ and $pos + 1$ did not lead to a
+change in LCP values, the algorithm is finished and the LCP array is updated. 
 
-The actual computation of LCP values is also fairly complex. In the incremental detection
-algorithm we are not storing the entire fingerprint, we only have the BWT stored in the
-wavelet matrix, and the LF function allows us to move from one character to the previous
-in the original input text. When we compute LCP values, we need to be able to compare
-characters in two suffixes from start to potentially end of the input, therefore we need
-to be able to move from one character to the next, which is the inverse of the LF
-function. 
+Now that we know which LCP values need to be updated, the next step is to compute the new
+LCP values at those positions. The actual computation of updating LCP values is also
+fairly complex. In the incremental detection algorithm we are not storing the entire
+fingerprint, we only have the BWT stored in the wavelet matrix, and the LF function allows
+us to move from one character to the previous in the original input text. When we compute
+LCP values, we need to be able to compare characters in two suffixes from start to
+potentially end of the input, therefore we need to be able to move from one character to
+the next, which is the inverse of the LF function. 
 
 The inverse LF function for a position $i$ computes the next cyclic-shift by first
 determining what character is in the first column of the CS at position $i$ in the sorted
@@ -1283,11 +1282,38 @@ With the inverse LF function, computing the LCP value between two suffixes at po
 and $j$ is done by repeatedly applying the inverse LF function to $i$ and $j$, and
 comparing the characters at those positions in the BWT.
 
-\Todo{Algorithm for iterating over suffixes which need to update their LCP value}
+\begin{table}[t]
+	\begin{center}
+		\scalebox{1.5}{
+			\begin{tabular}[c]{c|cccccccc}
+				              &               &     & \multicolumn{2}{c}{$\leftrightarrow$}
+				              &               & INS &                                       &                                           \\
+				BWT           & A             & N   & B                                     & N             & \$            & A & A & B \\
+				SA            & 7             & 6   & 4                                     & 1             & 0             & 2 & 5 & 3 \\
+				Old LCP       & 0             & 0   & \underline{1}                         & \underline{3} & \underline{0} &
+				\underline{N} & \underline{0} & 2                                                                                       \\
+				New LCP       & 0             & 0   & 1                                     & 1             & 0             & 1 & 0 & 2 \\
+			\end{tabular}
+		}
+	\end{center}
+	\caption{LCP array updating after BANANA\$ $\rightarrow$ BABNANA\$ suffix array
+		update. Values which needs to be updated is underscored in old LCP}
+	\label{tab:lcpupdates}
+\end{table}
 
-\Todo{Algorithm for updating a single LCP value}
-
-\Todo{Visualize this somehow?}
+Table \ref{tab:lcpupdates} shows how the LCP array is updated for the same example as in
+table \ref{table:bwtupdatestages}. In the suffix array update, we inserted a new suffix
+array value at position $5$. This also means a new LCP value is inserted at position $5$
+(N). This new suffix at position $5$ means that the LCP value at position $5$ and $6$
+needs to be updated. In addition, the reordering of the two suffixes at position $2$ and
+$3$ both lead to two LCP values needing to be updated. For position $2$, position $2$ and
+$3$ needs to be updated, and for position $3$, position $3$ and $4$ needs to be updated.
+As these LCP updates overlap on position $3$, only $5$ LCP values need to be updated in
+total. Note that multiple of the LCP values that needed to be updated did not actually
+change value, this is simply because the new LCP value coincided with the previous value,
+and it was marked to be changed because it could potentially have changed. The last two
+cases of potential LCP updates, where we need to iterate over suffixes did not lead to any
+additional changes in this instance.
 
 \section{Dynamic clone extraction and source-mapping}
 
