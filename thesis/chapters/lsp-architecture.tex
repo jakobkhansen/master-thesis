@@ -71,7 +71,7 @@ The following user-stories shows how interaction with the LSP server works.
           was already present in the source code of a large code base. As soon as the
           programmer saves the file, CCDetect-LSP will perform an incremental update based
           on the change, and display that the duplicated source code is a clone. The clone
-          will be displayed until it is removed or modified.
+          will be displayed until it is removed or modified until it is no longer a clone.
 
       \item A programmer wants to switch to a project in a different programming language,
           and wants to use CCDetect-LSP to analyze clones in that project. The programmer
@@ -129,15 +129,16 @@ detection algorithm.
 
 There are two things to consider when determining which files should be inserted into the
 index. First, we are considering only files of a specific file type, since the tool does
-not allow analysis of multiple programming languages at the same time (but multiple
-instances of CCDetect-LSP can be launched at the same time). Therefore, the index should
-contain for example only \verb|*.java| files if Java is the language to analyze. Second,
-all files of that file type might not be relevant to consider in the analysis. This could
-for example be generated code, which generally contains a lot of duplication, but is not
-practical or necessary to consider as duplicate code, since this is not code which the
-programmer interact with directly. Therefore, the default behavior is to consider only
-files of the correct file type, which are checked into version control. The tool supports
-adding all files in a folder, or all files checked into version control.
+not allow analysis of multiple programming languages at the same time\footnote{However,
+    multiple instances of CCDetect-LSP can be run to analyze multiple languages in
+the same IDE}. Therefore, the index should contain for example only \verb|*.java| files if
+Java is the language to analyze. Second, all files of that file type might not be relevant
+to consider in the analysis. This could for example be generated code, which generally
+contains a lot of duplication, but is not practical or necessary to consider as duplicate
+code, since this is not code which the programmer interacts with directly. Therefore, the
+default behavior is to consider only files of the correct file type, which are checked
+into version control. The tool supports adding all files in a folder, or all files checked
+into version control.
 
 When a document is first indexed by the server, the file contents is read from the disk.
 However, as soon as the programmer opens this file in their IDE, the source of truth for
@@ -152,7 +153,7 @@ flag \verb|open| for the relevant document and stops reading its contents from d
 Instead, updates to the file are obtained via the \verb|textDocument/didChange| message.
 This message can provide either the entire content of the file each time the file changes,
 or it can provide only the changes and the location of the change. Receiving only the
-changes will be useful for this algorithm when the analysis incrementally reparses the
+changes will be useful for this algorithm when the analysis incrementally parses the
 document.
 
 \section{Displaying and interacting with clones}
@@ -160,10 +161,10 @@ document.
 When detection is finished and the list of clones is ready, the LSP module will convert
 clones into diagnostics and code-actions which can be interacted with from the client. For
 diagnostics, each clone object is converted into a diagnostic which has a range and some
-information about the clone. The diagnostic displays an error in the client which also has
-information for each matching clone. This is achieved this by attaching
-\verb|DiagnosticRelatedInformation| to a diagnostic which is defined in the protocol. When
-all the code clones have been converted to diagnostics, the server sends a
+information about the clone. The diagnostic displays an information message in the client
+which also has information for each matching clone. This is achieved this by attaching
+\verb|DiagnosticRelatedInformation| to a diagnostic, which is defined in LSP. When all the
+code clones have been converted to diagnostics, the server sends a
 \verb|textDocument/publishDiagnostics| message which sends all the diagnostics to the
 client in JSON-RPC format. For code-actions, the process is similar, for each clone pair,
 we create a code-action which navigates from one to the other, using the
@@ -195,4 +196,5 @@ default values if none are given:
 \end{lstlisting}
 
 The fragment query option is a Tree-sitter query, which is explained in more detail in
-\cref{initialdetection}.
+\cref{initialdetection}. The rest of the configuration options will also become clear in
+the following chapters.
