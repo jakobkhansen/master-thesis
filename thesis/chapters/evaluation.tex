@@ -4,9 +4,9 @@
 In this chapter, CCDetect-LSP will be evaluated based on different criteria, which combined
 will provide a basis for evaluating the tool as a whole.
 
-The most important aspect of CCDetect-LSP to evaluate is the real-time performance. We
-will compare the time of the initial detection with the incremental updates, as well as
-compare its performance with another incremental clone detector,
+The most important aspect of CCDetect-LSP to evaluate is its performance in a real-time
+environment. We will compare the time of the initial detection with the incremental
+detection, as well as compare its performance with another incremental clone detector,
 iClones~\Cite{GodeIncrementalCloneDetection}. Note that we will also distinguish between
 the initial detection where parsing the entire code base is necessary, and subsequent
 detections which still constructs the suffix array from scratch, but does not require
@@ -18,8 +18,9 @@ building the suffix array from scratch.
 This chapter will evaluate CCDetect-LSP in the following ways:
 
 \begin{itemize}
-    \item Verify correctness of clone detection with BigCloneBench.
-    \item Informal complexity analysis of phases in initial, SACA and incremental detection
+    \item Verify correctness of clone detection with BigCloneBench
+    \item Informal complexity analysis of each phase in the initial and incremental
+        detection algorithms
     \item Performance benchmark of SACA detection, incremental detection and iClones
     \item Memory usage benchmark of SACA detection, incremental detection and iClones
     \item Language and IDE support
@@ -32,7 +33,7 @@ This chapter will evaluate CCDetect-LSP in the following ways:
 In order to verify that CCDetect-LSP correctly identifies clones, we should analyze and
 confirm that CCDetect-LSP finds all clones in a given code base.
 BigCloneBench~\cite{BigCloneBench} is a clone detection benchmark of a set of known clones
-in a dataset called ``IJaDataset''. The benchmark consists of the IJaDataset and a
+in a Java dataset called ``IJaDataset''. The benchmark consists of the IJaDataset and a
 database containing information of the clones which exist in the dataset.
 BigCloneEval~\cite{BigCloneEval} is a tool which simplifies evaluation of a tool on the
 BigCloneBench. BigCloneEval evaluates a tool by running the tool on the dataset, letting
@@ -59,8 +60,9 @@ the minimum clone size to $100$ and set the minimum similarity threshold to be $
 since we are only evaluating CCDetect-LSP for type-1 and type-2 clone recall. Setting the
 minimum similarity threshold also drastically reduces the time an evaluation takes, as we
 skip evaluating detection of type-3 clones. The default token threshold was set to $100$
-instead of $50$, as the evaluation time increases drastically as the number of clones to
-match in the database and the number of clones reported by CCDetect-LSP increases.
+instead of $50$, as the evaluation time alsos increases drastically as the number of
+clones to match in the database and the number of clones reported by CCDetect-LSP
+increases.
 
 For the type-2 detection, we set the following AST nodes to be normalized:
 
@@ -90,9 +92,9 @@ will be discussed further in \cref{discussion}.
 
 In this section we will conduct an informal analysis of the running time of each phase of
 the initial, SACA and incremental detection to argue that the average runtime complexity
-of the incremental detection is more efficient than the initial detection. In each phase
-we will argue the run time in terms of Big O notation. Some claims will be substantiated
-in the next section where we look at concrete code bases and their properties.
+of the incremental detection is lower than the initial detection. In each phase we will
+argue the run time in terms of Big O notation. Some claims will be substantiated in the
+next section where we look at concrete code bases and their properties.
 
 First, we will define some notation for this analysis. We are analyzing a code base of
 size $n$, where $n$ is the number of characters in the code base. The fingerprint of the
@@ -112,20 +114,21 @@ is $O(f)$ because the suffix array construction is performed for every update, w
 linear time in the size of the input, which is the fingerprint. The extraction of clones
 from the LCP array also runs in $O(f)$ as it is a single scan over the LCP array. The
 final source-mapping is a bit more complicated, taking $O(\vert\text{clones}\vert \times
-\log (\vert\text{documents}\vert))$. This complexity comes from binary-searching the list
+\log (\vert\text{documents}\vert))$. This complexity arises from binary-searching the list
 of documents to find the correct document for each clone. This is highly likely to be less
 time consuming than the suffix array construction, as the number of documents and number
 of clones are usually orders of magnitude lower than the size of the whole code base.
 Therefore, we get a final running time of $O(f) + O(\vert\text{clones}\vert \times
-\log(\vert\text{document}\vert))$, where $O(f)$ is highly likely to be the dominating factor.
+\log(\vert\text{document}\vert))$, where $O(f)$ is highly likely to be the dominating
+factor.
 
-For the incremental detection, we have already parsed the code base and built the index
-and dynamic extended suffix array structure for the code base. Afterwards, when an edit
-$E$ is performed in a document $D$, the first phase is to update the document index. We
-iterate over the documents to update their fingerprint ranges, which has a complexity of
-$O(\vert\text{documents}\vert)$. When a document which has been edited is reached, the new
-document content is incrementally parsed, queried for fragments and then the fragments are
-fingerprinted. In an IDE scenario, only one file is edited in each update, so only one
+For the incremental detection, we have already parsed the code base and built the index,
+dynamic extended suffix array and wavelet matrix for the code base. Afterwards, when an
+edit $E$ is performed in a document $D$, the first phase is to update the document index.
+We iterate over the documents to update their fingerprint ranges, which has a complexity
+of $O(\vert\text{documents}\vert)$. When a document which has been edited is reached, the
+new document content is incrementally parsed, queried for fragments and then the fragments
+are fingerprinted. In an IDE scenario, only one file is edited in each update, so only one
 document needs to be parsed in each update. In the worst-case, we have to fingerprint the
 entire document, which has a complexity of $O(\vert D\vert)$. The complexity of this phase
 is therefore $O(\vert\text{documents}\vert + \vert D\vert)$.
@@ -138,7 +141,7 @@ the file, then $\vert E\vert \approx \vert D_f\vert$. We get this time complexit
 Hirschberg's algorithm runs in $O(n \times m)$ where in our case, $n \approx m$. If the
 size of the edit is contained in a smaller area, we apply the optimization which reduces
 the size of the edit by comparing characters at the beginning and end of the string, as
-discussed in \cref{dynamicdetection}. This process has a complexity of $O(\vert D\vert)$,
+discussed in \cref{dynamicdetection}. This process has a complexity of $O(\vert D_f\vert)$,
 and afterwards Hirschberg's algorithm has a worst-case complexity of $O(\vert E\vert^2)$.
 
 The worst-case complexity of dynamically updating the extended suffix array is actually
@@ -155,13 +158,15 @@ addition, before the reordering when we are inserting/deleting characters in the
 use the LF function and insert/delete in the wavelet matrix and the $C$ array. The
 dominating factor of these operations is again the LF function. If an edit operation
 consists of inserting/deleting multiple characters, the number of LF function calls is
-increased, with a complexity of $O(e \times (\sigma + \log f \log\sigma))$. Note that
-while there are many factors in this time complexity, all the factors should be quite
-small compared to $f$, making the complexity of reordering the suffixes the dominating
-factor of this phase.
+increased, with a complexity of $O(e \times (\sigma + \log f \log\sigma))$. We can extend
+this to account for multiple edit operations as well, which increases the complexity to
+$O(\vert\text{edits}\vert \times (e \times (\sigma + \log f \log\sigma)))$. Note that while
+there are many factors in this time complexity, all the factors should be quite small
+compared to $f$, making the complexity of reordering the suffixes the dominating factor of
+this phase.
 
 The average-case complexity of this phase is however highly likely to be faster. Salson et
-al.have shown that on average, the number of reorderings required for an
+al. have shown that on average, the number of reorderings required for an
 insertion/deletion in a suffix array is highly correlated with the average LCP value of
 the input~\cite{DynamicExtendedSuffixArraysReorderings}. Their data shows that for
 multiple different types of data such as genome sequences and english text, the average
@@ -188,14 +193,13 @@ complexity iteration. However, this is highly unlikely, since the nodes with LCP
 above the token threshold are either clones, or contained clones. The number of contained
 clones is limited by the number of clones because each clone can only have a limited
 amount of contained clones. Therefore, the number of LCP nodes examined should be closer
-to $O(\vert\text{clones}\vert)$, which is highly likely to be much less expensive than
+to $O(\vert\text{clones}\vert)$, which is highly likely to be less expensive than
 iterating over all the LCP nodes. For each examined LCP node, we need to traverse from the
 node, to its pointer node, and then to the root of the $B$ tree to determine the
 fingerprint index of that LCP node. We do the same to determine the index of the matching
-clone, as described in Chapter \ref{dynamicdetection}. These traversals take $O(\log f)$ time.
-The worst-case performance of this phase is therefore $O(f \times \log(f))$, but we will
-see that the average-case performance is closer to $O(\vert\text{clones}\vert \times
-\log(f))$.
+clone, as described in Chapter \ref{dynamicdetection}. These traversals take $O(\log f)$
+time. The worst-case performance of this phase is therefore $O(f \times \log(f))$, but on
+average the complexity is closer to $O(\vert\text{clones}\vert \times \log(f))$.
 
 Finally, the source-mapping phase is easier to analyze. As we now know all the positions
 of clones and their matches, building the clone-map takes $O(\vert\text{clones}\vert
