@@ -4,8 +4,7 @@
 This chapter discusses the results of the evaluations performed in \cref{evaluation} and
 conclude with some insights into which algorithms seem to be more efficient in each case.
 We will also discuss the implications of the memory usage, and discuss the clones which
-are detected, and the possibility of extending the incremental algorithm of CCDetect-LSP
-to more intricate types of clones. Finally, this chapter will discuss some related work.
+are detected. Finally, this chapter will discuss some related work.
 
 \section{Performance}
 
@@ -76,10 +75,10 @@ incremental detection scales worse than the other algorithms when the number of 
 increase. Our incremental detection can outperform the other algorithms up to a decently
 large number of edits, but if the code base drastically changes (thousands of tokens) in
 each revision, iClones seems to have the best performance. Since editing thousands of
-tokens at a time is unrealistic in the IDE scenario, we are therefore confident in saying
-that CCDetect incremental detection still has the best performance for the IDE scenario,
-but that this algorithm is not very suitable in the evolution scenario, if the changes in
-each revision are affecting thousands of tokens.
+tokens in a single edit is unrealistic in the IDE scenario, we are therefore confident in
+saying that CCDetect-LSP incremental detection still has the best performance for the IDE
+scenario, but that this algorithm may not be suitable in the evolution scenario, if the
+changes in each revision are affecting thousands of tokens or more.
 
 In terms of stability of performance, it seems that the SACA detection is naturally very
 stable between each revision, as it is recomputing the entire suffix array anyway. The two
@@ -91,24 +90,24 @@ spikes in performance for iClones (such as in figure \ref{fig:neo4j}). Our incre
 algorithm has a running time which fluctuates mostly by how much time updating the suffix
 array takes. The other phases are generally either very stable (source-mapping) or are too
 fast to differentiate between revisions (parsing, fingerprinting). The time to update the
-suffix array is highly dependent on how many suffixes needs to be reordered. The number of
-suffixes being reordered directly affects how many LCP values need to be updated, which is
-often the bottleneck of the suffix array update. In our testing we examined two different
-code bases of size ${\sim}2.2\text{MLOC}$, graal and flink. We hypothesized that graal
-would have slower updates, as its $\text{LCP}_\text{avg}$ was more than double that of
-flink. According to Salson et al.~\cite{DynamicExtendedSuffixArraysReorderings}, this
-should on average lead to more suffixes being reordered. However, our results show that
-the running time for updates in these code bases are very similar. The reason why we do
-not see much of a difference could be because the $\text{LCP}_\text{avg}$ differences in
-our code bases is too small to see any noticeable effect by doubling the
-$\text{LCP}_\text{avg}$. Inspecting the numbers by Salson et
-al.~\cite{DynamicExtendedSuffixArraysReorderings}, shows that the number of suffixes
-needing to be reordered for lower $\text{LCP}_\text{avg}$ values were often below $20$ and
-that the number of reordered suffixes only drastically increases for
+suffix array is highly dependent on how the suffix array changes and how many LCP values
+need to be updated. The number of suffixes being reordered directly affects how many LCP
+values need to be updated, which is often the bottleneck of the suffix array update. In
+our testing we examined two different code bases of size ${\sim}2.2\text{MLOC}$, graal and
+flink. We hypothesized that graal would have slower updates, as its
+$\text{LCP}_\text{avg}$ was more than double that of flink. According to Salson et
+al.~\cite{DynamicExtendedSuffixArraysReorderings}, this should on average lead to more
+suffixes being reordered. However, our results show that the running time for updates in
+these code bases are very similar. The reason why we do not see much of a difference could
+be because the $\text{LCP}_\text{avg}$ difference in these code bases is too small to see
+any noticeable effect by doubling the $\text{LCP}_\text{avg}$. Inspecting the numbers by
+Salson et al.~\cite{DynamicExtendedSuffixArraysReorderings}, shows that the number of
+suffixes needing to be reordered for lower $\text{LCP}_\text{avg}$ values were often below
+$20$ and that the number of reordered suffixes only drastically increases for
 $\text{LCP}_\text{avg}$ in the hundreds. These values are more realistic for inputs such
 as DNA sequences than for our source code fingerprints. It therefore seems that source
-code is a good candidate to apply the dynamic suffix array update algorithm to, as updates
-in source code will on average mean few suffixes need to be reordered.
+code is a good candidate to apply the dynamic extended suffix array update algorithm to,
+as updates in source code will on average mean few suffixes need to be reordered.
 
 With these results, it is clear that CCDetect-LSP incremental detection is fast enough to
 be used in the IDE scenario for many code bases at least up to ${\sim}2.2$MLOC (flink,
@@ -117,12 +116,12 @@ code bases of larger sizes (elasticsearch, intellij), small edits (INS10, DEL10)
 be processed in under $1$ second, but larger edits (INS100, DEL100) can start to take some
 time, as the processing time exceeds $1$ second and can be closer to $2$ seconds. If the
 programmer is generally only performing small edits in few files, and not doing
-large-scale refactoring across many files at once, CCDetect-LSP is likely fast enough to
-feel ``real-time'' even for these large code bases, but might feel sluggish to update on
-such larger refactoring operations. It is also clear that while CCDetect-LSP incremental
-detection is fast for the IDE scenario, it starts to get outperformed by other algorithms
-in the evolution scenario if the number of edits increases, and the size of the edits get
-larger.
+large-scale automated refactoring across many files at once, CCDetect-LSP is likely fast
+enough to feel ``real-time'' even for these large code bases, but might feel sluggish to
+update on such larger refactoring operations. It is also clear that while CCDetect-LSP
+incremental detection is fast for the IDE scenario, it starts to get outperformed by other
+algorithms in the evolution scenario if the number of edits increases, and the size of the
+edits get larger.
 
 \section{Memory usage}
 
@@ -156,7 +155,7 @@ that it is not nearly as memory efficient as the normal suffix array in array fo
 larger code base such as elasticsearch and intellij-community, one would likely require a
 computer with at least 16GB RAM in order to justify running CCDetect-LSP incremental
 detection in the IDE. Again, it seems like CCDetect-LSP incremental detection is a good
-fit for code bases up to ${\sim}2.2MLOC$ (graal, flink), where the memory usage is lower
+fit for code bases up to ${\sim}2.2\text{MLOC}$ (graal, flink), where the memory usage is lower
 than 4GB.
 
 \section{Clones detected}
@@ -166,8 +165,8 @@ and ${\sim}89.40\%$ of type-2 clones in the BigCloneBench dataset. The results s
 CCDetect-LSP was able to identify practically all type-1 clones, which gives us confidence
 that our algorithm is correct in terms of the reported clones. BigCloneBench also reported
 that CCDetect-LSP was able to detect almost all type-2 clones, which we believe is
-correct, considering we did not fully explore which AST nodes should be normalized to get
-a better recall.
+correct, considering we did not fully explore which token types should be normalized to
+get a better recall in the BigCloneBench. 
 
 We decided to store and represent clones as clone classes, rather than clone pairs. We
 chose this because it gives a clearer picture to the programmer of all the clones of a
@@ -178,13 +177,14 @@ refactoring a set of clones likely leads to a better result than refactoring onl
 clone pair~\cite{TowardsAutomatedRefactoring}.
 
 Detecting type-1 clones is likely the most important clones to detect in an IDE scenario,
-but type-2 clones are also likely useful. CCDetect-LSP has shown that it can detect almost
-all type-2 clones with only a few normalizations added to its configuration, but we
+but type-2 clones are also likely important. CCDetect-LSP has shown that it can detect
+almost all type-2 clones with only a few normalizations added to its configuration, but we
 believe that this number would increase closer to $100\%$ if we added more normalizations.
-We believe that BigCloneBench allows more token types to be allowed differences than our
-configuration, and we therefore claim that CCDetect-LSP is able detect type-2 clones, but
-requires more configuration to be able to detect all type-2 clones in the BigCloneBench
-dataset.
+We only normalized the token types which correlated with our definition of a type-2 clone,
+but it is possible that BigCloneBench considers more token types to be tokens which should
+be allowed to be normalized. We therefore claim that CCDetect-LSP is able to detect type-2
+clones, but it requires the client to list every single token type which should be
+normalized, which is not optimal.
 
 If type-3 clones were to be considered, we need to consider how useful it is to report
 these clones in an IDE scenario. Recall that type-3 clones are clones which in addition to
@@ -208,7 +208,7 @@ a substantial performance and memory usage gain by instead fingerprinting entire
 instead of each token. This would drastically reduce the size of the fingerprint, which
 would make the suffix array updates faster and reduce the size of the dynamic extended
 suffix array and wavelet matrix. However, as there are a lot more unique lines in a code
-base than tokens, this would also drastically increase the alphabet size, $\sigma$, which
+base than tokens, this would also drastically increase the alphabet size $\sigma$, which
 will at least slow down operations on the wavelet matrix. This is a trade-off which would
 be interesting to explore further.
 
@@ -268,11 +268,11 @@ have tested CCDetect-LSP for multiple languages, and shown that there is very li
 configuration required to change the desired language. Therefore, we claim that
 CCDetect-LSP works very well as a language agnostic clone detection tool.
 
-However, for type-2 clones, CCDetect-LSP requires manual configuration of which AST nodes
-to normalize in the fingerprint. This process can hardly be called language agnostic, as
-which nodes to normalize is fully up to the client, and requires the user to be at least
-familiar with the AST of the language they are working on, for type-2 clone detection to
-work well.
+However, for type-2 clones, CCDetect-LSP requires manual configuration of which token
+types to normalize in the fingerprint. This process can hardly be called language
+agnostic, as which token types to normalize is fully up to the client, and requires the
+user to be at least familiar with the parser of the language they are working with, for
+type-2 clone detection to work well.
 
 In the case of the C language, which did not work correctly because of a quirk of its
 grammar, it demonstrates a downside to going with the parser generator strategy. You
@@ -295,7 +295,7 @@ This section will list related work which have explored similar topics, or work 
 could be relevant for future work.
 
 As mentioned in \cref{background}, the most common algorithm for clone detection is the
-suffix-tree implementation. Therefore, many existing tools use a suffix
+suffix tree implementation. Therefore, many existing tools use a suffix
 tree~\cite{GodeIncrementalCloneDetection, Zibran_real_time_search}. We have discussed the
 disadvantages of the suffix tree in \cref{discussion}, mainly the memory usage. The tool
 SimEclipse implements a suffix tree algorithm. Additionally, the tool implements many
@@ -306,8 +306,8 @@ Zhu et al. published a paper while this thesis was being written which shows a t
 implements grammar-pluggable clone detection~\cite{GrammarPluggableCloneDetection}. This
 is the same concept which we have implemented in CCDetect-LSP where we achieve language
 agnostic clone detection by using a parser generator. They are able to identify all type-2
-clones and has a $61\%$ recall for type-3 clones. Their algorithm seems to be based on a
-completely different paradigm of clone detection than suffix trees and suffix arrays,
+clones and obtain a $61\%$ recall for type-3 clones. Their algorithm seems to be based on
+a completely different paradigm of clone detection than suffix trees and suffix arrays,
 which could be interesting to examine for its potential in an incremental setting.
 However, we should note that their evaluation shows that this type of clone detection is
 not very fast, so it is not clear if this approach is suitable in a ``real-time'' setting.
@@ -316,8 +316,8 @@ While we are not aware of any other attempts at using dynamic suffix arrays for 
 detection, suffix arrays have been used for clone detection before. Li et al.~\cite{SAGA}
 has used suffix arrays as a way to perform clone detection while utilizing GPU
 acceleration. The tool SHINOBI also uses a suffix array which can be queried for clones
-based on a string~\cite{SHINOBI}. Their paper seems to indicate that only the edited code
-gets queried in the suffix array.
+based on a string~\cite{SHINOBI}. Their paper seems to indicate that only code being
+edited gets queried in the suffix array at a given moment, which is an interesting idea.
 
 For our dynamic extended suffix array implementation, we built upon the ideas of Salson et
 al.~\cite{DynamicExtendedSuffixArrays, DynamicExtendedSuffixArraysReorderings, DynamicBWT}

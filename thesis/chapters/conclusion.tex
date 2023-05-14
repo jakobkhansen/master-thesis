@@ -47,7 +47,7 @@ topic~\cite{TowardsAutomatedRefactoring, RefactoringOrientedClones}, especially 
 at object-oriented programming languages. For CCDetect-LSP it would be interesting to look
 at either combining the clone detection with existing refactoring tools from other LSP
 clients, or to implement refactoring code-actions in CCDetect-LSP itself, which
-automatically refactors to remove the selected clone. However, this would be a hard to
+automatically refactors to remove the selected clone. However, this would be hard to
 achieve while CCDetect-LSP is still a language agnostic tool, as different languages have
 completely different paradigms to perform refactoring on.
 
@@ -74,7 +74,7 @@ explained by Salson et al.~\cite{DynamicExtendedSuffixArrays}. This is done by s
 at unsampled positions by using the sampled values. This would again slow down the
 performance of accessing the data structure, as computing the values at unsampled
 positions is slower, but it will also reduce the number of values stored, and therefore
-the memory usage will be better.
+the memory usage will be improved.
 
 \subsection*{Lazy LCP array updates}
 
@@ -95,9 +95,8 @@ relatively small. The incremental algorithm was able to process large edits for 
 of over 5MLOC in under 2 seconds, and faster for smaller edits. We have demonstrated that
 our novel application of dynamic extended suffix arrays is a suitable and fast approach to
 clone detection in the IDE scenario, and can give comparable and better results than tools
-which implement a dynamic suffix tree. It also outperforms other incremental detection
-algorithms in terms of memory. Though memory consumption is the main limitation for
-practical use, CCDetect-LSP still outperforms other comparable tools in the IDE scenario.
+which implement a dynamic suffix tree. Though memory consumption is the main limitation
+for practical use, CCDetect-LSP still outperforms other incremental algorithms.
 
 We have demonstrated that LSP can implement the bare-minimum features needed for a clone
 detection tool, but some extensions would be useful in order to separate clone detection
@@ -106,6 +105,6 @@ from other types of diagnostics.
 Finally, we have demonstrated that language agnostic clone detection using a parser
 generator works and allows sufficient selection of fragments for flexible analysis, and to
 avoid listing unwanted clones. We have also discussed that a language agnostic approach is
-more challenging in terms of normalizing inputs and therefore detection of type-2 clones.
-However, this challenge was partly solved by allowing the client to configure how the
-input should be normalized.
+more challenging in terms of normalizing inputs and therefore detection of type-2 and
+type-3 clones. However, this challenge was partly solved for type-2 clones by allowing the
+client to configure how the input should be normalized.
