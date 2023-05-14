@@ -294,13 +294,19 @@ completely language agnostic one, for the IDE scenario.
 This section will list related work which have explored similar topics, or work which
 could be relevant for future work.
 
-As mentioned in \cref{background}, the most common algorithm for clone detection is the
-suffix tree implementation. Therefore, many existing tools use a suffix
-tree~\cite{GodeIncrementalCloneDetection, Zibran_real_time_search}. We have discussed the
-disadvantages of the suffix tree in \cref{discussion}, mainly the memory usage. The tool
-SimEclipse implements a suffix tree algorithm. Additionally, the tool implements many
-interesting features, such as visualization of clones in a tree-view, simultaneous editing
-of clones, and multiple features related to tracking the evolution of a clone.
+Our work falls under the category of incremental clone detection which focuses on
+performance in an incremental scenario rather than accuracy of clone detection. As
+previously cited in \cref{background}, other algorithms and tools have been made which
+also focuses on incremental clone detection~\cite{GodeIncrementalCloneDetection,
+LocalitySensitiveHashingIncremental, IndexBasedIncrementalCloneDetection,
+SiameseScalableAndIncrementalClone}.
+
+The most common algorithm for clone detection is the suffix tree implementation.
+Therefore, many existing tools use a suffix tree~\cite{GodeIncrementalCloneDetection,
+Zibran_real_time_search}. The tool SimEclipse implements a suffix tree
+algorithm~\cite{Udding_Towards_Convenient_Management}. Additionally, the tool implements
+many interesting features, such as visualization of clones in a tree-view, simultaneous
+editing of clones, and multiple features related to tracking the evolution of a clone.
 
 Zhu et al. published a paper while this thesis was being written which shows a tool which
 implements grammar-pluggable clone detection~\cite{GrammarPluggableCloneDetection}. This
