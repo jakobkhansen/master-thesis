@@ -336,7 +336,7 @@ print(sum);
 	\end{table}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Burrows-Wheeler transform}
 \end{frame}
 
 \section{Implementation}
@@ -347,13 +347,91 @@ print(sum);
 	\begin{itemize}
 		\item The Language Server Protocol (LSP) facilitates IDE agnostic tooling
 		\item CCDetect-LSP is implemented as an LSP server
+            \begin{itemize}
+                \item List clones
+                \item Display clones inline with code
+                \item Jump between matching clones
+                \item Incremental updates on each edit
+            \end{itemize}
 	\end{itemize}
+\end{frame}
+
+\begin{frame}{LSP}
+    \begin{figure}
+        \begin{center}
+            \includegraphics[width=0.7\textwidth]{figures/lspcommunication.drawio.pdf}
+        \end{center}
+        \caption{Example LSP server communication}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{CCDetect-LSP architecture}
+    \begin{figure}
+        \begin{center}
+            \includegraphics[width=0.7\textwidth]{figures/architecture.drawio.pdf}
+        \end{center}
+        \caption{Architecture of CCDetect-LSP}
+    \end{figure}
 \end{frame}
 
 \subsection{Initial clone detection}
 
 \begin{frame}{Implementation: Initial clone detection}
+    \begin{itemize}
+        \item Algorithm which initially detects type-1 and optionally type-2 clones
+        \item Pipeline of 5 phases, returns a list of clones
+        \item Uses an extended suffix array for match detection
+        \item Starting point: Assume documents are indexed
+    \end{itemize}
 \end{frame}
+
+\begin{frame}{Detection algorithm overview}
+    \begin{figure}
+        \begin{center}
+            \includegraphics[width=0.95\textwidth]{figures/phases_all.drawio.pdf}
+        \end{center}
+        \caption{Overview of detection algorithm phases}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Phase 1: Fragment selection}
+    \begin{itemize}
+        \item Parse files using Tree-sitter
+        \item Use a configurable Tree-sitter query to ``capture'' nodes
+        \item Extract and store the tokens of captured nodes
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phase 2: Fingerprinting}
+    \begin{itemize}
+        \item Consistently hash each token value with an increasing integer counter
+        \item Store the fingerprint of each fragment in the document index
+        \item For type-2 detection, hash the token type instead
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phase 2: Fingerprinting}
+    \begin{itemize}
+        \item Example here
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phase 3: Suffix array construction}
+    \begin{itemize}
+        \item Concatenate the fingerprints of each document in the index
+        \item Construct SA, ISA and LCP array of the full fingerprint
+        \item Uses ``Induced sorting variable-length LMS-substrings'' (SA-IS) algorithm
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phase 4: Clone extraction}
+    
+\end{frame}
+
+\begin{frame}{Phase 5: Source-mapping}
+    
+\end{frame}
+
 
 \subsection{Incremental clone detection}
 \begin{frame}{Implementation: Incremental clone detection}
