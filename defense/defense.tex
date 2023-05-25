@@ -2,6 +2,13 @@
 
 
 \usepackage{listings}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usepackage{subfig}
+\def\addsquare#1{\tikz\node[draw]{#1};}
+\def\addcircle#1{\tikz\node[draw,circle]{#1};}
+
+
 
 \usepackage{xcolor}
 \definecolor{pgreen}{rgb}{0,0.5,0}
@@ -213,7 +220,123 @@ print(sum);
 
 
 \subsection{Preliminary algorithms and data structures}
+\begin{frame}{Parsing and incremental parsing}
+    \begin{figure}
+        \begin{center}
+            \includegraphics[width=0.95\textwidth]{figures/incrementalparsing.drawio.pdf}
+        \end{center}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Suffixes}
+	\begin{definition}
+		A suffix of a string $S$ is any nonempty substring which reaches the end of $S$. The suffix
+		at position $i$ of $S$ is denoted $\text{Suffix}(S, i)$.
+	\end{definition}
+\end{frame}
+
+\begin{frame}{Suffix tree}
+	\begin{figure}
+		\begin{center}
+			\begin{tikzpicture}[every tree node,
+					level distance=1.25cm,sibling distance=1cm,
+					edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+				\Tree
+				[.\addcircle{}
+				\edge node[midway, above, sloped] {\$};
+				[.\addsquare{6} ]
+				\edge node[midway, below, sloped] {BANANA\$};
+				[.\addsquare{0} ]
+				\edge node[midway, above, sloped] {A};
+				[.\addcircle{}
+				\edge node[midway, above, sloped] {\$};
+				[.\addsquare{5} ]
+				\edge node[midway, above, sloped] {NA};
+				[.\addcircle{}
+				\edge node[midway, above, sloped] {\$};
+				[.\addsquare{3} ]
+				\edge node[midway, above, sloped] {NA\$};
+				[.\addsquare{1} ]
+				]
+				]
+				\edge node[midway, above, sloped] {NA};
+				[.\addcircle{}
+				\edge node[midway, above, sloped] {\$};
+				[.\addsquare{4} ]
+				\edge node[midway, above, sloped] {NA\$};
+				[.\addsquare{2} ]
+				]
+				]
+			\end{tikzpicture}
+			\caption{Suffix tree for $S=\text{BANANA\$}$}
+			\label{fig:suffixtree}
+		\end{center}
+	\end{figure}
+\end{frame}
+
 \begin{frame}{Suffix array}
+    \begin{definition}[Suffix array] 
+
+        Let $S$ be a string of length N. The suffix array SA of $S$ is an array of length
+        N where $\text{SA}[i] = n$ if $\text{Suffix}(S, n)$ is the ith lexicographically
+        smallest suffix in $S$.
+        
+    \end{definition}
+
+    \begin{definition}[LCP array] 
+
+        Let S be a string of length N and SA be the suffix array of S. The LCP array of S
+        is an array of length N where $\text{LCP[i] = n}$ if $\text{Suffix}(S, SA[i])$ and
+        $\text{Suffix}(S, SA[i - 1])$ has a maximal common prefix of length $\text{n}$.
+        $\text{LCP[0]}$ is undefined or {0}. 
+
+    \end{definition}
+\end{frame}
+
+\begin{frame}{Suffix array}
+	\begin{table}
+		\begin{center}
+			\subfloat[Suffixes]{
+				\begin{tabular}{c | l }
+					Index & Suffix   \\
+					\hline
+					0     & BANANA\$ \\
+					1     & ANANA\$  \\
+					2     & NANA\$   \\
+					3     & ANA\$    \\
+					4     & NA\$     \\
+					5     & A\$      \\
+					6     & \$       \\
+				\end{tabular}}
+			\hspace{1cm}
+			\subfloat[Sorted suffixes]{\begin{tabular}{c | l}
+					Index & Suffix   \\
+					\hline
+					6     & \$       \\
+					5     & A\$      \\
+					3     & ANA\$    \\
+					1     & ANANA\$  \\
+					0     & BANANA\$ \\
+					4     & NA\$     \\
+					2     & NANA\$   \\
+				\end{tabular}}
+			\hspace{1cm}
+			\subfloat[SA, ISA and LCP]{\begin{tabular}{c | c | c | c}
+					Index & SA & ISA & LCP \\
+					\hline
+					0     & 6  & 4   & 0   \\
+					1     & 5  & 3   & 0   \\
+					2     & 3  & 6   & 1   \\
+					3     & 1  & 2   & 3   \\
+					4     & 0  & 5   & 0   \\
+					5     & 4  & 1   & 0   \\
+					6     & 2  & 0   & 2   \\
+				\end{tabular}}
+		\end{center}
+	\end{table}
+\end{frame}
+
+\begin{frame}
 \end{frame}
 
 \section{Implementation}
