@@ -1,9 +1,10 @@
-\documentclass[aspectratio=1610]{beamer}
+\documentclass[aspectratio=1610, xcolor=table]{beamer}
 
 
 \usepackage{listings}
 \usepackage{tikz}
 \usepackage{tikz-qtree}
+\usepackage{multirow}
 \usepackage{subfig}
 \def\addsquare#1{\tikz\node[draw]{#1};}
 \def\addcircle#1{\tikz\node[draw,circle]{#1};}
@@ -361,6 +362,8 @@ print(sum);
 \subsection{Features}
 
 \begin{frame}{CCDetect-LSP features}
+    \begin{columns}
+        \column{0.55\linewidth}{
 	\begin{itemize}
 		\item CCDetect-LSP is implemented as an LSP server
             \begin{itemize}
@@ -370,6 +373,11 @@ print(sum);
                 \item Incremental updates on each edit
             \end{itemize}
 	\end{itemize}
+        }
+        \column{0.45\linewidth}{
+            \includegraphics[width=0.95\textwidth]{figures/vscodecodeclone.png}
+        }
+    \end{columns}
 \end{frame}
 
 \subsection{Initial clone detection}
@@ -392,12 +400,16 @@ print(sum);
     \end{figure}
 \end{frame}
 
-\begin{frame}{Phase 1: Fragment selection}
+\begin{frame}[fragile]{Phase 1: Fragment selection}
     \begin{itemize}
         \item Parse files using Tree-sitter
         \item Use a configurable Tree-sitter query to ``capture'' nodes
         \item Extract and store the tokens of captured nodes
     \end{itemize}
+    \vspace{1cm}
+    \begin{center}
+        \verb|(method_declaration) @method (constructor_declaration) @constructor|
+    \end{center}
 \end{frame}
 
 \begin{frame}{Phase 2: Fingerprinting}
@@ -408,31 +420,308 @@ print(sum);
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Phase 2: Fingerprinting}
-    \begin{itemize}
-        \item Example here
-    \end{itemize}
+\begin{frame}[fragile]{Phase 2: Fingerprinting}
+	\newsavebox{\firstlisting}
+	\begin{lrbox}{\firstlisting}
+        \begin{lstlisting}
+            public class Math() {
+                public int multiplyByTwo(int param) {
+                    return param * 2;
+                }
+
+                public int addTwo(int param) {
+                    return param + 2;
+                }
+            }
+        \end{lstlisting}
+	\end{lrbox}
+	\begin{figure}
+		\begin{center}
+            \scalebox{.75}{\usebox{\firstlisting}}
+                \hspace{.5cm}
+                \scalebox{.7}{\begin{tabular}{l | l}
+					Token         & Fingerprint \\
+					\hline
+					public        & 2           \\
+					int           & 3           \\
+					multiplyByTwo & 4           \\
+					(             & 5           \\
+					param         & 6           \\
+					)             & 7           \\
+					\{            & 8           \\
+					return        & 9           \\
+					*             & 10          \\
+					2             & 11          \\
+					;             & 12          \\
+					\}            & 13          \\
+					addTwo        & 14          \\
+					+             & 15          \\
+            \end{tabular}}
+            \vspace{.5cm}
+
+            [ 2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, \underline{1}, 2, 3, 14, 5, 3, 6, 7,
+                    8, 9, 6, 15, 11, \underline{1}, \underline{0} ]
+		\end{center}
+		\caption{Example fingerprint of Java source-code}
+		\label{fig:fingerprint}
+	\end{figure}
 \end{frame}
 
-\begin{frame}{Phase 3: Suffix array construction}
+\begin{frame}[fragile]{Phase 3: Suffix array construction}
     \begin{itemize}
         \item Concatenate the fingerprints of each document in the index
         \item Construct SA, ISA and LCP array of the full fingerprint
         \item Uses ``Induced sorting variable-length LMS-substrings'' (SA-IS) algorithm
+        \item LCP algorithm slightly modified
     \end{itemize}
+    \begin{center}
+        F:[2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, 1, 2, 3, 14, 5, 3, 6, 7, 8, 9, 6, 15, 11, 1, 0]
+
+        SA:[26,25,12,0,13,1,4,17,14,2,3,16,5,18,9,22,6,19,7,20,8,21,10,24,11,15,23]
+
+        ISA:[3,5,9,10,6,12,16,18,20,14,22,24,2,4,8,25,11,7,13,17,19,21,15,26,23,1,0]
+
+        LCP: [0, 0, 0, 0, 2, 0, 1, 6, 1, 0, 0, 7, 0, 5, 1, 1, 0, 4, 0, 3, 0, 2, 0, 0, 1, 0, 0]
+    \end{center}
+
 \end{frame}
 
 \begin{frame}{Phase 4: Clone extraction}
-    
+    \begin{itemize}
+        \item Use SA, ISA and LCP to find clone positions
+        \item Linear scan through the fingerprint
+        \item Skip contained clones
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Phase 5: Source-mapping}
-    
+    \begin{itemize}
+        \item Map the positions of clones back to the original source-code
+        \item Find the correct file and position of an index in the fingerprint
+    \end{itemize}
 \end{frame}
 
 
 \subsection{Incremental clone detection}
 \begin{frame}{Implementation: Incremental clone detection}
+    \begin{itemize}
+        \item Convert the algorithm to an incremental one
+        \item Input is now the file which has changed and potentially the range
+        \item Dynamic suffix array with edit operations as input
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phase 1: Update document index and fragment selection}
+    \begin{itemize}
+        \item Store the AST of the opened files
+        \item If range available, incrementally parse the changed file
+        \item Mark changed files
+        \item Fragment selection unchanged
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phase 2: Fingerprinting}
+    \begin{itemize}
+        \item Each document stores its fingerprint
+        \item Only need to fingerprint (and fragment select) changed files
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Phase 2.5: Edit operations}
+	\begin{columns}
+		\column{0.45\linewidth}{
+			\begin{itemize}
+				\item Input to phase 3: Edit operations
+				\item How to determine edit operations?
+				\item Edit distance algorithm!
+				\item ``Batched'' operations preferred
+			\end{itemize}
+		}
+		\column{0.55\linewidth}{
+			\begin{table}
+				\begin{center}
+					\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|}
+						  &                      & D                    & E                    & M                    & O                    & C                    & R                    & A                    & T                    \\\hline
+						  & \cellcolor{blue!25}0 & 1                    & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    & 8                    \\\hline
+						R & 1                    & \cellcolor{blue!25}1 & 2                    & 3                    & 4                    & 5                    & 5                    & 6                    & 7                    \\\hline
+						E & 2                    & 2                    & \cellcolor{blue!25}1 & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+						P & 3                    & 3                    & \cellcolor{blue!25}2 & 2                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+						U & 4                    & 4                    & \cellcolor{blue!25}3 & 3                    & 3                    & 4                    & 5                    & 6                    & 7                    \\\hline
+						B & 5                    & 5                    & 4                    & \cellcolor{blue!25}4 & 4                    & 4                    & 5                    & 6                    & 7                    \\\hline
+						L & 6                    & 6                    & 5                    & 5                    & \cellcolor{blue!25}5 & 5                    & 5                    & 6                    & 7                    \\\hline
+						I & 7                    & 7                    & 6                    & 6                    & 6                    & \cellcolor{blue!25}6 & 6                    & 6                    & 7                    \\\hline
+						C & 8                    & 8                    & 7                    & 7                    & 7                    & 6                    & \cellcolor{blue!25}7 & 7                    & 7                    \\\hline
+						A & 9                    & 9                    & 8                    & 8                    & 8                    & 7                    & 7                    & \cellcolor{blue!25}7 & 8                    \\\hline
+						N & 10                   & 10                   & 9                    & 9                    & 9                    & 8                    & 8                    & 8                    & \cellcolor{blue!25}8 \\\hline
+
+						\hline
+					\end{tabular}
+				\end{center}
+				\caption{REPUBLICAN $\rightarrow$ DEMOCRAT}
+				\label{tab:wagnerfischermatrix}
+			\end{table}
+		}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Optimize edit distance}
+\begin{columns}
+	\column{0.4\linewidth}{
+		\begin{itemize}
+			\item Standard algorithm memory usage is too high
+			\item Need to optimize
+			      \begin{itemize}
+				      \item Compare new/old fingerprint of changed document only
+				      \item Remove trivial part at each end of matrix
+				      \item Hirschberg's algorithm
+			      \end{itemize}
+		\end{itemize}
+	}
+	\column{0.6\linewidth}{
+        \begin{table}
+			\begin{center}
+                \scalebox{.9}{\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
+					  &                      & F                     & I                     & N                     & I                     & S                     & H                     & I                    & N                    & G                    \\\hline
+					  & \cellcolor{blue!25}0 & 1                     & 2                     & 3                     & 4                     & 5                     & 6                     & 7                    & 8                    & 9                    \\\hline
+					F & 1                    & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}5 & 6                    & 7                    & 8                    \\\hline
+					A & 2                    & \cellcolor{green!25}1 & \cellcolor{blue!25}1  & \cellcolor{green!25}2 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}5 & 6                    & 7                    & 8                    \\\hline
+					S & 3                    & \cellcolor{green!25}2 & \cellcolor{green!25}2 & \cellcolor{blue!25}2  & \cellcolor{green!25}3 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & 5                    & 6                    & 7                    \\\hline
+					C & 4                    & \cellcolor{green!25}3 & \cellcolor{green!25}3 & \cellcolor{blue!25}3  & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{green!25}4 & 5                    & 6                    & 7                    \\\hline
+					I & 5                    & \cellcolor{green!25}4 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{blue!25}3  & \cellcolor{green!25}4 & \cellcolor{green!25}5 & 4                    & 5                    & 6                    \\\hline
+					N & 6                    & \cellcolor{green!25}5 & \cellcolor{green!25}4 & \cellcolor{green!25}3 & \cellcolor{green!25}4 & \cellcolor{blue!25}4  & \cellcolor{green!25}5 & 5                    & 4                    & 5                    \\\hline
+					A & 7                    & \cellcolor{green!25}6 & \cellcolor{green!25}5 & \cellcolor{green!25}4 & \cellcolor{green!25}4 & \cellcolor{green!25}5 & \cellcolor{blue!25}5  & 6                    & 5                    & 5                    \\\hline
+					T & 8                    & \cellcolor{green!25}7 & \cellcolor{green!25}6 & \cellcolor{green!25}5 & \cellcolor{green!25}5 & \cellcolor{green!25}5 & \cellcolor{blue!25}6  & 6                    & 6                    & 6                    \\\hline
+					I & 9                    & 8                     & 7                     & 6                     & 5                     & 6                     & 6                     & \cellcolor{blue!25}6 & 7                    & 7                    \\\hline
+					N & 10                   & 9                     & 8                     & 7                     & 6                     & 6                     & 7                     & 7                    & \cellcolor{blue!25}6 & 7                    \\\hline
+					G & 11                   & 10                    & 9
+                      & 8                     & 7                     & 7
+                      & 7                     & 8                    & 7
+                      & \cellcolor{blue!25}6 \\\hline\end{tabular}} \end{center}
+                      \caption{FASCINATING $\rightarrow$ FINISHING \\ ASCINAT $\rightarrow$
+                      INISH}
+			\label{tab:minimizededitmatrix}
+    \end{table}
+
+	}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Phase 3: Dynamic suffix array}
+    \begin{itemize}
+        \item Update suffix array based on edit operations
+        \item ``Four-stage algorithm for updating a Burrows-Wheeler transform''
+        \item Updates to the BWT correlates with updates to the SA and ISA
+        \item Inserting a single character leads to:
+            \begin{itemize}
+                \item A new character in the BWT
+                \item A changed character in the BWT
+                \item 0 or more reordering of characters
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Phase 3: Dynamic suffix array}
+    \begin{table}
+	\begin{center}
+		\subfloat[Original BWT]{
+			\begin{tabular}{c | l | l}
+				Order & F  & L           \\
+				\hline
+				6     & \$ & A  \\
+				5     & A  & N  \\
+				3     & A  & N  \\
+				1     & A  & B  \\
+				0     & B  & \$ \\
+				4     & N  & A  \\
+				2     & N  & A  \\
+			\end{tabular}
+		}
+		\hspace{0.5cm}
+		\subfloat[After change and insert]{
+			\begin{tabular}{c | l | l l}
+				Order & F  & L  \\
+				\hline
+                7     & \$ & A & \\
+				6     & A  & N & \\
+				4     & A  & N & \\
+				1     & A  & B & \\
+                0     & B  & \$& \\
+                2     & \textbf{B}  & \textbf{A} & Inserted \\
+                5     & B  & A & \\
+                3     & \textbf{N}  & \textbf{B} & $A \rightarrow B$ \\
+			\end{tabular}
+		}
+		\hspace{0.5cm}
+		\subfloat[After reordering]{
+			\begin{tabular}{c | l | l l}
+                Order & F  & L & \\
+				\hline
+                7     & \$ & A & \\
+                6     & A  & N & \\
+                1     & \textbf{A}  & \textbf{B} &  \multirow{2}{*}{$\updownarrow$} \\
+                4     & \textbf{A}  & \textbf{N} & \\
+                0     & B  & \$& \\
+                2     & B  & A & \\
+                5     & B  & A & \\
+                3     & N  & B & \\
+			\end{tabular}
+		}
+    \caption{Updating BWT dynamically for the string BANANA\$ $\rightarrow$ BABNANA\$} 
+		\label{table:bwtupdatestages}
+	\end{center}
+\end{table}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Dynamic extended suffix array}
+    \begin{itemize}
+        \item Updating suffix array is slow
+            \begin{itemize}
+                \item Inserting: $O(n)$
+                \item Incrementing: $O(n)$
+            \end{itemize}
+        \item We therefore change the data structure which stores SA, ISA and LCP
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Dynamic extended suffix array}
+	\begin{figure}[t]
+		\begin{center}
+			\includegraphics[width=0.95\textwidth]{figures/dynamicpermutation.drawio.pdf}
+		\end{center}
+		\caption{Dynamic permutation for the permutation $[6,5,3,1,0,4,2]$.}
+		\label{fig:dynamicpermutation}
+	\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Updating LCP values}
+    \begin{itemize}
+        \item SA updates correlate with LCP values which need to be updated
+    \end{itemize}
+    \begin{table}[t]
+	\begin{center}
+		\scalebox{1.5}{
+			\begin{tabular}[c]{c|cccccccc}
+				              &               &     & \multicolumn{2}{c}{$\leftrightarrow$}
+				              &               & INS &                                       &                                           \\
+				BWT           & A             & N   & B                                     & N             & \$            & A & A & B \\
+				SA            & 7             & 6   & 4                                     & 1             & 0             & 2 & 5 & 3 \\
+				Old LCP       & 0             & 0   & \underline{1}                         & \underline{3} & \underline{0} &
+				\underline{N} & \underline{0} & 2                                                                                       \\
+				New LCP       & 0             & 0   & 1                                     & 1             & 0             & 1 & 0 & 2 \\
+			\end{tabular}
+		}
+	\end{center}
+	\label{tab:lcpupdates}
+\end{table}
+\end{frame}
+
+\begin{frame}[fragile]{Phase 4 and 5: Clone extraction and source-mapping}
+    \begin{itemize}
+        \item Very similar to the initial detection
+        \item Accessing SA, ISA and LCP is now a bit slower, but this is optimized
+    \end{itemize}
 \end{frame}
 
 \section{Evaluation}
@@ -477,3 +766,4 @@ print(sum);
 \end{frame}
 
 \end{document}
+
