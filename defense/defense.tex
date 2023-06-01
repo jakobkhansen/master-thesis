@@ -730,10 +730,9 @@ print(sum);
         \item CCDetect-LSP evaluation:
             \begin{itemize}
                 \item Verify correctness with BigCloneEval
-                \item Informal complexity analysis
                 \item Benchmark performance
                 \item Benchmark memory usage
-                \item Test multiple languages and IDEs
+                \item Tested multiple languages and IDEs
             \end{itemize}
     \end{itemize}
 \end{frame}
@@ -906,7 +905,7 @@ print(sum);
         \item Memory usage
             \begin{itemize}
                 \item SACA detection best, incremental detection better than iClones
-                \item Memory usage is probably a bottle-neck for usage
+                \item Memory usage is probably a bottle-neck for practical usage
             \end{itemize}
         \item Language agnostic
             \begin{itemize}
@@ -923,26 +922,36 @@ print(sum);
 \section{Conclusion}
 \begin{frame}{Conclusion}
 	\begin{itemize}
-		\item Why do people use clone detection tools?
+        \item CCDetect-LSP is a performant incremental clone detection tool
+        \item Language- and IDE agnostic clone detection is achieved
+		\item Practical usage?
+            \begin{itemize}
+                \item Clone information used by other tools
+                \item Live manual refactoring of code clones
+            \end{itemize}
+		\item Future work?
+            \begin{itemize}
+                \item Type-3 clones
+                \item Refactoring clones
+                \item Compressing data structures
+                \item Optimal edit operations
+            \end{itemize}
 	\end{itemize}
 \end{frame}
 
-\section{Demo?}
+\section{Questions or demo?}
 
-\begin{frame}{Demo}
+\begin{frame}{Questions?}
     \begin{itemize}
-        \item Demo!
+    \item Questions?
+        \begin{itemize}
+            \item Demo?
+            \item LSP communication and architecture?
+            \item Anything else?
+        \end{itemize}
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Implementation: LSP architecture and functionality}
-    \begin{figure}
-        \begin{center}
-            \includegraphics[width=0.7\textwidth]{figures/architecture.drawio.pdf}
-        \end{center}
-        \caption{Architecture of CCDetect-LSP}
-    \end{figure}
-\end{frame}
 
 \begin{frame}{LSP}
     \begin{figure}
@@ -950,6 +959,15 @@ print(sum);
             \includegraphics[width=0.7\textwidth]{figures/lspcommunication.drawio.pdf}
         \end{center}
         \caption{Example LSP server communication}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{LSP architecture}
+    \begin{figure}
+        \begin{center}
+            \includegraphics[width=0.7\textwidth]{figures/architecture.drawio.pdf}
+        \end{center}
+        \caption{Architecture of CCDetect-LSP}
     \end{figure}
 \end{frame}
 
