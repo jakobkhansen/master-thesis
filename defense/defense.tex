@@ -733,27 +733,191 @@ print(sum);
                 \item Informal complexity analysis
                 \item Benchmark performance
                 \item Benchmark memory usage
+                \item Test multiple languages and IDEs
             \end{itemize}
     \end{itemize}
 \end{frame}
 
 \begin{frame}{BigCloneBench}
     \begin{itemize}
-        \item A large database of clones
-        \item BigCloneEval can evaluate detection tools
+        \item A large database of clones in a Java dataset
+        \item BigCloneEval can evaluate detection tools on BigCloneBench
     \end{itemize}
     \begin{figure}
     \begin{alltt}
         \input{figures/ccdetect.report}
     \end{alltt}
-    \caption{BigCloneEval evaluation report on CCDetect-LSP}
+    \caption{BigCloneEval evaluation report for CCDetect-LSP}
     \label{bcblog}
 \end{figure}
 \end{frame}
 
+\begin{frame}{Performance evaluation}
+    \begin{itemize}
+        \item CCDetect-LSP was evaluated on multiple codebases
+        \item Performance compared against SACA detection and iClones
+        \item Incremental updates were randomly generated
+        \item $10 \times 10$ or $10 \times 100$ tokens inserted/deleted
+    \end{itemize}
+    \begin{table}[t]
+    \begin{center}
+        \begin{tabular}[c]{|l|l|l|l|l|}
+            \hline
+            \textbf{Code base} & \textbf{LOC} & \textbf{Clones detected} &
+            $\textbf{LCP}_{\textbf{avg}}$ & $\textbf{LCP}_{\geq \textbf{100}}$ \\
+            \hline
+            WorldWind & 550KLOC & 1517 & 18 & 63967\\
+            \hline
+            neo4j & 1MLOC & 1313 & 9 & 27557\\
+            \hline
+            graal & 2.2MLOC & 2012 & 28 & 154452\\
+            \hline
+            flink & 2.3MLOC & 4729 & 13 & 155754\\
+            \hline
+            elasticsearch & 3.2MLOC & 9986 & 14 & 289511 \\
+            \hline
+            intellij-community & 5.8MLOC & 3585 & 19 & 336190 \\
+            \hline
+        \end{tabular}
+    \end{center}
+    \caption{Properties of code bases}
+    \label{tab:codebases}
+\end{table}
+
+\end{frame}
+
+\begin{frame}{WorldWind (550KLOC)}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/WorldWind_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/WorldWind_INS100.pdf}
+    \end{center}
+    \caption{WorldWind performance benchmark}
+    \label{fig:WorldWind}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{neo4j (1MLOC)}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/neo4j_INS100.pdf}
+    \end{center}
+    \caption{neo4j performance benchmark}
+    \label{fig:neo4j}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{graal (2.2MLOC)}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/graal_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/graal_INS100.pdf}
+    \end{center}
+    \caption{graal performance benchmark}
+    \label{fig:graal}
+\end{figure}
+\end{frame}
+
+\begin{frame}{flink (2.3MLOC)}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/flink_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/flink_INS100.pdf}
+    \end{center}
+    \caption{flink performance benchmark}
+    \label{fig:flink}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{elasticsearch (3.2MLOC)}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS10.pdf} 
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/elasticsearch_INS100.pdf} \end{center}
+    \caption{elasticsearch performance benchmark}
+    \label{fig:elasticsearch}
+\end{figure}
+\end{frame}
+
+\begin{frame}{intellij-community (5.8MLOC)}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/performancegraphs/intellij_INS100.pdf}
+    \end{center}
+    \caption{intellij-community performance benchmark}
+    \label{fig:intellij}
+\end{figure}
+\end{frame}
+
+\begin{frame}{elasticsearch (3.2MLOC)}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.49\textwidth]{figures/incedit_performancegraphs/elasticsearch_INS10.pdf}
+        \includegraphics[width=0.49\textwidth]{figures/incedit_performancegraphs/elasticsearch_INS100.pdf}
+    \end{center}
+    \caption{Elasticsearch performance benchmark with increasing number of edits}
+    \label{fig:elasticsearch_inc}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Memory usage}
+    \begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.6\textwidth]{figures/memoryusage.pdf}
+    \end{center}
+    \caption{Peak memory usage of each tool when running the DEL10 test for each code base.}
+    \label{fig:memoryusage}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Language and IDE agnostic}
+    \begin{itemize}
+        \item CCDetect tested on 6 languages
+            \begin{itemize}
+                \item Java
+                \item Python
+                \item C
+                \item Rust
+                \item Javascript
+                \item Go
+            \end{itemize}
+        \item And 2 IDEs
+            \begin{itemize}
+                \item Neovim
+                \item VSCode
+            \end{itemize}
+        \item Works well in our experience
+    \end{itemize}
+
+\end{frame}
     
 \section{Discussion}
 \begin{frame}{Discussion}
+    \begin{itemize}
+        \item Performance
+            \begin{itemize}
+                \item Incremental detection has best performance if edits are small
+            \end{itemize}
+        \item Memory usage
+            \begin{itemize}
+                \item SACA detection best, incremental detection better than iClones
+                \item Memory usage is probably a bottle-neck for usage
+            \end{itemize}
+        \item Language agnostic
+            \begin{itemize}
+                \item Works well if grammar is correct
+            \end{itemize}
+        \item IDE agnostic
+            \begin{itemize}
+                \item Functionality should work in most IDEs
+                \item Setup and configuration depends on IDE
+            \end{itemize}
+    \end{itemize}
 \end{frame}
 
 \section{Conclusion}
