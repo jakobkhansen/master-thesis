@@ -2,6 +2,8 @@
 
 
 \usepackage{listings}
+\usepackage{alltt}
+
 \usepackage{tikz}
 \usepackage{tikz-qtree}
 \usepackage{multirow}
@@ -621,58 +623,56 @@ print(sum);
 \end{frame}
 
 \begin{frame}[fragile]{Phase 3: Dynamic suffix array}
-    \begin{table}
-	\begin{center}
-		\subfloat[Original BWT]{
-			\begin{tabular}{c | l | l}
-				Order & F  & L           \\
-				\hline
-				6     & \$ & A  \\
-				5     & A  & N  \\
-				3     & A  & N  \\
-				1     & A  & B  \\
-				0     & B  & \$ \\
-				4     & N  & A  \\
-				2     & N  & A  \\
-			\end{tabular}
-		}
-		\hspace{0.5cm}
-		\subfloat[After change and insert]{
-			\begin{tabular}{c | l | l l}
-				Order & F  & L  \\
-				\hline
-                7     & \$ & A & \\
-				6     & A  & N & \\
-				4     & A  & N & \\
-				1     & A  & B & \\
-                0     & B  & \$& \\
-                2     & \textbf{B}  & \textbf{A} & Inserted \\
-                5     & B  & A & \\
-                3     & \textbf{N}  & \textbf{B} & $A \rightarrow B$ \\
-			\end{tabular}
-		}
-		\hspace{0.5cm}
-		\subfloat[After reordering]{
-			\begin{tabular}{c | l | l l}
-                Order & F  & L & \\
-				\hline
-                7     & \$ & A & \\
-                6     & A  & N & \\
-                1     & \textbf{A}  & \textbf{B} &  \multirow{2}{*}{$\updownarrow$} \\
-                4     & \textbf{A}  & \textbf{N} & \\
-                0     & B  & \$& \\
-                2     & B  & A & \\
-                5     & B  & A & \\
-                3     & N  & B & \\
-			\end{tabular}
-		}
-    \caption{Updating BWT dynamically for the string BANANA\$ $\rightarrow$ BABNANA\$} 
-		\label{table:bwtupdatestages}
-	\end{center}
-\end{table}
-
+	\begin{table}
+		\begin{center}
+			\subfloat[Original BWT]{
+				\begin{tabular}{c | l | l}
+					Order & F  & L  \\
+					\hline
+					6     & \$ & A  \\
+					5     & A  & N  \\
+					3     & A  & N  \\
+					1     & A  & B  \\
+					0     & B  & \$ \\
+					4     & N  & A  \\
+					2     & N  & A  \\
+				\end{tabular}
+			}
+			\hspace{0.5cm}
+			\subfloat[After change and insert]{
+				\begin{tabular}{c | l | l l}
+					Order & F          & L                              \\
+					\hline
+					7     & \$         & A          &                   \\
+					6     & A          & N          &                   \\
+					4     & A          & N          &                   \\
+					1     & A          & B          &                   \\
+					0     & B          & \$         &                   \\
+					2     & \textbf{B} & \textbf{A} & Inserted          \\
+					5     & B          & A          &                   \\
+					3     & \textbf{N} & \textbf{B} & $A \rightarrow B$ \\
+				\end{tabular}
+			}
+			\hspace{0.5cm}
+			\subfloat[After reordering]{
+				\begin{tabular}{c | l | l l}
+					Order & F          & L          &                                 \\
+					\hline
+					7     & \$         & A          &                                 \\
+					6     & A          & N          &                                 \\
+					1     & \textbf{A} & \textbf{B} & \multirow{2}{*}{$\updownarrow$} \\
+					4     & \textbf{A} & \textbf{N} &                                 \\
+					0     & B          & \$         &                                 \\
+					2     & B          & A          &                                 \\
+					5     & B          & A          &                                 \\
+					3     & N          & B          &                                 \\
+				\end{tabular}
+			}
+			\caption{Updating BWT dynamically for the string BANANA\$ $\rightarrow$ BABNANA\$}
+			\label{table:bwtupdatestages}
+		\end{center}
+	\end{table}
 \end{frame}
-
 
 \begin{frame}[fragile]{Dynamic extended suffix array}
     \begin{itemize}
@@ -725,9 +725,33 @@ print(sum);
 \end{frame}
 
 \section{Evaluation}
-\begin{frame}{Results}
+\begin{frame}{Evaluation}
+    \begin{itemize}
+        \item CCDetect-LSP evaluation:
+            \begin{itemize}
+                \item Verify correctness with BigCloneEval
+                \item Informal complexity analysis
+                \item Benchmark performance
+                \item Benchmark memory usage
+            \end{itemize}
+    \end{itemize}
 \end{frame}
 
+\begin{frame}{BigCloneBench}
+    \begin{itemize}
+        \item A large database of clones
+        \item BigCloneEval can evaluate detection tools
+    \end{itemize}
+    \begin{figure}
+    \begin{alltt}
+        \input{figures/ccdetect.report}
+    \end{alltt}
+    \caption{BigCloneEval evaluation report on CCDetect-LSP}
+    \label{bcblog}
+\end{figure}
+\end{frame}
+
+    
 \section{Discussion}
 \begin{frame}{Discussion}
 \end{frame}

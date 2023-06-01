@@ -1,0 +1,5 @@
+-- Recall Per Clone Type (type: numDetected / numClones = recall) --
+              Type-1: 23209 / 23210 = 0.999956915122792
+              Type-2: 3542 / 3547 = 0.9985903580490555
+      Type-2 (blind): 242 / 245 = 0.9877551020408163
+ Type-2 (consistent): 3300 / 3302 = 0.9993943064809206
