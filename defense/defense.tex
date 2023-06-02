@@ -87,27 +87,12 @@
 
     \begin{definition}[Code clone]
         A code clone is a code snippet which is equal or similar to another code snippet. The two
-        code snippets are both code clones, and together they form a clone pair.
-        Similarity is determined by some metric such as number of equal lines of code.
+        code snippets are both code clones, and together they form a clone pair. 
     \end{definition}
 \end{frame}
 
-\begin{frame}
-	\frametitle{Clone types}
-	\begin{itemize}
-		\item Code clones are classified into four types
-		      \begin{itemize}
-			      \item Type-1: Syntactically identical
-			      \item Type-2: Structurally identical
-			      \item Type-3: Structurally similar
-			      \item Type-4: Functionally similar (generally)
-		      \end{itemize}
-	\end{itemize}
-\end{frame}
-
-
 \begin{frame}[fragile]
-	\frametitle{Clone type examples: type-1 and type-2}
+	\frametitle{Clone types: type-1 and type-2}
     \begin{figure}[t]
 		\begin{center}
 			\begin{tabular}{c | c}
@@ -148,49 +133,6 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \end{frame}
 
 
-\begin{frame}[fragile]
-	\frametitle{Clone type examples: type-3 and type-4}
-    \vspace{0.5cm}
-	\begin{figure}[t]
-		\begin{center}
-			\begin{tabular}{p{6cm} | p{6cm}}
-				\begin{lstlisting}
-for (int i = 0; i < 10; i++) {
-    print(i);
-}\end{lstlisting} &
-				\begin{lstlisting}
-for (int i = 0; i < 10; i++) {
-    print(i);
-    print(i*2);
-}\end{lstlisting}
-			\end{tabular}
-		\end{center}
-		\caption{Type-3 clone pair}
-		\label{fig:type3clone}
-	\end{figure}
-    \vspace{-0.5cm}
-
-	\begin{figure}[t]
-		\begin{center}
-			\begin{tabular}{r | p{6.5cm}}
-				\hspace{3.2cm}\begin{lstlisting}
-print((n*(n-1))/2)
-\end{lstlisting} &
-				\begin{lstlisting}
-int sum = 0;
-for (int i = 0; i < n; i++) {
-    for (int j = i+1; j < n; j++) {
-        sum++;
-    }
-}
-print(sum);
-            \end{lstlisting}
-			\end{tabular}
-		\end{center}
-		\caption{Type-4 clone pair}
-		\label{fig:type4clone}
-	\end{figure}
-\end{frame}
 
 \begin{frame}{Clone detection}
     \begin{figure}
@@ -200,28 +142,6 @@ print(sum);
     \end{figure}
 \end{frame}
 
-\begin{frame}{Clone matching techniques}
-    \begin{itemize}
-        \item Text-based detection
-            \begin{itemize}
-                \item Match based on raw source code
-            \end{itemize}
-        \item Token-based detection
-            \begin{itemize}
-                \item Match based on tokens
-            \end{itemize}
-        \item Syntactic detection
-            \begin{itemize}
-                \item Match based on AST
-            \end{itemize}
-        \item Hybrid detection
-            \begin{itemize}
-                \item Combine multiple approaches
-            \end{itemize}
-    \end{itemize}
-\end{frame}
-
-
 \subsection{Preliminary algorithms and data structures}
 \begin{frame}{Parsing and incremental parsing}
     \begin{figure}
@@ -229,45 +149,6 @@ print(sum);
             \includegraphics[width=0.95\textwidth]{figures/incrementalparsing.drawio.pdf}
         \end{center}
     \end{figure}
-\end{frame}
-
-\begin{frame}{Suffix tree}
-	\begin{figure}
-		\begin{center}
-			\begin{tikzpicture}[every tree node,
-					level distance=1.25cm,sibling distance=1cm,
-					edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
-				\Tree
-				[.\addcircle{}
-				\edge node[midway, above, sloped] {\$};
-				[.\addsquare{6} ]
-				\edge node[midway, below, sloped] {BANANA\$};
-				[.\addsquare{0} ]
-				\edge node[midway, above, sloped] {A};
-				[.\addcircle{}
-				\edge node[midway, above, sloped] {\$};
-				[.\addsquare{5} ]
-				\edge node[midway, above, sloped] {NA};
-				[.\addcircle{}
-				\edge node[midway, above, sloped] {\$};
-				[.\addsquare{3} ]
-				\edge node[midway, above, sloped] {NA\$};
-				[.\addsquare{1} ]
-				]
-				]
-				\edge node[midway, above, sloped] {NA};
-				[.\addcircle{}
-				\edge node[midway, above, sloped] {\$};
-				[.\addsquare{4} ]
-				\edge node[midway, above, sloped] {NA\$};
-				[.\addsquare{2} ]
-				]
-				]
-			\end{tikzpicture}
-			\caption{Suffix tree for $S=\text{BANANA\$}$}
-			\label{fig:suffixtree}
-		\end{center}
-	\end{figure}
 \end{frame}
 
 \begin{frame}{Suffix array}
@@ -414,15 +295,11 @@ print(sum);
     \end{center}
 \end{frame}
 
-\begin{frame}{Phase 2: Fingerprinting}
+\begin{frame}[fragile]{Phase 2: Fingerprinting}
     \begin{itemize}
         \item Consistently hash each token value with an increasing integer counter
-        \item Store the fingerprint of each fragment in the document index
         \item For type-2 detection, hash the token type instead
     \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Phase 2: Fingerprinting}
 	\newsavebox{\firstlisting}
 	\begin{lrbox}{\firstlisting}
         \begin{lstlisting}
@@ -464,7 +341,6 @@ print(sum);
             [ 2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, \underline{1}, 2, 3, 14, 5, 3, 6, 7,
                     8, 9, 6, 15, 11, \underline{1}, \underline{0} ]
 		\end{center}
-		\caption{Example fingerprint of Java source-code}
 		\label{fig:fingerprint}
 	\end{figure}
 \end{frame}
@@ -476,15 +352,6 @@ print(sum);
         \item Uses ``Induced sorting variable-length LMS-substrings'' (SA-IS) algorithm
         \item LCP algorithm slightly modified
     \end{itemize}
-    \begin{center}
-        F:[2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, 1, 2, 3, 14, 5, 3, 6, 7, 8, 9, 6, 15, 11, 1, 0]
-
-        SA:[26,25,12,0,13,1,4,17,14,2,3,16,5,18,9,22,6,19,7,20,8,21,10,24,11,15,23]
-
-        ISA:[3,5,9,10,6,12,16,18,20,14,22,24,2,4,8,25,11,7,13,17,19,21,15,26,23,1,0]
-
-        LCP: [0, 0, 0, 0, 2, 0, 1, 6, 1, 0, 0, 7, 0, 5, 1, 1, 0, 4, 0, 3, 0, 2, 0, 0, 1, 0, 0]
-    \end{center}
 
 \end{frame}
 
@@ -494,12 +361,22 @@ print(sum);
         \item Linear scan through the fingerprint
         \item Skip contained clones
     \end{itemize}
+    \begin{center}
+        F:[2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, 1, 2, 3, 14, 5, 3, 6, 7, 8, 9, 6, 15, 11, 1, 0]
+
+        SA:[26,25,12,0,13,1,4,17,14,2,3,16,5,18,9,22,6,19,7,20,8,21,10,24,11,15,23]
+
+        ISA:[3,5,9,10,6,12,16,18,20,14,22,24,2,4,8,25,11,7,13,17,19,21,15,26,23,1,0]
+
+        LCP: [0, 0, 0, 0, 2, 0, 1, 6, 1, 0, 0, 7, 0, 5, 1, 1, 0, 4, 0, 3, 0, 2, 0, 0, 1, 0, 0]
+    \end{center}
 \end{frame}
 
 \begin{frame}{Phase 5: Source-mapping}
     \begin{itemize}
         \item Map the positions of clones back to the original source-code
         \item Find the correct file and position of an index in the fingerprint
+        \item Binary-search speeds this process up
     \end{itemize}
 \end{frame}
 
@@ -508,7 +385,7 @@ print(sum);
 \begin{frame}{Implementation: Incremental clone detection}
     \begin{itemize}
         \item Convert the algorithm to an incremental one
-        \item Input is now the file which has changed and potentially the range
+        \item Input is now the file(s) which has changed and potentially the range(s)
         \item Dynamic suffix array with edit operations as input
     \end{itemize}
 \end{frame}
@@ -719,7 +596,8 @@ print(sum);
 
 \begin{frame}[fragile]{Phase 4 and 5: Clone extraction and source-mapping}
     \begin{itemize}
-        \item Very similar to the initial detection
+        \item Similar to the initial detection
+        \item Store nodes with LCP values $\geq$ threshold
         \item Accessing SA, ISA and LCP is now a bit slower, but this is optimized
     \end{itemize}
 \end{frame}
@@ -946,6 +824,7 @@ print(sum);
     \item Questions?
         \begin{itemize}
             \item Demo?
+            \item Go through anything in more detail?
             \item LSP communication and architecture?
             \item Anything else?
         \end{itemize}
@@ -969,6 +848,50 @@ print(sum);
         \end{center}
         \caption{Architecture of CCDetect-LSP}
     \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Clone types: type-3 and type-4}
+    \vspace{0.5cm}
+	\begin{figure}[t]
+		\begin{center}
+			\begin{tabular}{p{6cm} | p{6cm}}
+				\begin{lstlisting}
+for (int i = 0; i < 10; i++) {
+    print(i);
+}\end{lstlisting} &
+				\begin{lstlisting}
+for (int i = 0; i < 10; i++) {
+    print(i);
+    print(i*2);
+}\end{lstlisting}
+			\end{tabular}
+		\end{center}
+		\caption{Type-3 clone pair}
+		\label{fig:type3clone}
+	\end{figure}
+    \vspace{-0.5cm}
+
+	\begin{figure}[t]
+		\begin{center}
+			\begin{tabular}{r | p{6.5cm}}
+				\hspace{3.2cm}\begin{lstlisting}
+print((n*(n-1))/2)
+\end{lstlisting} &
+				\begin{lstlisting}
+int sum = 0;
+for (int i = 0; i < n; i++) {
+    for (int j = i+1; j < n; j++) {
+        sum++;
+    }
+}
+print(sum);
+            \end{lstlisting}
+			\end{tabular}
+		\end{center}
+		\caption{Type-4 clone pair}
+		\label{fig:type4clone}
+	\end{figure}
 \end{frame}
 
 \end{document}
