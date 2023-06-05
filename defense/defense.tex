@@ -133,16 +133,6 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 
 \end{frame}
 
-
-
-\begin{frame}{Clone detection}
-    \begin{figure}
-        \begin{center}
-            \includegraphics[width=0.95\textwidth]{figures/detectionphases.drawio.pdf}
-        \end{center}
-    \end{figure}
-\end{frame}
-
 \subsection{Preliminary algorithms and data structures}
 \begin{frame}{Parsing and incremental parsing}
     \begin{figure}
@@ -271,7 +261,6 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
         \item Algorithm which initially detects type-1 and optionally type-2 clones
         \item Pipeline of 5 phases, returns a list of clones
         \item Uses an extended suffix array for match detection
-        \item Starting point: Assume documents are indexed
     \end{itemize}
 \end{frame}
 
@@ -363,13 +352,14 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
         \item Skip contained clones
     \end{itemize}
     \begin{center}
-        F:[2, 3, 4, 5, 3, 6, 7, 8, 9, 6, 10, 11, 1, 2, 3, 14, 5, 3, 6, 7, 8, 9, 6, 15, 11, 1, 0]
+        F:[2, 3, 4, {\color{blue}\underline{5, 3, 6, 7, 8, 9, 6,}} 10, 11, 1, 2, 3, 14,
+        {\color{blue}\underline{5, 3, 6, 7, 8, 9, 6,}} 15, 11, 1, 0]
 
-        SA:[26,25,12,0,13,1,4,17,14,2,3,16,5,18,9,22,6,19,7,20,8,21,10,24,11,15,23]
+        SA:[26,25,12,0,13,1,4,17,14,2,{\color{blue} \underline{3,16}},5,18,9,22,6,19,7,20,8,21,10,24,11,15,23]
 
-        ISA:[3,5,9,10,6,12,16,18,20,14,22,24,2,4,8,25,11,7,13,17,19,21,15,26,23,1,0]
+        ISA:[3,5,9,10,6,12,16,18,20,14,22,24,2,4,8,25,{\color{blue}\underline{11}},7,13,17,19,21,15,26,23,1,0]
 
-        LCP: [0, 0, 0, 0, 2, 0, 1, 6, 1, 0, 0, 7, 0, 5, 1, 1, 0, 4, 0, 3, 0, 2, 0, 0, 1, 0, 0]
+        LCP: [0, 0, 0, 0, 2, 0, 1, 6, 1, 0, 0, {\color{blue} \underline{7}}, 0, 5, 1, 1, 0, 4, 0, 3, 0, 2, 0, 0, 1, 0, 0]
     \end{center}
 \end{frame}
 
@@ -386,18 +376,18 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \begin{frame}{Implementation: Incremental clone detection}
     \begin{itemize}
         \item Convert the algorithm to an incremental one
-        \item Input is now the file(s) which has changed and potentially the range(s)
+        \item Input is now the file(s) which has changed and the range(s)
         \item Dynamic suffix array with edit operations as input
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Phase 1 and 2: Fragment selection and fingerprinting}
     \begin{itemize}
+        \item Mainly reuse results from previous computation, except for changed file
         \item Fragment selection
     \begin{itemize}
         \item Store the AST of the opened files
-        \item If range available, incrementally parse the changed file
-        \item Fragment selection unchanged
+        \item Incrementally parse the changed file with Tree-sitter
     \end{itemize}
 \item Fingerprinting
     \begin{itemize}
@@ -492,12 +482,6 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
         \item Update suffix array based on edit operations
         \item ``Four-stage algorithm for updating a Burrows-Wheeler transform''
         \item Updates to the BWT correlates with updates to the SA and ISA
-        \item Inserting a single character leads to:
-            \begin{itemize}
-                \item A new character in the BWT
-                \item A changed character in the BWT
-                \item 0 or more reordering of characters
-            \end{itemize}
     \end{itemize}
 \end{frame}
 
@@ -551,9 +535,6 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 			\label{table:bwtupdatestages}
 		\end{center}
 	\end{table}
-\end{frame}
-
-\begin{frame}[fragile]{Dynamic extended suffix array}
 \end{frame}
 
 \begin{frame}[fragile]{Dynamic extended suffix array}
@@ -773,23 +754,21 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \section{Discussion}
 \begin{frame}{Discussion}
     \begin{itemize}
-        \item Performance
+        \item Performance and memory usage
             \begin{itemize}
-                \item Incremental detection has best performance if edits are small
+                \item Incremental detection has the best performance if edits are ``small''
+                \item Memory usage is lower than other incremental algorithms, but could still be a
+                    bottle-neck for practical use
             \end{itemize}
-        \item Memory usage
+        \item Language- and IDE agnostic
             \begin{itemize}
-                \item SACA detection best, incremental detection better than iClones
-                \item Memory usage is probably a bottle-neck for practical usage
+                \item Works well for any language if grammar is correct
+                \item Setup and configuration depends on the IDE
             \end{itemize}
-        \item Language agnostic
+		\item Practical usage in the IDE scenario
             \begin{itemize}
-                \item Works well if grammar is correct
-            \end{itemize}
-        \item IDE agnostic
-            \begin{itemize}
-                \item Functionality should work in most IDEs
-                \item Setup and configuration depends on IDE
+                \item Live manual/automatic refactoring of code clones
+                \item Clone information used by other tools/refactorings
             \end{itemize}
     \end{itemize}
 \end{frame}
@@ -798,37 +777,21 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \begin{frame}{Conclusion}
 	\begin{itemize}
         \item CCDetect-LSP is a performant incremental clone detection tool
-        \item Language- and IDE agnostic clone detection is achieved
-		\item Practical usage?
             \begin{itemize}
-                \item Live manual/automatic refactoring of code clones
-                \item Clone information used by other tools/refactorings
-                \item Simultaneous editing
+                \item Facilitates fast incremental updates
+                \item Lower memory usage than existing solutions
+                \item Language- and IDE agnostic clone detection
             \end{itemize}
-		\item Future work?
+		\item Future work
             \begin{itemize}
                 \item Type-3 clones
                 \item Refactoring clones
                 \item Compressing data structures
-                \item Optimal edit operations
             \end{itemize}
 	\end{itemize}
 \end{frame}
 
 \section{Questions or demo?}
-
-\begin{frame}{Questions?}
-    \begin{itemize}
-    \item Questions?
-        \begin{itemize}
-            \item Demo?
-            \item Go through anything in more detail?
-            \item LSP communication and architecture?
-            \item Anything else?
-        \end{itemize}
-    \end{itemize}
-\end{frame}
-
 
 \begin{frame}{LSP}
     \begin{figure}
