@@ -59,6 +59,7 @@
 \frametitle{Motivation}
 \begin{itemize}
     \item Duplicated code is generally considered harmful to software quality
+    \item Software often contains $10-15\%$ duplicated code
     \item Code clone detection, analysis and management is therefore important
     \item Incremental clone detection algorithms have not been thoroughly researched
     \item Incremental algorithms are useful in use-cases such as in IDEs
@@ -390,21 +391,22 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Phase 1: Update document index and fragment selection}
+\begin{frame}{Phase 1 and 2: Fragment selection and fingerprinting}
+    \begin{itemize}
+        \item Fragment selection
     \begin{itemize}
         \item Store the AST of the opened files
         \item If range available, incrementally parse the changed file
-        \item Mark changed files
         \item Fragment selection unchanged
     \end{itemize}
-\end{frame}
-
-\begin{frame}{Phase 2: Fingerprinting}
+\item Fingerprinting
     \begin{itemize}
         \item Each document stores its fingerprint
         \item Only need to fingerprint (and fragment select) changed files
     \end{itemize}
+    \end{itemize}
 \end{frame}
+
 
 \begin{frame}[fragile]{Phase 2.5: Edit operations}
 	\begin{columns}
@@ -552,20 +554,15 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \end{frame}
 
 \begin{frame}[fragile]{Dynamic extended suffix array}
-    \begin{itemize}
-        \item Updating suffix array is slow
-            \begin{itemize}
-                \item Inserting: $O(n)$
-                \item Incrementing: $O(n)$
-            \end{itemize}
-        \item We therefore change the data structure which stores SA, ISA and LCP
-    \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Dynamic extended suffix array}
+    \begin{itemize}
+        \item Updating suffix array is slow $(O(n))$, new data structure needed
+    \end{itemize}
 	\begin{figure}[t]
 		\begin{center}
-			\includegraphics[width=0.95\textwidth]{figures/dynamicpermutation.drawio.pdf}
+			\includegraphics[width=0.9\textwidth]{figures/dynamicpermutation.drawio.pdf}
 		\end{center}
 		\caption{Dynamic permutation for the permutation $[6,5,3,1,0,4,2]$.}
 		\label{fig:dynamicpermutation}
@@ -754,7 +751,7 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 
 \begin{frame}{Language and IDE agnostic}
     \begin{itemize}
-        \item CCDetect tested on 6 languages
+        \item CCDetect-LSP tested on 6 languages
             \begin{itemize}
                 \item Java
                 \item Python
@@ -804,8 +801,9 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
         \item Language- and IDE agnostic clone detection is achieved
 		\item Practical usage?
             \begin{itemize}
-                \item Clone information used by other tools
-                \item Live manual refactoring of code clones
+                \item Live manual/automatic refactoring of code clones
+                \item Clone information used by other tools/refactorings
+                \item Simultaneous editing
             \end{itemize}
 		\item Future work?
             \begin{itemize}
