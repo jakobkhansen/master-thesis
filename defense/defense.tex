@@ -137,7 +137,15 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \begin{frame}{Parsing and incremental parsing}
     \begin{figure}
         \begin{center}
-            \includegraphics[width=0.95\textwidth]{figures/incrementalparsing.drawio.pdf}
+            \includegraphics[width=0.95\textwidth]{figures/incrementalparsing1.drawio.pdf}
+        \end{center}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Parsing and incremental parsing}
+    \begin{figure}
+        \begin{center}
+            \includegraphics[width=0.95\textwidth]{figures/incrementalparsing2.drawio.pdf}
         \end{center}
     \end{figure}
 \end{frame}
@@ -285,11 +293,6 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
     \end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Phase 2: Fingerprinting}
-    \begin{itemize}
-        \item Consistently hash each token value with an increasing integer counter
-        \item For type-2 detection, hash the token type instead
-    \end{itemize}
 	\newsavebox{\firstlisting}
 	\begin{lrbox}{\firstlisting}
         \begin{lstlisting}
@@ -304,6 +307,11 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
             }
         \end{lstlisting}
 	\end{lrbox}
+\begin{frame}[fragile]{Phase 2: Fingerprinting}
+    \begin{itemize}
+        \item Consistently hash each token value with an increasing integer counter
+        \item For type-2 detection, hash the token type instead
+    \end{itemize}
 	\begin{figure}
 		\begin{center}
             \scalebox{.75}{\usebox{\firstlisting}}
@@ -346,20 +354,33 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \end{frame}
 
 \begin{frame}{Phase 4: Clone extraction}
-    \begin{itemize}
-        \item Use SA, ISA and LCP to find clone positions
-        \item Linear scan through the fingerprint
-        \item Skip contained clones
-    \end{itemize}
+    \begin{columns}
+        \column{0.5\textwidth}{
+            \begin{itemize}
+                \item Use SA, ISA and LCP to find clone positions
+                \item Linear scan through the fingerprint
+                \item Skip contained clones
+            \end{itemize}
+        }
+        \column{0.5\textwidth}{
+            \scalebox{.75}{\usebox{\firstlisting}}
+        }
+    \end{columns}
     \begin{center}
-        F:[2, 3, 4, {\color{blue}\underline{5, 3, 6, 7, 8, 9, 6,}} 10, 11, 1, 2, 3, 14,
-        {\color{blue}\underline{5, 3, 6, 7, 8, 9, 6,}} 15, 11, 1, 0]
-
-        SA:[26,25,12,0,13,1,4,17,14,2,{\color{blue} \underline{3,16}},5,18,9,22,6,19,7,20,8,21,10,24,11,15,23]
-
-        ISA:[3,5,9,10,6,12,16,18,20,14,22,24,2,4,8,25,{\color{blue}\underline{11}},7,13,17,19,21,15,26,23,1,0]
-
-        LCP: [0, 0, 0, 0, 2, 0, 1, 6, 1, 0, 0, {\color{blue} \underline{7}}, 0, 5, 1, 1, 0, 4, 0, 3, 0, 2, 0, 0, 1, 0, 0]
+        \begin{table}
+        
+            \setlength{\tabcolsep}{2pt}
+        \begin{tabular}{c|ccccccccccccccccccccccccccc}
+            F & 2 & 3 & 4 & {\color{blue}5} & {\color{blue}3} & {\color{blue}6}
+              &{\color{blue} 7} & {\color{blue}8} & {\color{blue}9} & {\color{blue}6} & 10 & 11 & 1 & 2 & 3 & 14 &
+            {\color{blue}5} & {\color{blue}3} & {\color{blue}6} & {\color{blue}7} &
+            {\color{blue}8} & {\color{blue}9} & 6 & 15 & 11 & 1 & 0 \\
+        SA & 26 & 25 & 12 & 0 & 13 & 1 & 4 & 17 & 14 & 2 & {\color{blue}3} &
+        {\color{blue}16} & 5 & 18 & 9 & 22 & 6 & 19 & 7 & 20 & 8 & 21 & 10 & 24 & 11 & 15 & 23 \\
+        ISA & 3 & 5 & 9 & 10 & 6 & 12 & 16 & 18 & 20 & 14 & 22 & 24 & 2 & 4 & 8 & 25 & {\color{blue}11} & 7 & 13 & 17 & 19 & 21 & 15 & 26 & 23 & 1 & 0 \\
+        LCP & 0 &  0 &  0 &  0 &  2 &  0 &  1 &  6 &  1 &  0 &  0 &  {\color{blue} 7} &  0 &  5 &  1 &  1 &  0 &  4 &  0 &  3 &  0 &  2 &  0 &  0 &  1 &  0 &  0
+        \end{tabular}
+        \end{table}
     \end{center}
 \end{frame}
 
@@ -543,7 +564,20 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
     \end{itemize}
 	\begin{figure}[t]
 		\begin{center}
-			\includegraphics[width=0.9\textwidth]{figures/dynamicpermutation.drawio.pdf}
+			\includegraphics[width=0.9\textwidth]{figures/dynamicpermutation1.drawio.pdf}
+		\end{center}
+		\caption{Dynamic permutation for the permutation $[6,5,3,1,0,4,2]$.}
+		\label{fig:dynamicpermutation}
+	\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Dynamic extended suffix array}
+    \begin{itemize}
+        \item Updating suffix array is slow $(O(n))$, new data structure needed
+    \end{itemize}
+	\begin{figure}[t]
+		\begin{center}
+			\includegraphics[width=0.9\textwidth]{figures/dynamicpermutation2.drawio.pdf}
 		\end{center}
 		\caption{Dynamic permutation for the permutation $[6,5,3,1,0,4,2]$.}
 		\label{fig:dynamicpermutation}
