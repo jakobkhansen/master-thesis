@@ -3,6 +3,8 @@
 
 \usepackage{listings}
 \usepackage{alltt}
+\usepackage{booktabs}
+
 
 \usepackage{tikz}
 \usepackage{tikz-qtree}
@@ -241,8 +243,6 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 
 \section{Implementation}
 
-\subsection{Features}
-
 \begin{frame}{CCDetect-LSP features}
     \begin{columns}
         \column{0.55\linewidth}{
@@ -370,7 +370,7 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
         \begin{table}
         
             \setlength{\tabcolsep}{2pt}
-        \begin{tabular}{c|ccccccccccccccccccccccccccc}
+        \begin{tabular}{r|rrrrrrrrrrrrrrrrrrrrrrrrrrr}
             F & 2 & 3 & 4 & {\color{blue}5} & {\color{blue}3} & {\color{blue}6}
               &{\color{blue} 7} & {\color{blue}8} & {\color{blue}9} & {\color{blue}6} & 10 & 11 & 1 & 2 & 3 & 14 &
             {\color{blue}5} & {\color{blue}3} & {\color{blue}6} & {\color{blue}7} &
@@ -818,14 +818,12 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
             \end{itemize}
 		\item Future work
             \begin{itemize}
-                \item Type-3 clones
                 \item Refactoring clones
+                \item Type-3 clones
                 \item Compressing data structures
             \end{itemize}
 	\end{itemize}
 \end{frame}
-
-\section{Questions or demo?}
 
 \begin{frame}{LSP}
     \begin{figure}
@@ -839,9 +837,8 @@ for (int (*\textbf j*) = (*\textbf 5*); (*\textbf j*) < (*\textbf{20}*); (*\text
 \begin{frame}{LSP architecture}
     \begin{figure}
         \begin{center}
-            \includegraphics[width=0.7\textwidth]{figures/architecture.drawio.pdf}
+            \includegraphics[width=0.85\textwidth]{figures/architecture.drawio.pdf}
         \end{center}
-        \caption{Architecture of CCDetect-LSP}
     \end{figure}
 \end{frame}
 
@@ -887,6 +884,152 @@ print(sum);
 		\caption{Type-4 clone pair}
 		\label{fig:type4clone}
 	\end{figure}
+\end{frame}
+
+\begin{frame}{Suffix tree}
+    \begin{figure}
+	\begin{center}
+		\begin{tikzpicture}[every tree node,
+				level distance=1.25cm,sibling distance=1cm,
+				edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+			\Tree
+			[.\addcircle{}
+                \edge node[midway, above, sloped] {\$};
+                [.\addsquare{6} ]
+                \edge node[midway, below, sloped] {BANANA\$};
+                [.\addsquare{0} ]
+                \edge node[midway, above, sloped] {A};
+                [.\addcircle{}
+                    \edge node[midway, above, sloped] {\$};
+                    [.\addsquare{5} ]
+                    \edge node[midway, above, sloped] {NA};
+                    [.\addcircle{}
+                        \edge node[midway, above, sloped] {\$};
+                        [.\addsquare{3} ]
+                        \edge node[midway, above, sloped] {NA\$};
+                        [.\addsquare{1} ]
+                    ]
+                ]
+                \edge node[midway, above, sloped] {NA};
+                [.\addcircle{}
+                    \edge node[midway, above, sloped] {\$};
+                    [.\addsquare{4} ]
+                    \edge node[midway, above, sloped] {NA\$};
+                    [.\addsquare{2} ]
+			    ]
+			]
+		\end{tikzpicture}
+		\caption{Suffix tree for $S=\text{BANANA\$}$}
+        \label{fig:suffixtree}
+	\end{center}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Linear time LCP array}
+\begin{table}[t]
+    \begin{center}
+        \begin{tabular}[c]{c|cccccc|c}
+            Index & \multicolumn{6}{c}{Suffix} & Minimum LCP \\
+            \hline
+            1 & A & N & A & N & A & \$ & 0 \\ 
+            3 & A & N & A & \$ &  &  & 0\\ 
+            2 & N & A & N & A & \$ & & 2 \\ 
+            4 & N & A & \$ & & &  & 2\\ 
+
+        \end{tabular}
+    \end{center}
+    \caption{Minimum common LCP values between suffixes for S = BANANA\$}
+    \label{tab:lcpexample}
+\end{table}
+\end{frame}
+
+
+\begin{frame}{Test generation}
+    \begin{center}
+        \includegraphics[width=0.9\textwidth]{figures/revisioninversion.drawio.pdf}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{table}
+	\begin{center}
+        \begin{tabular}[c]{cc}
+		\scalebox{0.6}{
+			\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
+				  &                        & F                     & I                     & N                     & I                    & S                     & H                     & I                     & N                      & G                      \\\hline
+				  & \cellcolor{blue!25}    & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				F & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				A & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				S & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				C & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				I & \cellcolor{green!25}10 & \cellcolor{green!25}8 & \cellcolor{green!25}6 & \cellcolor{green!25}7 & \cellcolor{blue!75}6 & \cellcolor{green!25}7 & \cellcolor{green!25}8 & \cellcolor{green!25}8 & \cellcolor{green!25}10 & \cellcolor{green!25}12 \\\hline
+				N & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				A & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				T & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				I & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				N & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{green!25}   \\\hline
+				G & \cellcolor{green!25}   & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}   & \cellcolor{blue!25}    \\\hline
+			\end{tabular}
+        } &
+
+		\scalebox{0.6}{
+			\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
+				  &                       & F                     & I                    & N                     & I                     & S                     & H                    & I                     & N                     & G                     \\\hline
+				  & \cellcolor{blue!25}   & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
+				F & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
+				A & \cellcolor{green!25}5 & \cellcolor{green!25}3 & \cellcolor{blue!75}3 & \cellcolor{green!25}4 & \cellcolor{green!25}6 &                       &                      &                       &                       &                       \\\hline
+				S & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
+				C & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  &                       &                      &                       &                       &                       \\\hline
+				I & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{blue!25}   & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
+				N &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
+				A &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
+				T &                       &                       &                      &                       & \cellcolor{green!25}5 & \cellcolor{green!25}4 & \cellcolor{blue!75}3 & \cellcolor{green!25}4 & \cellcolor{green!25}6 & \cellcolor{green!25}8 \\\hline
+				I &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
+				N &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25}  \\\hline
+				G &                       &                       &                      &                       & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{blue!25}   \\\hline
+			\end{tabular}
+        } \\
+        \addlinespace[0.5cm]
+		\scalebox{0.6}{
+			\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
+				                     &                       & F                     & I                     & N                    & I                     & S                     & H                    & I                    & N                    & G                    \\\hline
+				                     & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 &                      &                       &                       &                      &                      &                      &                      \\\hline
+				F                    & \cellcolor{green!25}1 & \cellcolor{blue!75}0  & \cellcolor{green!25}1 &                      &                       &                       &                      &                      &                      &                      \\\hline
+				A                    & \cellcolor{green!25}2 & \cellcolor{green!25}1 & \cellcolor{blue!25}1  & \cellcolor{green!25} & \cellcolor{green!25}  &                       &                      &                      &                      &                      \\\hline
+				S                    &                       &                       & \cellcolor{green!25}2 & \cellcolor{blue!75}2 & \cellcolor{green!25}4 &                       &                       &                      &                       &                                                                                                                   \\\hline
+				C                    &                       &                       & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{green!25}  &                       &                      &                      &                      &                      \\\hline
+				I                    &                       &                       & \cellcolor{green!25}  & \cellcolor{green!25} & \cellcolor{blue!25}   & \cellcolor{green!25}  & \cellcolor{green!25} &                      &                      &                      \\\hline
+				N                    &                       &                       &                       & & \cellcolor{blue!75}3  & \cellcolor{green!25}3 & \cellcolor{green!25}4 &                      &                       &                                                                                                                   \\\hline
+				A                    &                       &                       &                       &                      & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{green!25} &                      &                      &                      \\\hline
+				T                    &                       &                       &                       &                      & \cellcolor{green!25}  & \cellcolor{green!25}  & \cellcolor{blue!25}  & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} \\\hline
+				I                    &                       &                       &                       & &                       &                       & \cellcolor{green!25}2 & \cellcolor{blue!75}0 & \cellcolor{green!25}2 & \cellcolor{green!25}4                                                                                             \\\hline
+				N                    &                       &                       &                       &                      &                       &                       & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} \\\hline
+				G                    &                       &                       &                       &                      &                       &                       & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{green!25} & \cellcolor{blue!25}  \\\hline
+			\end{tabular}
+        }&
+		\scalebox{0.6}{
+			\begin{tabular}[c]{c|c|c|c|c|c|c|c|c|c|c|}
+				  &                     & F                   & I                   & N                     & I                     & S                     & H                     & I                     & N                     & G                     \\\hline
+				  & \cellcolor{blue!25} &                     &                     &                       &                       &                       &                       &                       &                       &                       \\\hline
+				F &                     & \cellcolor{blue!25} &                     &                       &                       &                       &                       &                       &                       &                       \\\hline
+				A &                     &                     & \cellcolor{blue!25} &                       &                       &                       &                       &                       &                       &                       \\\hline
+				S &                     &                     &                     & \cellcolor{blue!25}0  & \cellcolor{green!25}1 &                       &                       &                       &                       &                       \\\hline
+				C &                     &                     &                     & \cellcolor{blue!75}1  & \cellcolor{green!25}1 &                       &                       &                       &                       &                       \\\hline
+				I &                     &                     &                     & \cellcolor{green!25}2 & \cellcolor{blue!25}1  &                       &                       &                       &                       &                       \\\hline
+				N &                     &                     &                     &                       & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 &                       &                       &                       \\\hline
+				A &                     &                     &                     &                       & \cellcolor{green!25}1 & \cellcolor{blue!75}1  & \cellcolor{green!25}2 &                       &                       &                       \\\hline
+				T &                     &                     &                     &                       & \cellcolor{green!25}2 & \cellcolor{green!25}2 & \cellcolor{blue!25}2  &                       &                       &                       \\\hline
+				I &                     &                     &                     &                       &                       &                       &                       & \cellcolor{blue!25}0  & \cellcolor{green!25}1 & \cellcolor{green!25}2 \\\hline
+				N &                     &                     &                     &                       &                       &                       &                       & \cellcolor{green!25}1 & \cellcolor{blue!75}0  & \cellcolor{green!25}1 \\\hline
+				G &                     &                     &                     &                       &                       &                       &                       & \cellcolor{green!25}2 & \cellcolor{green!25}1 & \cellcolor{blue!25}0  \\\hline
+			\end{tabular}
+		}
+        \end{tabular}
+	\end{center}
+	\label{tab:hirschbergs}
+\end{table}
+
 \end{frame}
 
 \end{document}

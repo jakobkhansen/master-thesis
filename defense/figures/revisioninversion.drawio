@@ -1,0 +1,62 @@
+<mxfile host="Electron" modified="2023-04-22T10:24:54.197Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="utoJ4YVukuWyYGnEcmmP" version="21.1.2" type="device">
+  <diagram name="Page-1" id="jui37XqeeH_dwL4KF3Na">
+    <mxGraphModel dx="1434" dy="969" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2Ipa8VqLwssa-Gp7A83x-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Computer Modern;" parent="1" source="2Ipa8VqLwssa-Gp7A83x-1" target="2Ipa8VqLwssa-Gp7A83x-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2Ipa8VqLwssa-Gp7A83x-1" value="&lt;font&gt;Revision 0&lt;br&gt;(Original source)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="40" y="170" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="2Ipa8VqLwssa-Gp7A83x-2" value="Revision 1" style="whiteSpace=wrap;html=1;rounded=1;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="320" y="170" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-1" value="Delete 100 tokens x 10" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="180" y="170" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Computer Modern;" parent="1" target="-Iq5-rDpAbpalomt3rTi-3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="200" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-3" value="Revision 2" style="whiteSpace=wrap;html=1;rounded=1;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="600" y="170" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-4" value="Delete 100 tokens x 10" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="460" y="170" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=none;fontFamily=Computer Modern;" parent="1" source="-Iq5-rDpAbpalomt3rTi-6" target="-Iq5-rDpAbpalomt3rTi-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-6" value="Revision 2&lt;br&gt;(Original source)" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="40" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-7" value="Revision 1" style="whiteSpace=wrap;html=1;rounded=1;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="320" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-8" value="Insert 100 tokens x 10" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="185" y="350" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Computer Modern;" parent="1" source="-Iq5-rDpAbpalomt3rTi-10" target="-Iq5-rDpAbpalomt3rTi-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="380" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-10" value="Revision 0" style="whiteSpace=wrap;html=1;rounded=1;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="600" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-11" value="Insert 100 tokens x 10" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Computer Modern;" parent="1" vertex="1">
+          <mxGeometry x="470" y="350" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-Iq5-rDpAbpalomt3rTi-12" value="" style="endArrow=classic;html=1;rounded=0;fontFamily=Computer Modern;" parent="1" source="-Iq5-rDpAbpalomt3rTi-7" target="-Iq5-rDpAbpalomt3rTi-6" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
